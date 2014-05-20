@@ -1,0 +1,4 @@
+dependencies {
+    compile 'com.pivotal.cf.mobile:SampleAppCore:0.5-RELEASE'
+    compile project(':DataSDK')
+}
