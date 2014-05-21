@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Data Sample</string>
+    <string name="app_name">Data Sample App</string>
+    <string name="action_authorize">Authorize</string>
+    <string name="action_clear_authorization">Clear Authorization</string>
+    <string name="title_activity_preferences">Preferences</string>
+    <string name="pref_title_data_preferences">Data Preferences</string>
+    <string name="pref_title_client_id">Client ID</string>
+    <string name="pref_title_client_secret">Client Secret</string>
+    <string name="pref_title_redirect_url">Redirect URL</string>
+    <string name="pref_title_authorization_url">Authorization URL</string>
+    <string name="pref_title_token_url">Token URL</string>
+    <string name="pref_title_user_info_url">User Info URL</string>
 
 </resources>

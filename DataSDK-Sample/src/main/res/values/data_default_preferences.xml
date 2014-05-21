@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- The default Client ID for this client's account on the data server.                                         -->
+    <string name="pref_default_client_id">947045348411-lf2k2rpp7gmhgonthk2l39221ei36ugq.apps.googleusercontent.com</string>
+
+    <!-- The default Client Secret for this client's account on the data server.                                     -->
+    <string name="pref_default_client_secret">cYvu_h-koYhJYYzKk7aEXpxr</string>
+
+    <!-- The default redirect URL used during authorization.                                                         -->
+    <string name="pref_default_redirect_url">https://mobile.cf.pivotal.com/oauth2callback</string>
+
+    <!-- The URI used to start the user authorization flow.                                                          -->
+    <string name="pref_default_authorization_url">https://accounts.google.com/o/oauth2/auth</string>
+
+    <!-- The URI used to get access tokens.                                                                          -->
+    <string name="pref_default_token_url">https://accounts.google.com/o/oauth2/token</string>
+
+    <!-- The URI used to get user info.                                                                              -->
+    <string name="pref_default_user_info_url">https://www.googleapis.com/oauth2/v1/userinfo</string>
+
+</resources>
