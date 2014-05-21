@@ -12,5 +12,6 @@
     <string name="pref_title_authorization_url">Authorization URL</string>
     <string name="pref_title_token_url">Token URL</string>
     <string name="pref_title_user_info_url">User Info URL</string>
+    <string name="title_activity_authorization">Data Sample App Authorization</string>
 
 </resources>

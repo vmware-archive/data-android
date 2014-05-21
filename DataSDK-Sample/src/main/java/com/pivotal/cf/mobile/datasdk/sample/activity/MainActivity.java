@@ -1,5 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.sample.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -8,13 +9,8 @@ import android.view.MenuItem;
 
 import com.pivotal.cf.mobile.common.sample.activity.BaseMainActivity;
 import com.pivotal.cf.mobile.common.sample.activity.BasePreferencesActivity;
-import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.DataSDK;
 import com.pivotal.cf.mobile.datasdk.sample.R;
-import com.pivotal.cf.mobile.datasdk.sample.util.Preferences;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 public class MainActivity extends BaseMainActivity {
 
@@ -67,7 +63,8 @@ public class MainActivity extends BaseMainActivity {
     }
 
     private void doAuthorize() {
-        dataSDK.obtainAuthorization(this, getDataParameters());
+        final Intent intent = new Intent(this, AuthorizationActivity.class);
+        startActivity(intent);
     }
 
     private void doClearAuthorization() {
@@ -75,55 +72,4 @@ public class MainActivity extends BaseMainActivity {
 
     }
 
-    private DataParameters getDataParameters() {
-
-        final URL authorizationUrl = getAuthorizationUrl();
-        final URL tokenUrl = getTokenUrl();
-        final URL userInfoUrl = getUserInfoUrl();
-        final URL redirectUrl = getRedirectUrl();
-
-        return new DataParameters(
-                Preferences.getClientId(this),
-                Preferences.getClientSecret(this),
-                authorizationUrl,
-                tokenUrl,
-                userInfoUrl,
-                redirectUrl);
-    }
-
-    private URL getAuthorizationUrl() {
-        try {
-            return new URL(Preferences.getAuthorizationUrl(this));
-        } catch (MalformedURLException e) {
-            addLogMessage("Invalid authorization URL: " + e.getLocalizedMessage());
-            return null;
-        }
-    }
-
-    private URL getTokenUrl() {
-        try {
-            return new URL(Preferences.getTokenUrl(this));
-        } catch (MalformedURLException e) {
-            addLogMessage("Invalid token URL: " + e.getLocalizedMessage());
-            return null;
-        }
-    }
-
-    private URL getUserInfoUrl() {
-        try {
-            return new URL(Preferences.getUserInfoUrl(this));
-        } catch (MalformedURLException e) {
-            addLogMessage("Invalid user info URL: " + e.getLocalizedMessage());
-            return null;
-        }
-    }
-
-    private URL getRedirectUrl() {
-        try {
-            return new URL(Preferences.getRedirectUrl(this));
-        } catch (MalformedURLException e) {
-            addLogMessage("Invalid redirect URL: " + e.getLocalizedMessage());
-            return null;
-        }
-    }
 }

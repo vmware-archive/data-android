@@ -3,7 +3,8 @@ package com.pivotal.cf.mobile.datasdk.authorization;
 import android.test.AndroidTestCase;
 
 import com.pivotal.cf.mobile.datasdk.DataParameters;
-import com.pivotal.cf.mobile.datasdk.activity.FakeActivity;
+import com.pivotal.cf.mobile.datasdk.activity.FakeAuthorizationActivity;
+import com.pivotal.cf.mobile.datasdk.prefs.FakeAuthorizationPreferences;
 
 import java.net.URL;
 
@@ -15,12 +16,15 @@ public class AuthorizationEngineTest extends AndroidTestCase {
     private static final String USER_INFO_URL = "https://test.user.info.url";
     private static final String AUTHORIZATION_URL = "https://test.authorization.url";
     private static final String TOKEN_URL = "https://test.token.url";
-    private FakeActivity activity;
+
+    private FakeAuthorizationPreferences preferences;
+    private FakeAuthorizationActivity activity;
     private DataParameters parameters;
 
     @Override
     protected void setUp() throws Exception {
-        activity = new FakeActivity();
+        activity = new FakeAuthorizationActivity();
+        preferences = new FakeAuthorizationPreferences();
         parameters = new DataParameters(
                 CLIENT_ID,
                 CLIENT_SECRET,
@@ -30,9 +34,18 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                 new URL(REDIRECT_URL));
     }
 
+    public void testRequestAuthorizationPreferencesProvider() {
+        try {
+            new AuthorizationEngine(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
     public void testRequiresActivity() {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine();
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
             engine.obtainAuthorization(null, parameters);
             fail();
         } catch (IllegalArgumentException e) {
@@ -42,11 +55,108 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresParameters() {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine();
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
             engine.obtainAuthorization(activity, null);
             fail();
         } catch (IllegalArgumentException e) {
             // success
         }
     }
+
+    public void testRequiresClientId() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    null,
+                    CLIENT_SECRET,
+                    new URL(AUTHORIZATION_URL),
+                    new URL(TOKEN_URL),
+                    new URL(USER_INFO_URL),
+                    new URL(REDIRECT_URL)));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresClientSecret() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    CLIENT_ID,
+                    null,
+                    new URL(AUTHORIZATION_URL),
+                    new URL(TOKEN_URL),
+                    new URL(USER_INFO_URL),
+                    new URL(REDIRECT_URL)));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresAuthorizationUrl() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    CLIENT_ID,
+                    CLIENT_SECRET,
+                    null,
+                    new URL(TOKEN_URL),
+                    new URL(USER_INFO_URL),
+                    new URL(REDIRECT_URL)));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresTokenUrl() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    CLIENT_ID,
+                    CLIENT_SECRET,
+                    new URL(AUTHORIZATION_URL),
+                    null,
+                    new URL(USER_INFO_URL),
+                    new URL(REDIRECT_URL)));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresUserInfoUrl() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    CLIENT_ID,
+                    CLIENT_SECRET,
+                    new URL(AUTHORIZATION_URL),
+                    new URL(TOKEN_URL),
+                    null,
+                    new URL(REDIRECT_URL)));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresRedirectUrl() throws Exception {
+        try {
+            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            engine.obtainAuthorization(activity, new DataParameters(
+                    CLIENT_ID,
+                    CLIENT_SECRET,
+                    new URL(AUTHORIZATION_URL),
+                    new URL(TOKEN_URL),
+                    new URL(USER_INFO_URL),
+                    null));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
 }
