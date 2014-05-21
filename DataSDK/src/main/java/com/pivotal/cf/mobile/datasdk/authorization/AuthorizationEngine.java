@@ -3,11 +3,14 @@ package com.pivotal.cf.mobile.datasdk.authorization;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
+import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -21,6 +24,7 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 
 public class AuthorizationEngine {
@@ -54,11 +58,29 @@ public class AuthorizationEngine {
         this.authorizationPreferencesProvider = authorizationPreferencesProvider;
     }
 
+    /**
+     * Starts the authorization process.
+     *
+     * @param activity    an already-running activity to use as the base of the authorization process.  This activity
+     *                    *MUST* have an intent filter in the AndroidManifest.xml file that captures the redirect URL
+     *                    sent by the server.  e.g.:
+     *                         <intent-filter>
+     *                             <action android:name="android.intent.action.VIEW" />
+     *                             <category android:name="android.intent.category.DEFAULT" />
+     *                             <category android:name="android.intent.category.BROWSABLE" />
+     *                             <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
+     *                             <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
+     *                             <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
+     *                         </intent-filter>
+     *
+     * @param parameters  Parameters object defining the client identification and API endpoints used by
+     *                    authorization.
+     */
     public void obtainAuthorization(BaseAuthorizationActivity activity, DataParameters parameters) {
         verifyAuthorizationArguments(activity, parameters);
         saveAuthorizationParameters(parameters);
         setupDataStore(activity);
-        setupFlow(parameters);
+        setupFlow();
         startAuthorization(activity, parameters);
     }
 
@@ -106,20 +128,89 @@ public class AuthorizationEngine {
         Logger.d("Loading authorization request URL: " + url);
         final Uri uri = Uri.parse(url);
         final Intent i = new Intent(Intent.ACTION_VIEW, uri);
+        i.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         activity.startActivity(i); // Launches external browser to do complete authentication
     }
 
-    private void setupFlow(DataParameters parameters) {
+    /**
+     * Re-entry point to the authorization engine after the user authorizes the application and the
+     * server sends back an authorization code.  This method will fail if it has been called before
+     * obtainAuthorization.
+     *
+     * @param activity    an already-running activity to use as the base of the authorization process.  This activity
+     *                    *MUST* have an intent filter in the AndroidManifest.xml file that captures the redirect URL
+     *                    sent by the server.
+     * @param authorizationCode  the authorization code received from the server.
+     */
+    public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) {
+
+        // TODO - ensure that an authorization flow is already active
+
+        setupDataStore(activity);
+        setupFlow();
+
+
+        // TODO - remove the AsyncTask after the thread pool is set up.
+
+        final AsyncTask<Void, Void, TokenResponse> task = new AsyncTask<Void, Void, TokenResponse>() {
+
+            @Override
+            protected TokenResponse doInBackground(Void... params) {
+                try {
+                    final AuthorizationCodeTokenRequest tokenUrl = flow.newTokenRequest(authorizationCode);
+                    tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
+                    return tokenUrl.execute();
+                } catch (Exception e) {
+                    Logger.ex("Could not get tokens.", e);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(TokenResponse tokenResponse) {
+                if (tokenResponse != null) {
+                    Logger.d("Got access token: " + tokenResponse.getAccessToken());
+                    storeTokenResponse(tokenResponse);
+                    activity.authorizationComplete();
+                } else {
+                    Logger.e("Got null token response.");
+                    activity.authorizationFailed("Got null token response.");
+                }
+            }
+
+        };
+        task.execute((Void)null);
+    }
+
+
+    private void storeTokenResponse(TokenResponse tokenResponse) {
         try {
+            // User the Client ID as the user ID.
+            flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
+        } catch (IOException e) {
+            Logger.ex("Could not store token response", e);
+        }
+    }
+
+
+
+
+    private void setupFlow() {
+        try {
+
+            final String clientId = authorizationPreferencesProvider.getClientId();
+            final String clientSecret = authorizationPreferencesProvider.getClientSecret();
+            final String authorizationURL = authorizationPreferencesProvider.getAuthorizationUrl().toString();
+            final URL tokenUrl = authorizationPreferencesProvider.getTokenUrl();
 
             flow = new AuthorizationCodeFlow.Builder(
                     BearerToken.authorizationHeaderAccessMethod(),
                     HTTP_TRANSPORT,
                     JSON_FACTORY,
-                    new GenericUrl(parameters.getTokenUrl()),
-                    new ClientParametersAuthentication(parameters.getClientId(), parameters.getClientSecret()),
-                    parameters.getClientId(),
-                    parameters.getAuthorizationUrl().toString())
+                    new GenericUrl(tokenUrl),
+                    new ClientParametersAuthentication(clientId, clientSecret),
+                    clientId,
+                    authorizationURL)
                     .setScopes(Arrays.asList(SCOPES))
                     .setDataStoreFactory(dataStoreFactory).build();
 

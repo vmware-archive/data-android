@@ -3,6 +3,7 @@ package com.pivotal.cf.mobile.datasdk.sample.activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
@@ -23,6 +24,17 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authorization);
         dataSDK = DataSDK.getInstance();
+    }
+
+    @Override
+    public void authorizationComplete() {
+        finish();
+    }
+
+    @Override
+    public void authorizationFailed(String reason) {
+        Toast.makeText(this, reason, Toast.LENGTH_SHORT).show();
+        finish();
     }
 
     @Override

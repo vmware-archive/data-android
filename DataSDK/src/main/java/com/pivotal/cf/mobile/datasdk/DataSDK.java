@@ -22,6 +22,7 @@ public class DataSDK {
 
     public void obtainAuthorization(BaseAuthorizationActivity activity, DataParameters parameters) {
         // TODO - AuthorizationEngine should be launched on a worker thread.
+        // TODO - Calls to AuthorizationEngine should be serialized.
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
         final AuthorizationEngine engine = new AuthorizationEngine(preferences);
         engine.obtainAuthorization(activity, parameters);
