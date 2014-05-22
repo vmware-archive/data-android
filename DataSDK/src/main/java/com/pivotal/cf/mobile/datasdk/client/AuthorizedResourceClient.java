@@ -31,6 +31,7 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
     }
 
     public void get(final URL url, final Map<String, String> headers, DataParameters parameters, final Listener listener) {
+        verifyGetArguments(url, parameters, listener);
 
         // TODO - user a thread pool to process request
 
@@ -79,6 +80,18 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
             }
         };
         task.execute();
+    }
+
+    private void verifyGetArguments(URL url, DataParameters parameters, Listener listener) {
+        if (url == null) {
+            throw new IllegalArgumentException("url may not be null");
+        }
+        if (parameters == null) {
+            throw new IllegalArgumentException("parameters may not be null");
+        }
+        if (listener == null) {
+            throw new IllegalArgumentException("listener may not be null");
+        }
     }
 
 
