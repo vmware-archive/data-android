@@ -16,9 +16,6 @@ public interface AuthorizationPreferencesProvider {
     public URL getTokenUrl();
     public void setTokenUrl(URL tokenUrl);
 
-    public URL getUserInfoUrl();
-    public void setUserInfoUrl(URL userInfoUrl);
-    
     public URL getRedirectUrl();
     public void setRedirectUrl(URL redirectUrl);
 }

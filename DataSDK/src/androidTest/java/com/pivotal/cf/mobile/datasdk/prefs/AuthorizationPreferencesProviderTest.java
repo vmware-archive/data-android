@@ -9,7 +9,6 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
     private static final String CLIENT_SECRET = "TEST_CLIENT_SECRET";
     private static final String CLIENT_ID = "TEST_CLIENT_ID";
     private static final String REDIRECT_URL = "https://test.redirect.url";
-    private static final String USER_INFO_URL = "https://test.user.info.url";
     private static final String AUTHORIZATION_URL = "https://test.authorization.url";
     private static final String TOKEN_URL = "https://test.token.url";
 
@@ -26,7 +25,6 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
         assertNull(prefs.getClientSecret());
         assertNull(prefs.getAuthorizationUrl());
         assertNull(prefs.getTokenUrl());
-        assertNull(prefs.getUserInfoUrl());
         assertNull(prefs.getRedirectUrl());
     }
 
@@ -60,14 +58,6 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
         assertEquals(new URL(TOKEN_URL), prefs1.getTokenUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
         assertEquals(new URL(TOKEN_URL), prefs2.getTokenUrl());
-    }
-
-    public void testSetUserInfoUrl() throws Exception {
-        final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setUserInfoUrl(new URL(USER_INFO_URL));
-        assertEquals(new URL(USER_INFO_URL), prefs1.getUserInfoUrl());
-        final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(new URL(USER_INFO_URL), prefs2.getUserInfoUrl());
     }
 
     public void testSetRedirectUrl() throws Exception {

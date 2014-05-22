@@ -52,16 +52,6 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     }
 
     @Override
-    public URL getUserInfoUrl() {
-        return userInfoUrl;
-    }
-
-    @Override
-    public void setUserInfoUrl(URL userInfoUrl) {
-        this.userInfoUrl = userInfoUrl;
-    }
-
-    @Override
     public URL getRedirectUrl() {
         return redirectUrl;
     }

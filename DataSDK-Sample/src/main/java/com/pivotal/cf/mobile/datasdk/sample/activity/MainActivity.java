@@ -11,9 +11,13 @@ import com.pivotal.cf.mobile.common.sample.activity.BasePreferencesActivity;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.DataSDK;
+import com.pivotal.cf.mobile.datasdk.client.OAuth2Client;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.util.Preferences;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -61,6 +65,10 @@ public class MainActivity extends BaseMainActivity {
                 doClearAuthorization();
                 break;
 
+            case R.id.action_get_user_info:
+                doGetUserInfo();
+                break;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -76,11 +84,42 @@ public class MainActivity extends BaseMainActivity {
 
     }
 
+    private void doGetUserInfo() {
+        final URL userInfoUrl = getUserInfoUrl();
+        final DataParameters parameters = getDataParameters();
+        dataSDK.getClient(this).get(userInfoUrl, null, parameters, new OAuth2Client.Listener() {
+
+            @Override
+            public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                Logger.d("GET userInfo onSuccess");
+                if (httpStatusCode >= 200 && httpStatusCode < 300) {
+                    if (contentType.startsWith("application/json")) {
+                        try {
+                            final String responseData = readInput(result);
+                            Logger.d("Read user info data: " + responseData);
+                            result.close();
+                        } catch (IOException e) {
+                            Logger.ex("Could not read user info response data", e);
+                        }
+                    } else {
+                        Logger.e("Got invalid content type: " + contentType + ".");
+                    }
+                } else {
+                    Logger.e("Got error HTTP status getting user info: '" + httpStatusCode + ".");
+                }
+            }
+
+            @Override
+            public void onFailure(String reason) {
+                Logger.e("GET userInfo onFailure reason: '" + reason + "'.");
+            }
+        });
+    }
+
     private DataParameters getDataParameters() {
 
         final URL authorizationUrl = getAuthorizationUrl();
         final URL tokenUrl = getTokenUrl();
-        final URL userInfoUrl = getUserInfoUrl();
         final URL redirectUrl = getRedirectUrl();
 
         return new DataParameters(
@@ -88,7 +127,6 @@ public class MainActivity extends BaseMainActivity {
                 Preferences.getClientSecret(this),
                 authorizationUrl,
                 tokenUrl,
-                userInfoUrl,
                 redirectUrl);
     }
 
@@ -110,6 +148,15 @@ public class MainActivity extends BaseMainActivity {
         }
     }
 
+    private URL getRedirectUrl() {
+        try {
+            return new URL(Preferences.getRedirectUrl(this));
+        } catch (MalformedURLException e) {
+            Logger.e("Invalid redirect URL: " + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
     private URL getUserInfoUrl() {
         try {
             return new URL(Preferences.getUserInfoUrl(this));
@@ -119,12 +166,19 @@ public class MainActivity extends BaseMainActivity {
         }
     }
 
-    private URL getRedirectUrl() {
-        try {
-            return new URL(Preferences.getRedirectUrl(this));
-        } catch (MalformedURLException e) {
-            Logger.e("Invalid redirect URL: " + e.getLocalizedMessage());
-            return null;
+    private String readInput(InputStream inputStream) throws IOException {
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[256];
+
+        while (true) {
+            final int numberBytesRead = inputStream.read(buffer);
+            if (numberBytesRead < 0) {
+                break;
+            }
+            byteArrayOutputStream.write(buffer, 0, numberBytesRead);
         }
+
+        final String str = new String(byteArrayOutputStream.toByteArray());
+        return str;
     }
 }

@@ -103,9 +103,6 @@ public class AuthorizationEngine {
         if (parameters.getTokenUrl() == null) {
             throw new IllegalArgumentException("parameters.tokenUrl may not be null");
         }
-        if (parameters.getUserInfoUrl() == null) {
-            throw new IllegalArgumentException("parameters.userInfoUrl may not be null");
-        }
         if (parameters.getRedirectUrl() == null) {
             throw new IllegalArgumentException("parameters.redirectUrl may not be null");
         }
@@ -116,7 +113,6 @@ public class AuthorizationEngine {
         authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
         authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
-        authorizationPreferencesProvider.setUserInfoUrl(parameters.getUserInfoUrl());
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
     }
 

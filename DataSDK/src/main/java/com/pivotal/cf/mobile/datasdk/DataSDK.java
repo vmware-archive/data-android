@@ -1,8 +1,11 @@
 package com.pivotal.cf.mobile.datasdk;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.pivotal.cf.mobile.datasdk.authorization.AuthorizationEngine;
+import com.pivotal.cf.mobile.datasdk.client.OAuth2Client;
+import com.pivotal.cf.mobile.datasdk.client.OAuth2ClientImpl;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
 
@@ -27,5 +30,10 @@ public class DataSDK {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
         final AuthorizationEngine engine = new AuthorizationEngine(preferences);
         engine.obtainAuthorization(activity, parameters);
+    }
+
+    public OAuth2Client getClient(Context context) {
+        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
+        return new OAuth2ClientImpl(context, preferences);
     }
 }

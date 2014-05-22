@@ -17,7 +17,6 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     private static final String PROPERTY_CLIENT_SECRET = "client_secret";
     private static final String PROPERTY_AUTHORIZATION_URL = "authorization_url";
     private static final String PROPERTY_TOKEN_URL = "token_url";
-    private static final String PROPERTY_USER_INFO_URL = "user_info_url";
     private static final String PROPERTY_REDIRECT_URL = "redirect_url";
 
     private Context context;
@@ -121,32 +120,6 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     }
 
     @Override
-    public URL getUserInfoUrl() {
-        final String preference = getSharedPreferences().getString(PROPERTY_USER_INFO_URL, null);
-        if (preference == null) {
-            return null;
-        }
-        try {
-            return new URL(preference);
-        } catch (MalformedURLException e) {
-            Logger.w("Invalid user info URL stored in preferences: " + preference);
-            return null;
-        }
-    }
-
-    @Override
-    public void setUserInfoUrl(URL userInfoUrl) {
-        final SharedPreferences prefs = getSharedPreferences();
-        final SharedPreferences.Editor editor = prefs.edit();
-        if (userInfoUrl != null) {
-            editor.putString(PROPERTY_USER_INFO_URL, userInfoUrl.toString());
-        } else {
-            editor.putString(PROPERTY_USER_INFO_URL, null);
-        }
-        editor.commit();
-    }
-
-    @Override
     public URL getRedirectUrl() {
         final String preference = getSharedPreferences().getString(PROPERTY_REDIRECT_URL, null);
         if (preference == null) {
@@ -179,5 +152,4 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     private SharedPreferences getSharedPreferences() {
         return context.getSharedPreferences(TAG_NAME, Context.MODE_PRIVATE);
     }
-
 }

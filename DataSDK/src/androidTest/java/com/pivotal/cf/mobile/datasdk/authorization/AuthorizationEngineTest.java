@@ -13,7 +13,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
     private static final String CLIENT_SECRET = "TEST_CLIENT_SECRET";
     private static final String CLIENT_ID = "TEST_CLIENT_ID";
     private static final String REDIRECT_URL = "https://test.redirect.url";
-    private static final String USER_INFO_URL = "https://test.user.info.url";
     private static final String AUTHORIZATION_URL = "https://test.authorization.url";
     private static final String TOKEN_URL = "https://test.token.url";
 
@@ -30,7 +29,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                 CLIENT_SECRET,
                 new URL(AUTHORIZATION_URL),
                 new URL(TOKEN_URL),
-                new URL(USER_INFO_URL),
                 new URL(REDIRECT_URL));
     }
 
@@ -71,7 +69,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                     CLIENT_SECRET,
                     new URL(AUTHORIZATION_URL),
                     new URL(TOKEN_URL),
-                    new URL(USER_INFO_URL),
                     new URL(REDIRECT_URL)));
             fail();
         } catch (IllegalArgumentException e) {
@@ -87,7 +84,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                     null,
                     new URL(AUTHORIZATION_URL),
                     new URL(TOKEN_URL),
-                    new URL(USER_INFO_URL),
                     new URL(REDIRECT_URL)));
             fail();
         } catch (IllegalArgumentException e) {
@@ -103,7 +99,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                     CLIENT_SECRET,
                     null,
                     new URL(TOKEN_URL),
-                    new URL(USER_INFO_URL),
                     new URL(REDIRECT_URL)));
             fail();
         } catch (IllegalArgumentException e) {
@@ -118,23 +113,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                     CLIENT_ID,
                     CLIENT_SECRET,
                     new URL(AUTHORIZATION_URL),
-                    null,
-                    new URL(USER_INFO_URL),
-                    new URL(REDIRECT_URL)));
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        }
-    }
-
-    public void testRequiresUserInfoUrl() throws Exception {
-        try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
-            engine.obtainAuthorization(activity, new DataParameters(
-                    CLIENT_ID,
-                    CLIENT_SECRET,
-                    new URL(AUTHORIZATION_URL),
-                    new URL(TOKEN_URL),
                     null,
                     new URL(REDIRECT_URL)));
             fail();
@@ -151,7 +129,6 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                     CLIENT_SECRET,
                     new URL(AUTHORIZATION_URL),
                     new URL(TOKEN_URL),
-                    new URL(USER_INFO_URL),
                     null));
             fail();
         } catch (IllegalArgumentException e) {
