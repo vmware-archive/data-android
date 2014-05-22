@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.authorization.AuthorizationEngine;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
@@ -14,26 +13,23 @@ public abstract class BaseAuthorizationActivity extends Activity {
     private AuthorizationPreferencesProvider authorizationPreferencesProvider;
     private AuthorizationEngine authorizationEngine;
 
-    public abstract void authorizationComplete();
-    public abstract void authorizationFailed(String reason);
+    public abstract void onAuthorizationComplete();
+    public abstract void onAuthorizationFailed(String reason);
+
+    // TODO - do we need to onCreate and provide a null content view?
 
     @Override
     protected void onResume() {
         super.onResume();
-        Logger.fd("onResume activity:%s", this);
         setupPreferences();
         if (intentHasCallbackUrl(getIntent())) {
             // TODO - check state field in intent.data URI
             setupAuthorizationEngine();
             reenterAuthorizationEngine(getIntent());
         }
-    }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Logger.fd("onNewIntent activity:%s", this);
-        Logger.d("Got new intent " + intent);
+        // TODO - finish here?
+//        finish();
     }
 
     private void setupPreferences() {

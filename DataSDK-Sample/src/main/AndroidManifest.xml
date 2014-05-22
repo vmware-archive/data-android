@@ -10,6 +10,7 @@
 
         <activity
             android:name="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity"
+            android:launchMode="singleInstance"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,11 +28,9 @@
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
         </activity>
 
-        <!-- TODO: figure out the correct launchMode for this activity. 'singleTop' doesn't do what I want it to -->
         <activity
             android:name="com.pivotal.cf.mobile.datasdk.sample.activity.AuthorizationActivity"
             android:label="@string/title_activity_authorization"
-            android:launchMode="singleTop"
             android:parentActivityName="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
