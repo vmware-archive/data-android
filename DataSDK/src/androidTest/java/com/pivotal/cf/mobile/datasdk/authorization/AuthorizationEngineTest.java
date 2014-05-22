@@ -32,9 +32,18 @@ public class AuthorizationEngineTest extends AndroidTestCase {
                 new URL(REDIRECT_URL));
     }
 
-    public void testRequestAuthorizationPreferencesProvider() {
+    public void testRequiresContext() {
         try {
-            new AuthorizationEngine(null);
+            new AuthorizationEngine(null, preferences);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testRequiresAuthorizationPreferencesProvider() {
+        try {
+            new AuthorizationEngine(getContext(), null);
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -43,7 +52,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresActivity() {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(null, parameters);
             fail();
         } catch (IllegalArgumentException e) {
@@ -53,7 +62,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresParameters() {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, null);
             fail();
         } catch (IllegalArgumentException e) {
@@ -63,7 +72,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresClientId() throws Exception {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, new DataParameters(
                     null,
                     CLIENT_SECRET,
@@ -78,7 +87,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresClientSecret() throws Exception {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, new DataParameters(
                     CLIENT_ID,
                     null,
@@ -93,7 +102,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresAuthorizationUrl() throws Exception {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, new DataParameters(
                     CLIENT_ID,
                     CLIENT_SECRET,
@@ -108,7 +117,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresTokenUrl() throws Exception {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, new DataParameters(
                     CLIENT_ID,
                     CLIENT_SECRET,
@@ -123,7 +132,7 @@ public class AuthorizationEngineTest extends AndroidTestCase {
 
     public void testRequiresRedirectUrl() throws Exception {
         try {
-            final AuthorizationEngine engine = new AuthorizationEngine(preferences);
+            final AuthorizationEngine engine = new AuthorizationEngine(getContext(), preferences);
             engine.obtainAuthorization(activity, new DataParameters(
                     CLIENT_ID,
                     CLIENT_SECRET,

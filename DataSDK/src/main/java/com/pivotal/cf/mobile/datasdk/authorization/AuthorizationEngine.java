@@ -9,78 +9,41 @@ import android.os.AsyncTask;
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
-import com.google.api.client.auth.oauth2.BearerToken;
-import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.activity.BaseAuthorizationActivity;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-
-public class AuthorizationEngine {
-
-    // TODO - these items should be provided via the constructor (i.e.: dependency injection)
-    private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
-    private static final JsonFactory JSON_FACTORY = new JacksonFactory();
-    private static FileDataStoreFactory dataStoreFactory;
-
-    // TODO - these scopes will likely be different in the final product
-    private static final String[] SCOPES = new String[] {"profile", "email"};
+public class AuthorizationEngine extends AbstractAuthorizationClient {
 
     // TODO - the state token should be randomly generated, but persisted until the end of the flow
     private static final String STATE_TOKEN = "BLORG";
 
-    private AuthorizationCodeFlow flow;
-    private AuthorizationPreferencesProvider authorizationPreferencesProvider;
-
-    public AuthorizationEngine(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
-        verifyArguments(authorizationPreferencesProvider);
-        saveArguments(authorizationPreferencesProvider);
-    }
-
-    private void verifyArguments(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
-        if (authorizationPreferencesProvider == null) {
-            throw new IllegalArgumentException("authorizationPreferencesProvider may not be null");
-        }
-    }
-
-    private void saveArguments(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
-        this.authorizationPreferencesProvider = authorizationPreferencesProvider;
+    public AuthorizationEngine(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) {
+        super(context, authorizationPreferencesProvider);
     }
 
     /**
      * Starts the authorization process.
-     *  @param activity    an already-running activity to use as the base of the authorization process.  This activity
-     *                    *MUST* have an intent filter in the AndroidManifest.xml file that captures the redirect URL
-     *                    sent by the server.  e.g.:
-     *                         <intent-filter>
-     *                             <action android:name="android.intent.action.VIEW" />
-     *                             <category android:name="android.intent.category.DEFAULT" />
-     *                             <category android:name="android.intent.category.BROWSABLE" />
-     *                             <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
-     *                             <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
-     *                             <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
-     *                         </intent-filter>
      *
-     * @param parameters  Parameters object defining the client identification and API endpoints used by
+     * @param activity   an already-running activity to use as the base of the authorization process.  This activity
+     *                   *MUST* have an intent filter in the AndroidManifest.xml file that captures the redirect URL
+     *                   sent by the server.  e.g.:
+     *                   <intent-filter>
+     *                   <action android:name="android.intent.action.VIEW" />
+     *                   <category android:name="android.intent.category.DEFAULT" />
+     *                   <category android:name="android.intent.category.BROWSABLE" />
+     *                   <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
+     *                   <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
+     *                   <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
+     *                   </intent-filter>
+     * @param parameters Parameters object defining the client identification and API endpoints used by
      */
     // TODO - needs a callback to report authorization success/failure.
     public void obtainAuthorization(Activity activity, DataParameters parameters) {
         verifyAuthorizationArguments(activity, parameters);
         saveAuthorizationParameters(parameters);
-        setupDataStore(activity);
-        setupFlow();
         startAuthorization(activity, parameters);
     }
 
@@ -117,6 +80,7 @@ public class AuthorizationEngine {
     }
 
     private void startAuthorization(Activity activity, DataParameters parameters) {
+        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
         final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
         authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
         authorizationUrl.setState(STATE_TOKEN);
@@ -134,24 +98,20 @@ public class AuthorizationEngine {
      * server to receive the access token (which is required before calling any protected APIs).
      * This method will fail if it has been called before obtainAuthorization.
      *
-     *  @param activity   an already-running activity to use as the base of the authorization process.  This activity
-     *                    *MUST* have an intent filter in the `AndroidManifest.xml` file that captures the redirect URL
-     *                    sent by the server.  Note that the `AuthorizationEngine` will hold a reference to this activity
-     *                    until the access token from the identity server has been received and one of the two callbacks
-     *                    in the activity have been made.
-     *
-     * @param authorizationCode  the authorization code received from the server.
+     * @param activity          an already-running activity to use as the base of the authorization process.  This activity
+     *                          *MUST* have an intent filter in the `AndroidManifest.xml` file that captures the redirect URL
+     *                          sent by the server.  Note that the `AuthorizationEngine` will hold a reference to this activity
+     *                          until the access token from the identity server has been received and one of the two callbacks
+     *                          in the activity have been made.
+     * @param authorizationCode the authorization code received from the server.
      */
     public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) {
 
         Logger.fd("Received authorization code from identity server: '%s'.", authorizationCode);
 
         // TODO - ensure that an authorization flow is already active
-
-        setupDataStore(activity);
-        setupFlow();
-
         // TODO - remove the AsyncTask after the thread pool is set up.
+        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
 
         final AsyncTask<Void, Void, TokenResponse> task = new AsyncTask<Void, Void, TokenResponse>() {
 
@@ -172,7 +132,7 @@ public class AuthorizationEngine {
                 if (tokenResponse != null) {
                     Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
                     Logger.d("Authorization flow complete.");
-                    storeTokenResponse(tokenResponse);
+                    storeTokenResponse(flow, tokenResponse);
                     // TODO - report success to callback
                     activity.onAuthorizationComplete();
                 } else {
@@ -183,50 +143,6 @@ public class AuthorizationEngine {
             }
 
         };
-        task.execute((Void)null);
-    }
-
-    private void storeTokenResponse(TokenResponse tokenResponse) {
-        try {
-            // User the Client ID as the user ID.
-            flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
-        } catch (IOException e) {
-            Logger.ex("Could not store token response", e);
-        }
-    }
-
-    private void setupFlow() {
-        try {
-
-            final String clientId = authorizationPreferencesProvider.getClientId();
-            final String clientSecret = authorizationPreferencesProvider.getClientSecret();
-            final String authorizationURL = authorizationPreferencesProvider.getAuthorizationUrl().toString();
-            final URL tokenUrl = authorizationPreferencesProvider.getTokenUrl();
-
-            flow = new AuthorizationCodeFlow.Builder(
-                    BearerToken.authorizationHeaderAccessMethod(),
-                    HTTP_TRANSPORT,
-                    JSON_FACTORY,
-                    new GenericUrl(tokenUrl),
-                    new ClientParametersAuthentication(clientId, clientSecret),
-                    clientId,
-                    authorizationURL)
-                    .setScopes(Arrays.asList(SCOPES))
-                    .setDataStoreFactory(dataStoreFactory).build();
-
-        } catch (IOException e) {
-            // TODO - pass errors back via callback
-            Logger.ex("Could not create AuthorizationCodeFlow object", e);
-        }
-    }
-
-    private void setupDataStore(Activity activity) {
-        final File dataStoreDir = activity.getDir("oauth2", Context.MODE_PRIVATE);
-        try {
-            dataStoreFactory = new FileDataStoreFactory(dataStoreDir);
-        } catch (IOException e) {
-            // TODO - pass errors back via callback
-            Logger.ex("Could not open file data store", e);
-        }
+        task.execute((Void) null);
     }
 }

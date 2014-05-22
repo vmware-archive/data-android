@@ -59,7 +59,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
 
     private void setupAuthorizationEngine() {
         if (authorizationEngine == null) {
-            authorizationEngine = new AuthorizationEngine(authorizationPreferencesProvider);
+            authorizationEngine = new AuthorizationEngine(this, authorizationPreferencesProvider);
         }
     }
 
