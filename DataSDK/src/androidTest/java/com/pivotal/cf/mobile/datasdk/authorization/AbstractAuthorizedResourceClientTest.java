@@ -4,11 +4,13 @@ import android.content.Context;
 import android.test.AndroidTestCase;
 
 import com.pivotal.cf.mobile.datasdk.DataParameters;
-import com.pivotal.cf.mobile.datasdk.activity.FakeAuthorizationActivity;
+import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.FakeApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.FakeAuthorizationPreferences;
 
 import java.net.URL;
+import java.util.concurrent.Semaphore;
 
 public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAuthorizationClient> extends AndroidTestCase {
 
@@ -18,25 +20,34 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
     protected static URL AUTHORIZATION_URL;
     protected static URL TOKEN_URL;
 
+    protected FakeApiProvider apiProvider;
     protected FakeAuthorizationPreferences preferences;
-    protected FakeAuthorizationActivity activity;
     protected DataParameters parameters;
+    protected Semaphore semaphore;
 
-    protected abstract T construct(Context context, AuthorizationPreferencesProvider preferencesProvider);
+    protected abstract T construct(Context context,
+                                   AuthorizationPreferencesProvider preferencesProvider,
+                                   ApiProvider apiProvider);
 
     @Override
     protected void setUp() throws Exception {
-        activity = new FakeAuthorizationActivity();
         preferences = new FakeAuthorizationPreferences();
+        apiProvider = new FakeApiProvider();
         REDIRECT_URL = new URL("https://test.redirect.url");
         AUTHORIZATION_URL = new URL("https://test.authorization.url");
         TOKEN_URL = new URL("https://test.token.url");
         parameters = new DataParameters(CLIENT_ID, CLIENT_SECRET, AUTHORIZATION_URL, TOKEN_URL, REDIRECT_URL);
+        preferences.setClientId(CLIENT_ID);
+        preferences.setClientSecret(CLIENT_SECRET);
+        preferences.setAuthorizationUrl(AUTHORIZATION_URL);
+        preferences.setTokenUrl(TOKEN_URL);
+        preferences.setRedirectUrl(REDIRECT_URL);
+        semaphore = new Semaphore(0);
     }
 
     public void testRequiresContext() {
         try {
-            construct(null, preferences);
+            construct(null, preferences, apiProvider);
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -45,10 +56,20 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
 
     public void testRequiresAuthorizationPreferencesProvider() {
         try {
-            construct(getContext(), null);
+            construct(getContext(), null, apiProvider);
             fail();
         } catch (IllegalArgumentException e) {
             // success
         }
     }
+
+    public void testRequiresHttpRequestFactoryProvider() {
+        try {
+            construct(getContext(), preferences, null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
 }

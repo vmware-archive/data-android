@@ -5,12 +5,15 @@ import android.content.Intent;
 import android.net.Uri;
 
 import com.pivotal.cf.mobile.datasdk.authorization.AuthorizationEngine;
+import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.ApiProviderImpl;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
 
 public abstract class BaseAuthorizationActivity extends Activity {
 
     private AuthorizationPreferencesProvider authorizationPreferencesProvider;
+    private ApiProvider apiProvider;
     private AuthorizationEngine authorizationEngine;
 
     public abstract void onAuthorizationComplete();
@@ -21,7 +24,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        setupPreferences();
+        setupRequirements();
         if (intentHasCallbackUrl(getIntent())) {
             // TODO - check state field in intent.data URI
             setupAuthorizationEngine();
@@ -32,10 +35,13 @@ public abstract class BaseAuthorizationActivity extends Activity {
 //        finish();
     }
 
-    private void setupPreferences() {
+    private void setupRequirements() {
         if (authorizationPreferencesProvider == null) {
             // TODO - find a way to provide an alternate preferences provider in unit tests
             authorizationPreferencesProvider = new AuthorizationPreferencesProviderImpl(this);
+        }
+        if (apiProvider == null) {
+            apiProvider = new ApiProviderImpl();
         }
     }
 
@@ -59,7 +65,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
 
     private void setupAuthorizationEngine() {
         if (authorizationEngine == null) {
-            authorizationEngine = new AuthorizationEngine(this, authorizationPreferencesProvider);
+            authorizationEngine = new AuthorizationEngine(this, apiProvider, authorizationPreferencesProvider);
         }
     }
 

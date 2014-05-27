@@ -2,26 +2,24 @@ package com.pivotal.cf.mobile.datasdk.authorization;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
-import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
-import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.activity.BaseAuthorizationActivity;
+import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 public class AuthorizationEngine extends AbstractAuthorizationClient {
 
-    // TODO - the state token should be randomly generated, but persisted until the end of the flow
+    // TODO - remove the state token from this class and bury it in AuthorizedApiRequestImpl
     private static final String STATE_TOKEN = "BLORG";
 
-    public AuthorizationEngine(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) {
-        super(context, authorizationPreferencesProvider);
+    public AuthorizationEngine(Context context,
+                               ApiProvider apiProvider,
+                               AuthorizationPreferencesProvider authorizationPreferencesProvider) {
+
+        super(context, apiProvider, authorizationPreferencesProvider);
     }
 
     /**
@@ -31,12 +29,12 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      *                   *MUST* have an intent filter in the AndroidManifest.xml file that captures the redirect URL
      *                   sent by the server.  e.g.:
      *                   <intent-filter>
-     *                   <action android:name="android.intent.action.VIEW" />
-     *                   <category android:name="android.intent.category.DEFAULT" />
-     *                   <category android:name="android.intent.category.BROWSABLE" />
-     *                   <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
-     *                   <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
-     *                   <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
+     *                      <action android:name="android.intent.action.VIEW" />
+     *                      <category android:name="android.intent.category.DEFAULT" />
+     *                      <category android:name="android.intent.category.BROWSABLE" />
+     *                      <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
+     *                      <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
+     *                      <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
      *                   </intent-filter>
      * @param parameters Parameters object defining the client identification and API endpoints used by
      */
@@ -80,16 +78,10 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     }
 
     private void startAuthorization(Activity activity, DataParameters parameters) {
-        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
-        final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
-        authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
-        authorizationUrl.setState(STATE_TOKEN);
-        final String url = authorizationUrl.build();
-        Logger.fd("Loading authorization request URL to identify server in external browser: '%s'.", url);
-        final Uri uri = Uri.parse(url);
-        final Intent i = new Intent(Intent.ACTION_VIEW, uri);
-        i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        activity.startActivity(i); // Launches external browser to do complete authentication
+
+        // Launches external browser to do complete authentication
+        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
+        request.obtainAuthorization(activity, parameters);
     }
 
     /**
@@ -110,39 +102,22 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         Logger.fd("Received authorization code from identity server: '%s'.", authorizationCode);
 
         // TODO - ensure that an authorization flow is already active
-        // TODO - remove the AsyncTask after the thread pool is set up.
-        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
-
-        final AsyncTask<Void, Void, TokenResponse> task = new AsyncTask<Void, Void, TokenResponse>() {
+        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
+        request.getAccessToken(authorizationCode, new AuthorizedApiRequest.AuthorizationListener() {
 
             @Override
-            protected TokenResponse doInBackground(Void... params) {
-                try {
-                    final AuthorizationCodeTokenRequest tokenUrl = flow.newTokenRequest(authorizationCode);
-                    tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
-                    return tokenUrl.execute();
-                } catch (Exception e) {
-                    Logger.ex("Could not get tokens.", e);
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(TokenResponse tokenResponse) {
-                if (tokenResponse != null) {
-                    Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
-                    Logger.d("Authorization flow complete.");
-                    storeTokenResponse(flow, tokenResponse);
-                    // TODO - report success to callback
+            public void onSuccess() {
+                if (activity != null) {
                     activity.onAuthorizationComplete();
-                } else {
-                    Logger.e("Got null token response.");
-                    // TODO - report failure to callback - provide a better error message
-                    activity.onAuthorizationFailed("Got null token response.");
                 }
             }
 
-        };
-        task.execute((Void) null);
+            @Override
+            public void onFailure(String reason) {
+                if (activity != null) {
+                    activity.onAuthorizationFailed(reason);
+                }
+            }
+        });
     }
 }

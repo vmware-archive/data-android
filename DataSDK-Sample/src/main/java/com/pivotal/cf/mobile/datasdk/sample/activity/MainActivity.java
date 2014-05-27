@@ -14,8 +14,8 @@ import com.pivotal.cf.mobile.datasdk.DataSDK;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.util.Preferences;
+import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -95,7 +95,7 @@ public class MainActivity extends BaseMainActivity {
                 if (httpStatusCode >= 200 && httpStatusCode < 300) {
                     if (contentType.startsWith("application/json")) {
                         try {
-                            final String responseData = readInput(result);
+                            final String responseData = StreamUtil.readInput(result);
                             Logger.d("Read user info data: " + responseData);
                             result.close();
                         } catch (IOException e) {
@@ -164,21 +164,5 @@ public class MainActivity extends BaseMainActivity {
             Logger.e("Invalid user info URL: " + e.getLocalizedMessage());
             return null;
         }
-    }
-
-    private String readInput(InputStream inputStream) throws IOException {
-        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[256];
-
-        while (true) {
-            final int numberBytesRead = inputStream.read(buffer);
-            if (numberBytesRead < 0) {
-                break;
-            }
-            byteArrayOutputStream.write(buffer, 0, numberBytesRead);
-        }
-
-        final String str = new String(byteArrayOutputStream.toByteArray());
-        return str;
     }
 }

@@ -3,18 +3,13 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
-import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.authorization.AbstractAuthorizationClient;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
+import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
@@ -23,11 +18,15 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
     public interface Listener {
         public void onSuccess(int httpStatusCode, String contentType, InputStream result);
+
         public void onFailure(String reason);
     }
 
-    public AuthorizedResourceClient(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) {
-        super(context, authorizationPreferencesProvider);
+    public AuthorizedResourceClient(Context context,
+                                    ApiProvider apiProvider,
+                                    AuthorizationPreferencesProvider authorizationPreferencesProvider) {
+
+        super(context, apiProvider, authorizationPreferencesProvider);
     }
 
     public void get(final URL url, final Map<String, String> headers, DataParameters parameters, final Listener listener) {
@@ -44,42 +43,33 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
                 // TODO - add headers
 
-                final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
-                final Credential credentials = loadCredentials(flow);
-                final HttpRequestFactory requestFactory = HTTP_TRANSPORT.createRequestFactory(credentials);
-                final GenericUrl requestUrl = new GenericUrl(url);
+                final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
 
-                try {
-                    final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
-                    final HttpResponse response = request.execute();
-                    if (listener != null) {
-                        final int statusCode = response.getStatusCode();
-                        final String contentType = response.getContentType();
-                        final InputStream inputStream = response.getContent();
-                        listener.onSuccess(statusCode, contentType, inputStream);
-                    }
-                } catch (com.google.api.client.http.HttpResponseException e) {
-
-                    // TODO - Check for an HttpResponseException indicating that the token has expired.
-                    Logger.ex("Could not get user info", e);
-                    if (listener != null) {
-                        listener.onFailure(e.getLocalizedMessage());
+                request.get(url, headers, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
+                    @Override
+                    public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                        if (isSuccessfulHttpStatusCode(httpStatusCode)) {
+                            // TODO - watch for 401 errors and clear credentials.
+                            listener.onSuccess(httpStatusCode, contentType, result);
+                        } else {
+                            listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
+                        }
                     }
 
-                } catch (IOException e) {
-
-                    // Some other error occurred?
-                    Logger.ex("Could not get user info", e);
-
-                    if (listener != null) {
-                        listener.onFailure(e.getLocalizedMessage());
+                    @Override
+                    public void onFailure(String reason) {
+                        listener.onFailure(reason);
                     }
-                }
+                });
 
                 return null;
             }
         };
         task.execute();
+    }
+
+    private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
+        return httpStatusCode >= 200 && httpStatusCode < 300;
     }
 
     private void verifyGetArguments(URL url, DataParameters parameters, Listener listener) {
@@ -93,6 +83,4 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
             throw new IllegalArgumentException("listener may not be null");
         }
     }
-
-
 }

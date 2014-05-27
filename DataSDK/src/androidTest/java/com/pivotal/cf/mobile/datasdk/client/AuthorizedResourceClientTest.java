@@ -4,8 +4,11 @@ import android.content.Context;
 
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.authorization.AbstractAuthorizedResourceClientTest;
+import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
+import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
@@ -13,48 +16,46 @@ import java.util.Map;
 
 public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClientTest<AuthorizedResourceClient> {
 
+    private static final String HTTP_TEST_GET_URL = "http://test.get.url";
+    private static final String TEST_CONTENT_TYPE = "test/content-type";
+    private static final String TEST_CONTENT_DATA = "TEST CONTENT DATA";
+    private static final int TEST_HTTP_STATUS_CODE = 200;
+
     private URL url;
     private Map<String, String> headers;
     private AuthorizedResourceClient.Listener listener;
+    private boolean shouldSuccessListenerBeCalled;
+    private boolean shouldRequestBeSuccessful;
+    private int expectedHttpStatusCode;
+    private String expectedContentType;
+    private String expectedContentData;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        url = new URL("http://test.get.url");
+        url = new URL(HTTP_TEST_GET_URL);
         headers = new HashMap<String, String>();
         listener = new AuthorizedResourceClient.Listener() {
 
             @Override
             public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-
+                assertTrue(shouldSuccessListenerBeCalled);
+                assertEquals(expectedHttpStatusCode, httpStatusCode);
+                assertEquals(expectedContentType, contentType);
+                try {
+                    assertEquals(expectedContentData, StreamUtil.readInput(result));
+                } catch (IOException e) {
+                    fail();
+                }
+                semaphore.release();
             }
 
             @Override
             public void onFailure(String reason) {
-
+                assertFalse(shouldSuccessListenerBeCalled);
+                semaphore.release();
             }
         };
-    }
-
-    @Override
-    protected AuthorizedResourceClient construct(Context context, AuthorizationPreferencesProvider preferencesProvider) {
-        return new AuthorizedResourceClient(context, preferencesProvider);
-    }
-
-    private AuthorizedResourceClient getClient() {
-        return new AuthorizedResourceClient(getContext(), preferences);
-    }
-
-    private void baseTestGetRequires(final URL url,
-                                     final Map<String, String> headers,
-                                     DataParameters parameters,
-                                     final AuthorizedResourceClient.Listener listener) throws Exception {
-        try {
-            getClient().get(url, headers, parameters, listener);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        }
     }
 
     public void testGetRequiresUrl() throws Exception {
@@ -69,5 +70,81 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         baseTestGetRequires(url, headers, parameters, null);
     }
 
+    public void testGetDoesNotRequiresHeaders() throws InterruptedException {
+        setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        getClient().get(url, null, parameters, listener);
+        semaphore.acquire();
+    }
 
+    public void testSuccessfulGet() throws InterruptedException {
+        setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        getClient().get(url, headers, parameters, listener);
+        semaphore.acquire();
+    }
+
+    public void testFailedGet() throws InterruptedException {
+        setupFailedRequest();
+        getClient().get(url, headers, parameters, listener);
+        semaphore.acquire();
+    }
+
+    public void testFailedGet404() throws InterruptedException {
+        setupSuccessfulRequestWithFailedHttpStatus(404, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        getClient().get(url, headers, parameters, listener);
+        semaphore.acquire();
+    }
+
+    // TODO - add test showing that credentials are cleared after a 401 error
+
+    @Override
+    protected AuthorizedResourceClient construct(Context context,
+                                                 AuthorizationPreferencesProvider preferencesProvider,
+                                                 ApiProvider apiProvider) {
+
+        return new AuthorizedResourceClient(context, apiProvider, preferencesProvider);
+    }
+
+    private AuthorizedResourceClient getClient() {
+        return new AuthorizedResourceClient(getContext(), apiProvider, preferences);
+    }
+
+    private void baseTestGetRequires(final URL url,
+                                     final Map<String, String> headers,
+                                     DataParameters parameters,
+                                     final AuthorizedResourceClient.Listener listener) throws Exception {
+        try {
+            getClient().get(url, headers, parameters, listener);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {
+        shouldSuccessListenerBeCalled = true;
+        shouldRequestBeSuccessful = true;
+        apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
+        setupHttpRequestResults(httpStatusCode, contentType, contentData);
+    }
+
+    private void setupFailedRequest() {
+        shouldSuccessListenerBeCalled = false;
+        shouldRequestBeSuccessful = false;
+        apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
+    }
+
+    private void setupSuccessfulRequestWithFailedHttpStatus(int httpStatusCode, String contentType, String contentData) {
+        shouldSuccessListenerBeCalled = false;
+        shouldRequestBeSuccessful = true;
+        apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
+        setupHttpRequestResults(httpStatusCode, contentType, contentData);
+    }
+
+    private void setupHttpRequestResults(int httpStatusCode, String contentType, String contentData) {
+        expectedHttpStatusCode = httpStatusCode;
+        expectedContentType = contentType;
+        expectedContentData = contentData;
+        apiProvider.setHttpRequestResults(httpStatusCode, contentType, contentData);
+    }
 }
