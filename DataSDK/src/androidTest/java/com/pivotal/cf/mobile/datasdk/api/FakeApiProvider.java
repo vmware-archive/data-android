@@ -3,6 +3,7 @@ package com.pivotal.cf.mobile.datasdk.api;
 import android.content.Context;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
@@ -19,6 +20,8 @@ public class FakeApiProvider implements ApiProvider {
     private int httpStatus;
     private String contentType;
     private String contentData;
+    private TokenResponse tokenResponse;
+    private Credential credential;
 
     @Override
     public HttpTransport getTransport() {
@@ -35,11 +38,15 @@ public class FakeApiProvider implements ApiProvider {
     public AuthorizedApiRequest getAuthorizedApiRequest(Context context,
                                                         AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
-        final FakeAuthorizedApiRequest apiRequest = new FakeAuthorizedApiRequest(shouldAuthorizationListenerBeSuccessful,
+        final FakeAuthorizedApiRequest apiRequest = new FakeAuthorizedApiRequest(
+                shouldAuthorizationListenerBeSuccessful,
                 shouldAuthorizedApiRequestBeSuccessful,
                 httpStatus,
                 contentType,
-                contentData);
+                contentData,
+                tokenResponse,
+                credential);
+
         apiRequests.add(apiRequest);
         return apiRequest;
     }
@@ -56,6 +63,14 @@ public class FakeApiProvider implements ApiProvider {
 
     public void setShouldAuthorizationListenerBeSuccessful(boolean b) {
         shouldAuthorizationListenerBeSuccessful = b;
+    }
+
+    public void setTokenResponse(TokenResponse tokenResponse) {
+        this.tokenResponse = tokenResponse;
+    }
+
+    public void setCredential(Credential credential) {
+        this.credential = credential;
     }
 
     public List<FakeAuthorizedApiRequest> getApiRequests() {

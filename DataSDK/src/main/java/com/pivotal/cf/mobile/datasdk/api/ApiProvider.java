@@ -11,6 +11,6 @@ public interface ApiProvider {
 
     public HttpTransport getTransport();
     public HttpRequestFactory getFactory(Credential credential);
-    public AuthorizedApiRequest getAuthorizedApiRequest(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider);
+    public AuthorizedApiRequest getAuthorizedApiRequest(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) throws Exception;
 
 }

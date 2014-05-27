@@ -48,4 +48,23 @@ public class AbstractAuthorizationClient {
         this.authorizationPreferencesProvider = authorizationPreferencesProvider;
         this.apiProvider = apiProvider;
     }
+
+    protected boolean areAuthorizationPreferencesAvailable() {
+        if (authorizationPreferencesProvider.getClientId() == null) {
+            return false;
+        }
+        if (authorizationPreferencesProvider.getClientSecret() == null) {
+            return false;
+        }
+        if (authorizationPreferencesProvider.getAuthorizationUrl() == null) {
+            return false;
+        }
+        if (authorizationPreferencesProvider.getTokenUrl() == null) {
+            return false;
+        }
+        if (authorizationPreferencesProvider.getRedirectUrl() == null) {
+            return false;
+        }
+        return true;
+    }
 }

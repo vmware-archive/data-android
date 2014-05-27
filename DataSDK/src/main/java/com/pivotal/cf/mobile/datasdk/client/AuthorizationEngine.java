@@ -3,6 +3,7 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.app.Activity;
 import android.content.Context;
 
+import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.activity.BaseAuthorizationActivity;
@@ -39,7 +40,8 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      * @param parameters Parameters object defining the client identification and API endpoints used by
      */
     // TODO - needs a callback to report authorization success/failure.
-    public void obtainAuthorization(Activity activity, DataParameters parameters) {
+    // TODO - describe thrown exceptions
+    public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
         verifyAuthorizationArguments(activity, parameters);
         saveAuthorizationParameters(parameters);
         startAuthorization(activity, parameters);
@@ -77,7 +79,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
     }
 
-    private void startAuthorization(Activity activity, DataParameters parameters) {
+    private void startAuthorization(Activity activity, DataParameters parameters) throws Exception {
 
         // Launches external browser to do complete authentication
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
@@ -95,18 +97,25 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      *                          sent by the server.  Note that the `AuthorizationEngine` will hold a reference to this activity
      *                          until the access token from the identity server has been received and one of the two callbacks
      *                          in the activity have been made.
+     *
      * @param authorizationCode the authorization code received from the server.
      */
-    public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) {
+    // TODO - describe thrown exceptions
+    public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) throws Exception {
 
         Logger.fd("Received authorization code from identity server: '%s'.", authorizationCode);
+
+        if (!areAuthorizationPreferencesAvailable()) {
+            throw new AuthorizationException("Authorization parameters have not been set.");
+        }
 
         // TODO - ensure that an authorization flow is already active
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
         request.getAccessToken(authorizationCode, new AuthorizedApiRequest.AuthorizationListener() {
 
             @Override
-            public void onSuccess() {
+            public void onSuccess(TokenResponse tokenResponse) {
+                request.storeTokenResponse(tokenResponse);
                 if (activity != null) {
                     activity.onAuthorizationComplete();
                 }
@@ -114,6 +123,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
             @Override
             public void onFailure(String reason) {
+                // TODO - should we clear the credentials?
                 if (activity != null) {
                     activity.onAuthorizationFailed(reason);
                 }

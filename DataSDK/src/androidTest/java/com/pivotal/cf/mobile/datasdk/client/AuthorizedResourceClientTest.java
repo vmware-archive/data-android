@@ -2,6 +2,8 @@ package com.pivotal.cf.mobile.datasdk.client;
 
 import android.content.Context;
 
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
@@ -28,10 +30,12 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     private int expectedHttpStatusCode;
     private String expectedContentType;
     private String expectedContentData;
+    private Credential credential;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         url = new URL(HTTP_TEST_GET_URL);
         headers = new HashMap<String, String>();
         listener = new AuthorizedResourceClient.Listener() {
@@ -69,26 +73,46 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         baseTestGetRequires(url, headers, parameters, null);
     }
 
-    public void testGetDoesNotRequiresHeaders() throws InterruptedException {
+    public void testRequiresAuthorizationParameters() throws Exception {
+        try {
+            saveCredential();
+            getClient().get(url, headers, parameters, listener);
+            fail();
+        } catch (AuthorizationException e) {
+            // success
+        }
+    }
+
+    public void testRequiresSavedCredential() throws Exception {
+        try {
+            savePreferences();
+            getClient().get(url, headers, parameters, listener);
+            fail();
+        } catch (AuthorizationException e) {
+            // success
+        }
+    }
+
+    public void testGetDoesNotRequiresHeaders() throws Exception {
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         getClient().get(url, null, parameters, listener);
         semaphore.acquire();
     }
 
-    public void testSuccessfulGet() throws InterruptedException {
+    public void testSuccessfulGet() throws Exception {
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         getClient().get(url, headers, parameters, listener);
         semaphore.acquire();
     }
 
-    public void testFailedGet() throws InterruptedException {
+    public void testFailedGet() throws Exception {
         setupFailedRequest();
         getClient().get(url, headers, parameters, listener);
         semaphore.acquire();
     }
 
-    public void testFailedGet404() throws InterruptedException {
+    public void testFailedGet404() throws Exception {
         setupSuccessfulRequestWithFailedHttpStatus(404, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         getClient().get(url, headers, parameters, listener);
         semaphore.acquire();
@@ -120,7 +144,13 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         }
     }
 
+    private void saveCredential() {
+        apiProvider.setCredential(credential);
+    }
+
     private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {
+        savePreferences();
+        saveCredential();
         shouldSuccessListenerBeCalled = true;
         shouldRequestBeSuccessful = true;
         apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
@@ -128,12 +158,16 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     }
 
     private void setupFailedRequest() {
+        savePreferences();
+        saveCredential();
         shouldSuccessListenerBeCalled = false;
         shouldRequestBeSuccessful = false;
         apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
     }
 
     private void setupSuccessfulRequestWithFailedHttpStatus(int httpStatusCode, String contentType, String contentData) {
+        savePreferences();
+        saveCredential();
         shouldSuccessListenerBeCalled = false;
         shouldRequestBeSuccessful = true;
         apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);

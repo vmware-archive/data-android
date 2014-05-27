@@ -3,6 +3,7 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
@@ -17,7 +18,6 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
     public interface Listener {
         public void onSuccess(int httpStatusCode, String contentType, InputStream result);
-
         public void onFailure(String reason);
     }
 
@@ -28,9 +28,20 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         super(context, apiProvider, authorizationPreferencesProvider);
     }
 
-    public void get(final URL url, final Map<String, String> headers, DataParameters parameters, final Listener listener) {
+    // TODO provide documents - including which exceptions can get thrown
+
+    public void get(final URL url, final Map<String, String> headers, DataParameters parameters, final Listener listener) throws Exception {
         verifyGetArguments(url, parameters, listener);
 
+        if (!areAuthorizationPreferencesAvailable()) {
+            throw new AuthorizationException("Authorization parameters have not been set. You must authorize with DataSDK.obtainAuthorization first.");
+        }
+
+        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
+        final Credential credential = request.loadCredential();
+        if (credential == null) {
+            throw new AuthorizationException("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
+        }
         // TODO - user a thread pool to process request
 
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
@@ -42,24 +53,28 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
                 // TODO - add headers
 
-                final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
-
-                request.get(url, headers, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
-                    @Override
-                    public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-                        if (isSuccessfulHttpStatusCode(httpStatusCode)) {
+                try {
+                    request.get(url, headers, credential, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
+                        @Override
+                        public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
                             // TODO - watch for 401 errors and clear credentials.
-                            listener.onSuccess(httpStatusCode, contentType, result);
-                        } else {
-                            listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
+                            if (isSuccessfulHttpStatusCode(httpStatusCode)) {
+                                listener.onSuccess(httpStatusCode, contentType, result);
+                            } else {
+                                listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(String reason) {
-                        listener.onFailure(reason);
-                    }
-                });
+                        @Override
+                        public void onFailure(String reason) {
+                            listener.onFailure(reason);
+                        }
+                    });
+
+                } catch (Exception e) {
+                    Logger.ex("Could not perform authorized GET request", e);
+                    listener.onFailure("Could not perform authorized GET request: " + e.getLocalizedMessage());
+                }
 
                 return null;
             }

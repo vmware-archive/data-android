@@ -1,7 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.api;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -23,6 +22,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.File;
@@ -46,23 +46,19 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     private final AuthorizationPreferencesProvider authorizationPreferencesProvider;
     private final ApiProvider apiProvider;
-    private final Context context;
+    private AuthorizationCodeFlow flow;
 
     public AuthorizedApiRequestImpl(Context context,
                                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                                    ApiProvider apiProvider) {
+                                    ApiProvider apiProvider) throws Exception {
 
         // TODO - ensure arguments are not null
         // TODO - once arguments have settled down, make separate methods to verify and save them.
 
         this.authorizationPreferencesProvider = authorizationPreferencesProvider;
         this.apiProvider = apiProvider;
-        if (context instanceof Application) {
-            this.context = context;
-        } else {
-            this.context = context.getApplicationContext();
-        }
         setupDataStore(context);
+        setupFlow();
     }
 
     private void setupDataStore(Context context) {
@@ -77,13 +73,39 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
+    private void setupFlow() throws Exception {
+
+        try {
+            final String clientId = authorizationPreferencesProvider.getClientId();
+            final String clientSecret = authorizationPreferencesProvider.getClientSecret();
+            final URL authorizationURL = authorizationPreferencesProvider.getAuthorizationUrl();
+            final URL tokenUrl = authorizationPreferencesProvider.getTokenUrl();
+
+            if (clientId == null || clientSecret == null || authorizationURL == null || tokenUrl == null) {
+                throw new AuthorizationException("Authorization preferences have not been set up.");
+            }
+
+            flow = new AuthorizationCodeFlow.Builder(
+                    BearerToken.authorizationHeaderAccessMethod(),
+                    apiProvider.getTransport(),
+                    JSON_FACTORY,
+                    new GenericUrl(tokenUrl),
+                    new ClientParametersAuthentication(clientId, clientSecret),
+                    clientId,
+                    authorizationURL.toString())
+                    .setScopes(Arrays.asList(SCOPES))
+                    .setDataStoreFactory(dataStoreFactory).build();
+
+        } catch (IOException e) {
+            // TODO - pass errors back via callback
+            Logger.ex("Could not create AuthorizationCodeFlow object", e);
+            throw new AuthorizationException("Could not create AuthorizationCodeFlow: " + e.getLocalizedMessage());
+        }
+    }
+
     @Override
     public void obtainAuthorization(Activity activity, DataParameters parameters) {
-        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
-        final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
-        authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
-        authorizationUrl.setState(STATE_TOKEN);
-        final String url = authorizationUrl.build();
+        final String url = getAuthorizationRequestUrl(parameters);
         Logger.fd("Loading authorization request URL to identify server in external browser: '%s'.", url);
         final Uri uri = Uri.parse(url);
         final Intent i = new Intent(Intent.ACTION_VIEW, uri);
@@ -91,10 +113,16 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         activity.startActivity(i); // Launches external browser to do complete authentication
     }
 
+    private String getAuthorizationRequestUrl(DataParameters parameters) {
+        final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
+        authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
+        authorizationUrl.setState(STATE_TOKEN);
+        return authorizationUrl.build();
+    }
+
     @Override
     public void getAccessToken(final String authorizationCode, final AuthorizationListener listener) {
         // TODO - remove the AsyncTask after the thread pool is set up.
-        final AuthorizationCodeFlow flow = getFlow(); // TODO - handle null flow
 
         final AsyncTask<Void, Void, TokenResponse> task = new AsyncTask<Void, Void, TokenResponse>() {
 
@@ -115,9 +143,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                 if (tokenResponse != null) {
                     Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
                     Logger.d("Authorization flow complete.");
-                    storeTokenResponse(flow, tokenResponse);
-                    // TODO - report success to callback
-                    listener.onSuccess();
+                    listener.onSuccess(tokenResponse);
                 } else {
                     Logger.e("Got null token response.");
                     // TODO - report failure to callback - provide a better error message
@@ -132,12 +158,11 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     @Override
     public void get(URL url,
                     Map<String, String> headers,
+                    Credential credential,
                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
                     HttpOperationListener listener) {
 
-        final AuthorizationCodeFlow flow = getFlow();
-        final Credential credentials = loadCredentials(authorizationPreferencesProvider, flow); // TODO - handle null flow
-        final HttpRequestFactory requestFactory = apiProvider.getFactory(credentials);
+        final HttpRequestFactory requestFactory = apiProvider.getFactory(credential);
         final GenericUrl requestUrl = new GenericUrl(url);
 
         // TODO - user the headers
@@ -170,34 +195,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
-    private AuthorizationCodeFlow getFlow() {
-
-        try {
-            // TODO handle null values in preferences
-            final String clientId = authorizationPreferencesProvider.getClientId();
-            final String clientSecret = authorizationPreferencesProvider.getClientSecret();
-            final String authorizationURL = authorizationPreferencesProvider.getAuthorizationUrl().toString();
-            final URL tokenUrl = authorizationPreferencesProvider.getTokenUrl();
-
-            return new AuthorizationCodeFlow.Builder(
-                    BearerToken.authorizationHeaderAccessMethod(),
-                    apiProvider.getTransport(),
-                    JSON_FACTORY,
-                    new GenericUrl(tokenUrl),
-                    new ClientParametersAuthentication(clientId, clientSecret),
-                    clientId,
-                    authorizationURL)
-                    .setScopes(Arrays.asList(SCOPES))
-                    .setDataStoreFactory(dataStoreFactory).build();
-
-        } catch (IOException e) {
-            // TODO - pass errors back via callback
-            Logger.ex("Could not create AuthorizationCodeFlow object", e);
-            return null;
-        }
-    }
-
-    private void storeTokenResponse(AuthorizationCodeFlow flow, TokenResponse tokenResponse) {
+    public void storeTokenResponse(TokenResponse tokenResponse) {
         try {
             // TODO - make a new parameter for the user ID.
             flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
@@ -206,8 +204,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
-    private Credential loadCredentials(AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                                       AuthorizationCodeFlow flow) {
+    public Credential loadCredential() {
         try {
             // TODO - make a new parameter for the user ID.
             final Credential credential = flow.loadCredential(authorizationPreferencesProvider.getClientId());
@@ -217,4 +214,5 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             return null;
         }
     }
+
 }

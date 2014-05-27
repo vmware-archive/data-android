@@ -76,7 +76,11 @@ public class MainActivity extends BaseMainActivity {
     }
 
     private void doAuthorize() {
-        dataSDK.obtainAuthorization(this, getDataParameters());
+        try {
+            dataSDK.obtainAuthorization(this, getDataParameters());
+        } catch (Exception e) {
+            Logger.ex("Could not obtain authorization", e);
+        }
     }
 
     private void doClearAuthorization() {
@@ -87,33 +91,37 @@ public class MainActivity extends BaseMainActivity {
     private void doGetUserInfo() {
         final URL userInfoUrl = getUserInfoUrl();
         final DataParameters parameters = getDataParameters();
-        dataSDK.getClient(this).get(userInfoUrl, null, parameters, new AuthorizedResourceClient.Listener() {
+        try {
+            dataSDK.getClient(this).get(userInfoUrl, null, parameters, new AuthorizedResourceClient.Listener() {
 
-            @Override
-            public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-                Logger.d("GET userInfo onSuccess");
-                if (httpStatusCode >= 200 && httpStatusCode < 300) {
-                    if (contentType.startsWith("application/json")) {
-                        try {
-                            final String responseData = StreamUtil.readInput(result);
-                            Logger.d("Read user info data: " + responseData);
-                            result.close();
-                        } catch (IOException e) {
-                            Logger.ex("Could not read user info response data", e);
+                @Override
+                public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                    Logger.d("GET userInfo onSuccess");
+                    if (httpStatusCode >= 200 && httpStatusCode < 300) {
+                        if (contentType.startsWith("application/json")) {
+                            try {
+                                final String responseData = StreamUtil.readInput(result);
+                                Logger.d("Read user info data: " + responseData);
+                                result.close();
+                            } catch (IOException e) {
+                                Logger.ex("Could not read user info response data", e);
+                            }
+                        } else {
+                            Logger.e("Got invalid content type: " + contentType + ".");
                         }
                     } else {
-                        Logger.e("Got invalid content type: " + contentType + ".");
+                        Logger.e("Got error HTTP status getting user info: '" + httpStatusCode + ".");
                     }
-                } else {
-                    Logger.e("Got error HTTP status getting user info: '" + httpStatusCode + ".");
                 }
-            }
 
-            @Override
-            public void onFailure(String reason) {
-                Logger.e("GET userInfo onFailure reason: '" + reason + "'.");
-            }
-        });
+                @Override
+                public void onFailure(String reason) {
+                    Logger.e("GET userInfo onFailure reason: '" + reason + "'.");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private DataParameters getDataParameters() {

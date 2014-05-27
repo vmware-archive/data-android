@@ -8,7 +8,6 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     private String clientSecret;
     private URL authorizationUrl;
     private URL tokenUrl;
-    private URL userInfoUrl;
     private URL redirectUrl;
 
     @Override

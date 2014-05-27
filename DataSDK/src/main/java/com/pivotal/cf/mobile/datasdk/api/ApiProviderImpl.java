@@ -23,7 +23,7 @@ public class ApiProviderImpl implements ApiProvider {
     }
 
     @Override
-    public AuthorizedApiRequest getAuthorizedApiRequest(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) {
+    public AuthorizedApiRequest getAuthorizedApiRequest(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) throws Exception {
         return new AuthorizedApiRequestImpl(context, authorizationPreferencesProvider, this);
     }
 }

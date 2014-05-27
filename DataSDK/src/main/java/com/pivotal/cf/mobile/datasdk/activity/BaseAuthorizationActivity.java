@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.pivotal.cf.mobile.datasdk.client.AuthorizationEngine;
+import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.ApiProviderImpl;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationEngine;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
 
@@ -28,7 +29,12 @@ public abstract class BaseAuthorizationActivity extends Activity {
         if (intentHasCallbackUrl(getIntent())) {
             // TODO - check state field in intent.data URI
             setupAuthorizationEngine();
-            reenterAuthorizationEngine(getIntent());
+            try {
+                reenterAuthorizationEngine(getIntent());
+            } catch (Exception e) {
+                Logger.ex("Could not provide access code to Authorization Engine", e);
+                onAuthorizationFailed("Could not provide access code to Authorization Engine :" + e.getLocalizedMessage());
+            }
         }
 
         // TODO - finish here?
@@ -69,7 +75,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
         }
     }
 
-    private void reenterAuthorizationEngine(Intent intent) {
+    private void reenterAuthorizationEngine(Intent intent) throws Exception {
         final String authorizationCode = getAuthorizationCode(intent.getData());
         authorizationEngine.authorizationCodeReceived(this, authorizationCode);
     }
