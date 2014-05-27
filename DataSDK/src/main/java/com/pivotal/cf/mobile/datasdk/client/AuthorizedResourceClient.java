@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
-import com.pivotal.cf.mobile.datasdk.authorization.AbstractAuthorizationClient;
 import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;

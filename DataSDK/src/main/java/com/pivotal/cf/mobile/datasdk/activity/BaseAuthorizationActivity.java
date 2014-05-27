@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.pivotal.cf.mobile.datasdk.authorization.AuthorizationEngine;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationEngine;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.ApiProviderImpl;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;

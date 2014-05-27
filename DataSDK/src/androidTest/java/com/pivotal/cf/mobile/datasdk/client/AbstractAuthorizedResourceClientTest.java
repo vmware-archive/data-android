@@ -1,4 +1,4 @@
-package com.pivotal.cf.mobile.datasdk.authorization;
+package com.pivotal.cf.mobile.datasdk.client;
 
 import android.content.Context;
 import android.test.AndroidTestCase;
@@ -6,6 +6,7 @@ import android.test.AndroidTestCase;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.FakeApiProvider;
+import com.pivotal.cf.mobile.datasdk.client.AbstractAuthorizationClient;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.FakeAuthorizationPreferences;
 

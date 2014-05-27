@@ -3,7 +3,6 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.content.Context;
 
 import com.pivotal.cf.mobile.datasdk.DataParameters;
-import com.pivotal.cf.mobile.datasdk.authorization.AbstractAuthorizedResourceClientTest;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;

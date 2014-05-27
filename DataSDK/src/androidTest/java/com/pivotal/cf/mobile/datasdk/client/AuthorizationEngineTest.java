@@ -1,4 +1,4 @@
-package com.pivotal.cf.mobile.datasdk.authorization;
+package com.pivotal.cf.mobile.datasdk.client;
 
 import android.app.Activity;
 import android.content.Context;
