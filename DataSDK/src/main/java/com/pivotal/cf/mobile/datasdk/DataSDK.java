@@ -36,11 +36,11 @@ public class DataSDK {
     }
 
     // TODO - add Javadocs
-    public void clearAuthorization(Context context) throws Exception {
+    public void clearAuthorization(Context context, DataParameters parameters) throws Exception {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl();
         final AuthorizationEngine engine = new AuthorizationEngine(context, apiProvider, preferences);
-        engine.clearAuthorization(context);
+        engine.clearAuthorization(context, parameters);
     }
 
     // TODO - add Javadocs

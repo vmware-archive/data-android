@@ -42,15 +42,15 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     // TODO - needs a callback to report authorization success/failure.
     // TODO - describe thrown exceptions
     public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
-        verifyAuthorizationArguments(activity, parameters);
-        saveAuthorizationParameters(parameters);
-        startAuthorization(activity, parameters);
-    }
-
-    private void verifyAuthorizationArguments(Activity activity, DataParameters parameters) {
         if (activity == null) {
             throw new IllegalArgumentException("activity may not be null");
         }
+        verifyDataParameters(parameters);
+        saveDataParameters(parameters);
+        startAuthorization(activity, parameters);
+    }
+
+    private void verifyDataParameters(DataParameters parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("parameters may not be null");
         }
@@ -71,7 +71,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         }
     }
 
-    private void saveAuthorizationParameters(DataParameters parameters) {
+    private void saveDataParameters(DataParameters parameters) {
         authorizationPreferencesProvider.setClientId(parameters.getClientId());
         authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
@@ -133,11 +133,12 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
     // TODO - add Javadocs
     // TODO - should be run on a worker thread
-    // TODO - since AuthorizationCodeFlow requires the DataParameters, they should be passed into this method and saved to the preferences
-    public void clearAuthorization(Context context) throws Exception {
+    public void clearAuthorization(Context context, DataParameters parameters) throws Exception {
         if (context == null) {
             throw new IllegalArgumentException("context may not be null");
         }
+        verifyDataParameters(parameters);
+        saveDataParameters(parameters);
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
         request.clearSavedCredential();
     }

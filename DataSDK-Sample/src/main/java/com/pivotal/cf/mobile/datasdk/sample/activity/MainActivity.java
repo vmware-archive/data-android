@@ -85,7 +85,7 @@ public class MainActivity extends BaseMainActivity {
 
     private void doClearAuthorization() {
         try {
-            dataSDK.clearAuthorization(this);
+            dataSDK.clearAuthorization(this, getDataParameters());
         } catch (Exception e) {
             addLogMessage("Could not clear authorization: '" + e.getLocalizedMessage() + "'.");
         }
