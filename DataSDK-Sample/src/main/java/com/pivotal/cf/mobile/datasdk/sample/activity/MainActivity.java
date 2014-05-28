@@ -120,7 +120,7 @@ public class MainActivity extends BaseMainActivity {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.e("Could not prepare GET userInfo request. Reason: '" + e.getLocalizedMessage() + "'.");
         }
     }
 

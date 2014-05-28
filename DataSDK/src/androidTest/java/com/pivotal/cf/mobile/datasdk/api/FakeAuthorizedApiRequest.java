@@ -16,14 +16,15 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
     private final boolean shouldAuthorizationListenerBeSuccessful;
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
-    private boolean didCallObtainAuthorization;
-    private boolean didCallGetAccessToken;
     private final String contentData;
     private final String contentType;
+    private final Credential credentialToReturn;
     private final int httpStatusCode;
+    private boolean didCallObtainAuthorization;
+    private boolean didCallGetAccessToken;
     private TokenResponse tokenResponseToReturn;
     private TokenResponse savedTokenReponse;
-    private final Credential credentialToReturn;
+    private Map<String, Object> requestHeaders;
 
     public FakeAuthorizedApiRequest(boolean shouldAuthorizationListenerBeSuccessful,
                                     boolean shouldAuthorizedApiRequestBeSuccessful,
@@ -58,10 +59,11 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
     @Override
     public void get(URL url,
-                    Map<String, String> headers,
+                    Map<String, Object> headers,
                     Credential credential, AuthorizationPreferencesProvider authorizationPreferencesProvider,
                     HttpOperationListener listener) {
 
+        this.requestHeaders = headers;
         if (shouldAuthorizedApiRequestBeSuccessful) {
             listener.onSuccess(httpStatusCode, contentType, getInputStream());
         } else {
@@ -89,6 +91,10 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
     public boolean didCallGetAccessToken() {
         return didCallGetAccessToken;
+    }
+
+    public Map<String, Object> getRequestHeaders() {
+        return requestHeaders;
     }
 
     private InputStream getInputStream() {

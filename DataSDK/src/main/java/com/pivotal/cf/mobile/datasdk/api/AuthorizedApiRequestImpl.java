@@ -157,7 +157,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     @Override
     public void get(URL url,
-                    Map<String, String> headers,
+                    Map<String, Object> headers,
                     Credential credential,
                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
                     HttpOperationListener listener) {
@@ -165,10 +165,9 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         final HttpRequestFactory requestFactory = apiProvider.getFactory(credential);
         final GenericUrl requestUrl = new GenericUrl(url);
 
-        // TODO - user the headers
-
         try {
             final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
+            addHeadersToRequest(headers, request);
             final HttpResponse response = request.execute();
             if (listener != null) {
                 final int statusCode = response.getStatusCode();
@@ -191,6 +190,18 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
             if (listener != null) {
                 listener.onFailure(e.getLocalizedMessage());
+            }
+        }
+    }
+
+    private void addHeadersToRequest(Map<String, Object> headers, HttpRequest request) {
+        if (headers != null) {
+            for(final Map.Entry<String, Object> entry : headers.entrySet()) {
+                if (entry != null) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        request.getHeaders().set(entry.getKey(), entry.getValue());
+                    }
+                }
             }
         }
     }

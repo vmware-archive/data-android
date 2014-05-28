@@ -30,7 +30,11 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
     // TODO provide documents - including which exceptions can get thrown
 
-    public void get(final URL url, final Map<String, String> headers, DataParameters parameters, final Listener listener) throws Exception {
+    public void get(final URL url,
+                    final Map<String, Object> headers,
+                    DataParameters parameters,
+                    final Listener listener) throws Exception {
+
         verifyGetArguments(url, parameters, listener);
 
         if (!areAuthorizationPreferencesAvailable()) {

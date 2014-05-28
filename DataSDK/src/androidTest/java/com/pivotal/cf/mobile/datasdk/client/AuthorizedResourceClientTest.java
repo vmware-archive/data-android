@@ -17,13 +17,15 @@ import java.util.Map;
 
 public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClientTest<AuthorizedResourceClient> {
 
-    private static final String HTTP_TEST_GET_URL = "http://test.get.url";
+    private static final String TEST_HTTP_GET_URL = "http://test.get.url";
     private static final String TEST_CONTENT_TYPE = "test/content-type";
     private static final String TEST_CONTENT_DATA = "TEST CONTENT DATA";
+    private static final String TEST_HEADER_NAME = "Test Header Name";
+    private static final String TEST_HEADER_VALUE = "Test Header Value";
     private static final int TEST_HTTP_STATUS_CODE = 200;
 
     private URL url;
-    private Map<String, String> headers;
+    private Map<String, Object> headers;
     private AuthorizedResourceClient.Listener listener;
     private boolean shouldSuccessListenerBeCalled;
     private boolean shouldRequestBeSuccessful;
@@ -36,8 +38,8 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     protected void setUp() throws Exception {
         super.setUp();
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
-        url = new URL(HTTP_TEST_GET_URL);
-        headers = new HashMap<String, String>();
+        url = new URL(TEST_HTTP_GET_URL);
+        headers = new HashMap<String, Object>();
         listener = new AuthorizedResourceClient.Listener() {
 
             @Override
@@ -97,13 +99,27 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         getClient().get(url, null, parameters, listener);
         semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertNull(apiProvider.getApiRequests().get(0).getRequestHeaders());
     }
 
     public void testSuccessfulGet() throws Exception {
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
-        getClient().get(url, headers, parameters, listener);
+        getClient().get(url, new HashMap<String, Object>(headers), parameters, listener);
         semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertEquals(headers, apiProvider.getApiRequests().get(0).getRequestHeaders());
+    }
+
+    public void testAddsHeaders() throws Exception {
+        setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        headers.put(TEST_HEADER_NAME, TEST_HEADER_VALUE);
+        apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
+        getClient().get(url, new HashMap<String, Object>(headers), parameters, listener);
+        semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertEquals(headers, apiProvider.getApiRequests().get(0).getRequestHeaders());
     }
 
     public void testFailedGet() throws Exception {
@@ -133,7 +149,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     }
 
     private void baseTestGetRequires(final URL url,
-                                     final Map<String, String> headers,
+                                     final Map<String, Object> headers,
                                      DataParameters parameters,
                                      final AuthorizedResourceClient.Listener listener) throws Exception {
         try {

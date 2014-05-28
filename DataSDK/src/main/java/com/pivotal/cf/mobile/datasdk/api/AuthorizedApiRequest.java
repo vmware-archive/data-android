@@ -28,7 +28,7 @@ public interface AuthorizedApiRequest {
     public void getAccessToken(String authorizationCode, AuthorizationListener listener);
 
     public void get(URL url,
-                    Map<String, String> headers,
+                    Map<String, Object> headers,
                     Credential credential,
                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
                     HttpOperationListener listener);
