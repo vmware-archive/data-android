@@ -130,4 +130,16 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
             }
         });
     }
+
+    // TODO - add Javadocs
+    // TODO - should be run on a worker thread
+    // TODO - since AuthorizationCodeFlow requires the DataParameters, they should be passed into this method and saved to the preferences
+    public void clearAuthorization(Context context) throws Exception {
+        if (context == null) {
+            throw new IllegalArgumentException("context may not be null");
+        }
+        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
+        request.clearSavedCredential();
+    }
+
 }

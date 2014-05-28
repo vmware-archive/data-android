@@ -18,19 +18,20 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
     private final String contentData;
     private final String contentType;
-    private final Credential credentialToReturn;
     private final int httpStatusCode;
     private boolean didCallObtainAuthorization;
     private boolean didCallGetAccessToken;
     private TokenResponse tokenResponseToReturn;
-    private TokenResponse savedTokenReponse;
+    private TokenResponse savedTokenResponse;
     private Map<String, Object> requestHeaders;
+    private Credential credentialToReturn;
 
     public FakeAuthorizedApiRequest(boolean shouldAuthorizationListenerBeSuccessful,
                                     boolean shouldAuthorizedApiRequestBeSuccessful,
                                     int httpStatus,
                                     String contentType,
                                     String contentData,
+                                    TokenResponse savedTokenResponse,
                                     TokenResponse tokenResponseToReturn,
                                     Credential credentialToReturn) {
 
@@ -39,6 +40,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         this.httpStatusCode = httpStatus;
         this.contentType = contentType;
         this.contentData = contentData;
+        this.savedTokenResponse = savedTokenResponse;
         this.tokenResponseToReturn = tokenResponseToReturn;
         this.credentialToReturn = credentialToReturn;
     }
@@ -73,7 +75,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
     @Override
     public void storeTokenResponse(TokenResponse tokenResponse) {
-        savedTokenReponse = tokenResponse;
+        savedTokenResponse = tokenResponse;
     }
 
     @Override
@@ -81,8 +83,14 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         return credentialToReturn;
     }
 
-    public TokenResponse getSavedTokenReponse() {
-        return savedTokenReponse;
+    @Override
+    public void clearSavedCredential() {
+        savedTokenResponse = null;
+        credentialToReturn = null;
+    }
+
+    public TokenResponse getSavedTokenResponse() {
+        return savedTokenResponse;
     }
 
     public boolean didCallObtainAuthorization() {

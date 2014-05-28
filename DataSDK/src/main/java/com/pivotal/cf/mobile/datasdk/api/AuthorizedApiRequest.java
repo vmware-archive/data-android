@@ -37,4 +37,5 @@ public interface AuthorizedApiRequest {
 
     public Credential loadCredential();
 
+    public void clearSavedCredential();
 }

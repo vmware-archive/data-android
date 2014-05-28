@@ -2,8 +2,6 @@ package com.pivotal.cf.mobile.datasdk.client;
 
 import android.content.Context;
 
-import com.google.api.client.auth.oauth2.BearerToken;
-import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
@@ -32,12 +30,10 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     private int expectedHttpStatusCode;
     private String expectedContentType;
     private String expectedContentData;
-    private Credential credential;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         url = new URL(TEST_HTTP_GET_URL);
         headers = new HashMap<String, Object>();
         listener = new AuthorizedResourceClient.Listener() {
@@ -158,10 +154,6 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         } catch (IllegalArgumentException e) {
             // success
         }
-    }
-
-    private void saveCredential() {
-        apiProvider.setCredential(credential);
     }
 
     private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {

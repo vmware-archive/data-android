@@ -79,13 +79,16 @@ public class MainActivity extends BaseMainActivity {
         try {
             dataSDK.obtainAuthorization(this, getDataParameters());
         } catch (Exception e) {
-            Logger.ex("Could not obtain authorization", e);
+            addLogMessage("Could not obtain authorization: '" + e + "'.");
         }
     }
 
     private void doClearAuthorization() {
-        // TODO - implement
-
+        try {
+            dataSDK.clearAuthorization(this);
+        } catch (Exception e) {
+            addLogMessage("Could not clear authorization: '" + e.getLocalizedMessage() + "'.");
+        }
     }
 
     private void doGetUserInfo() {

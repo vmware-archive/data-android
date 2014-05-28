@@ -20,8 +20,9 @@ public class FakeApiProvider implements ApiProvider {
     private int httpStatus;
     private String contentType;
     private String contentData;
-    private TokenResponse tokenResponse;
     private Credential credential;
+    private TokenResponse expectedTokenResponse;
+    private TokenResponse savedTokenResponse;
 
     @Override
     public HttpTransport getTransport() {
@@ -44,7 +45,8 @@ public class FakeApiProvider implements ApiProvider {
                 httpStatus,
                 contentType,
                 contentData,
-                tokenResponse,
+                savedTokenResponse,
+                expectedTokenResponse,
                 credential);
 
         apiRequests.add(apiRequest);
@@ -65,8 +67,12 @@ public class FakeApiProvider implements ApiProvider {
         shouldAuthorizationListenerBeSuccessful = b;
     }
 
-    public void setTokenResponse(TokenResponse tokenResponse) {
-        this.tokenResponse = tokenResponse;
+    public void setTokenResponseToReturn(TokenResponse tokenResponse) {
+        this.expectedTokenResponse = tokenResponse;
+    }
+
+    public void setSavedTokenResponse(TokenResponse tokenResponse) {
+        this.savedTokenResponse = tokenResponse;
     }
 
     public void setCredential(Credential credential) {
@@ -76,4 +82,5 @@ public class FakeApiProvider implements ApiProvider {
     public List<FakeAuthorizedApiRequest> getApiRequests() {
         return Collections.unmodifiableList(apiRequests);
     }
+
 }

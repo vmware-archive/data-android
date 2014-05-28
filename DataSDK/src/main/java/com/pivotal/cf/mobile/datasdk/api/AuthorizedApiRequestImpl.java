@@ -12,6 +12,7 @@ import com.google.api.client.auth.oauth2.AuthorizationCodeTokenRequest;
 import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -19,6 +20,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
@@ -206,15 +208,6 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
-    public void storeTokenResponse(TokenResponse tokenResponse) {
-        try {
-            // TODO - make a new parameter for the user ID.
-            flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
-        } catch (IOException e) {
-            Logger.ex("Could not store token response", e);
-        }
-    }
-
     public Credential loadCredential() {
         try {
             // TODO - make a new parameter for the user ID.
@@ -226,4 +219,26 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
+    public void storeTokenResponse(TokenResponse tokenResponse) {
+        try {
+            // TODO - make a new parameter for the user ID.
+            Logger.d("Saving token response '" + tokenResponse.getAccessToken() + "'.");
+            flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
+        } catch (IOException e) {
+            Logger.ex("Could not store token response", e);
+        }
+    }
+
+    @Override
+    public void clearSavedCredential() {
+        try {
+            // TODO - make a new parameter for the user ID.
+            Logger.d("Clearing saved token response.");
+            final DataStore<StoredCredential> credentialDataStore = flow.getCredentialDataStore();
+            credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
+        } catch (IOException e) {
+            Logger.ex("Could not clear saved user credentials", e);
+            e.printStackTrace();
+        }
+    }
 }

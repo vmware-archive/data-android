@@ -12,10 +12,12 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTest<AuthorizationEngine> {
 
     private static final String TEST_AUTHORIZATION_CODE = "TEST AUTHORIZATION CODE";
-    private static final String TEST_ACCESS_TOKEN = "TEST ACCESS TOKEN";
+    private static final String TEST_EXPECTED_ACCESS_TOKEN = "TEST EXPECTED ACCESS TOKEN";
+    private static final String TEST_SAVED_ACCESS_TOKEN = "TEST SAVED ACCESS TOKEN";
     private FakeActivity activity;
     private FakeBaseAuthorizationActivity authorizationActivity;
-    private TokenResponse tokenResponse;
+    private TokenResponse expectedTokenResponse;
+    private TokenResponse savedTokenResponse;
 
     private boolean shouldBaseAuthorizationActivityListenerBeSuccessful;
 
@@ -43,8 +45,10 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         super.setUp();
         activity = new FakeActivity();
         authorizationActivity = new FakeBaseAuthorizationActivity();
-        tokenResponse = new TokenResponse();
-        tokenResponse.setAccessToken(TEST_ACCESS_TOKEN);
+        expectedTokenResponse = new TokenResponse();
+        expectedTokenResponse.setAccessToken(TEST_EXPECTED_ACCESS_TOKEN);
+        savedTokenResponse = new TokenResponse();
+        savedTokenResponse.setAccessToken(TEST_SAVED_ACCESS_TOKEN);
     }
 
     @Override
@@ -121,12 +125,12 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         savePreferences();
         shouldBaseAuthorizationActivityListenerBeSuccessful = true;
         apiProvider.setShouldAuthorizationListenerBeSuccessful(true);
-        apiProvider.setTokenResponse(tokenResponse);
+        apiProvider.setTokenResponseToReturn(expectedTokenResponse);
         getEngine().authorizationCodeReceived(authorizationActivity, TEST_AUTHORIZATION_CODE);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertTrue(apiProvider.getApiRequests().get(0).didCallGetAccessToken());
-        assertEquals(tokenResponse, apiProvider.getApiRequests().get(0).getSavedTokenReponse());
+        assertEquals(expectedTokenResponse, apiProvider.getApiRequests().get(0).getSavedTokenResponse());
     }
 
     public void testAuthorizationCodeReceivedFailure() throws Exception {
@@ -137,7 +141,31 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertTrue(apiProvider.getApiRequests().get(0).didCallGetAccessToken());
-        assertNull(apiProvider.getApiRequests().get(0).getSavedTokenReponse());
+        assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
+    }
+
+    public void testClearCredentialsRequiresContext() throws Exception {
+        savePreferences();
+        saveSavedTokenResponse();
+        try {
+            getEngine().clearAuthorization(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testClearCredentials() throws Exception {
+        savePreferences();
+        saveSavedTokenResponse();
+        getEngine().clearAuthorization(getContext());
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
+        assertNull(apiProvider.getApiRequests().get(0).loadCredential());
+    }
+
+    private void saveSavedTokenResponse() {
+        apiProvider.setSavedTokenResponse(savedTokenResponse);
     }
 
 }

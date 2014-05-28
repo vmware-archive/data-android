@@ -25,6 +25,7 @@ public class DataSDK {
 
     }
 
+    // TODO - add Javadocs
     public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
         // TODO - AuthorizationEngine should be launched on a worker thread.
         // TODO - Calls to AuthorizationEngine should be serialized.
@@ -34,6 +35,15 @@ public class DataSDK {
         engine.obtainAuthorization(activity, parameters);
     }
 
+    // TODO - add Javadocs
+    public void clearAuthorization(Context context) throws Exception {
+        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
+        final ApiProvider apiProvider = new ApiProviderImpl();
+        final AuthorizationEngine engine = new AuthorizationEngine(context, apiProvider, preferences);
+        engine.clearAuthorization(context);
+    }
+
+    // TODO - add Javadocs
     public AuthorizedResourceClient getClient(Context context) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl();

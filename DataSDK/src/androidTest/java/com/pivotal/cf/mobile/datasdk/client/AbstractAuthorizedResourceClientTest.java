@@ -3,6 +3,8 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.content.Context;
 import android.test.AndroidTestCase;
 
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.FakeApiProvider;
@@ -24,6 +26,7 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
     protected FakeAuthorizationPreferences preferences;
     protected DataParameters parameters;
     protected Semaphore semaphore;
+    protected Credential credential;
 
     protected abstract T construct(Context context,
                                    AuthorizationPreferencesProvider preferencesProvider,
@@ -37,6 +40,7 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
         TEST_AUTHORIZATION_URL = new URL("https://test.authorization.url");
         TEST_TOKEN_URL = new URL("https://test.token.url");
         parameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);
     }
 
@@ -73,6 +77,10 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
         } catch (IllegalArgumentException e) {
             // success
         }
+    }
+
+    protected void saveCredential() {
+        apiProvider.setCredential(credential);
     }
 
 }
