@@ -92,6 +92,8 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      * server to receive the access token (which is required before calling any protected APIs).
      * This method will fail if it has been called before obtainAuthorization.
      *
+     * This method assumes that it is called on the main thread.
+     *
      * @param activity          an already-running activity to use as the base of the authorization process.  This activity
      *                          *MUST* have an intent filter in the `AndroidManifest.xml` file that captures the redirect URL
      *                          sent by the server.  Note that the `AuthorizationEngine` will hold a reference to this activity
@@ -115,6 +117,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
             @Override
             public void onSuccess(TokenResponse tokenResponse) {
+                // TODO - decide if it is safe to call storeTokenResponse on a background thread here.
                 request.storeTokenResponse(tokenResponse);
                 if (activity != null) {
                     activity.onAuthorizationComplete();

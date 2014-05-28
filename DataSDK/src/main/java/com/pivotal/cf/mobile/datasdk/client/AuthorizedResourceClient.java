@@ -29,7 +29,7 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
     }
 
     // TODO provide documents - including which exceptions can get thrown
-
+    // NOTE - listener may be called on a background thread
     public void get(final URL url,
                     final Map<String, Object> headers,
                     DataParameters parameters,
@@ -46,7 +46,7 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         if (credential == null) {
             throw new AuthorizationException("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
         }
-        // TODO - user a thread pool to process request
+        // TODO - remove this async task. there is already a threadpool inside AuthorizedApiRequestImpl.
 
         final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
 

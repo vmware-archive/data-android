@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
@@ -33,8 +32,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
+
+    private static final ExecutorService threadPool = Executors.newSingleThreadExecutor();
 
     // TODO - should this item should be provided via the constructor (i.e.: dependency injection)?
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
@@ -124,76 +127,76 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     @Override
     public void getAccessToken(final String authorizationCode, final AuthorizationListener listener) {
-        // TODO - remove the AsyncTask after the thread pool is set up.
 
-        final AsyncTask<Void, Void, TokenResponse> task = new AsyncTask<Void, Void, TokenResponse>() {
+        final AuthorizationCodeTokenRequest tokenUrl = flow.newTokenRequest(authorizationCode);
+        tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
+
+        threadPool.execute(new Runnable() {
 
             @Override
-            protected TokenResponse doInBackground(Void... params) {
+            public void run() {
                 try {
-                    final AuthorizationCodeTokenRequest tokenUrl = flow.newTokenRequest(authorizationCode);
-                    tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
-                    return tokenUrl.execute();
+                    final TokenResponse tokenResponse = tokenUrl.execute();
+                    if (tokenResponse != null) {
+                        Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
+                        Logger.d("Authorization flow complete.");
+                        listener.onSuccess(tokenResponse);
+                    } else {
+                        Logger.e("Got null token response.");
+                        // TODO - report failure to callback - provide a better error message
+                        listener.onFailure("Got null token response.");
+                    }
                 } catch (Exception e) {
                     Logger.ex("Could not get tokens.", e);
-                    return null;
+                    listener.onFailure("Error getting access token: '" + e.getLocalizedMessage() + "'.");
                 }
             }
-
-            @Override
-            protected void onPostExecute(TokenResponse tokenResponse) {
-                if (tokenResponse != null) {
-                    Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
-                    Logger.d("Authorization flow complete.");
-                    listener.onSuccess(tokenResponse);
-                } else {
-                    Logger.e("Got null token response.");
-                    // TODO - report failure to callback - provide a better error message
-                    listener.onFailure("Got null token response.");
-                }
-            }
-
-        };
-        task.execute((Void) null);
+        });
     }
 
     @Override
     public void get(URL url,
-                    Map<String, Object> headers,
+                    final Map<String, Object> headers,
                     Credential credential,
                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                    HttpOperationListener listener) {
+                    final HttpOperationListener listener) {
 
         final HttpRequestFactory requestFactory = apiProvider.getFactory(credential);
         final GenericUrl requestUrl = new GenericUrl(url);
 
-        try {
-            final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
-            addHeadersToRequest(headers, request);
-            final HttpResponse response = request.execute();
-            if (listener != null) {
-                final int statusCode = response.getStatusCode();
-                final String contentType = response.getContentType();
-                final InputStream inputStream = response.getContent();
-                listener.onSuccess(statusCode, contentType, inputStream);
+        threadPool.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
+                    addHeadersToRequest(headers, request);
+                    final HttpResponse response = request.execute();
+                    if (listener != null) {
+                        final int statusCode = response.getStatusCode();
+                        final String contentType = response.getContentType();
+                        final InputStream inputStream = response.getContent();
+                        listener.onSuccess(statusCode, contentType, inputStream);
+                    }
+                } catch (com.google.api.client.http.HttpResponseException e) {
+
+                    // TODO - Check for an HttpResponseException indicating that the token has expired.
+                    Logger.ex("Could not perform GET request", e);
+                    if (listener != null) {
+                        listener.onFailure("Could not perform GET request: '" +e.getLocalizedMessage() + "'.");
+                    }
+
+                } catch (IOException e) {
+
+                    // Some other error occurred?
+                    Logger.ex("Could not perform GET request", e);
+
+                    if (listener != null) {
+                        listener.onFailure("Could not perform GET request: '" +e.getLocalizedMessage() + "'.");
+                    }
+                }
             }
-        } catch (com.google.api.client.http.HttpResponseException e) {
-
-            // TODO - Check for an HttpResponseException indicating that the token has expired.
-            Logger.ex("Could not get user info", e);
-            if (listener != null) {
-                listener.onFailure(e.getLocalizedMessage());
-            }
-
-        } catch (IOException e) {
-
-            // Some other error occurred?
-            Logger.ex("Could not get user info", e);
-
-            if (listener != null) {
-                listener.onFailure(e.getLocalizedMessage());
-            }
-        }
+        });
     }
 
     private void addHeadersToRequest(Map<String, Object> headers, HttpRequest request) {

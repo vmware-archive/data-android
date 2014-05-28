@@ -54,6 +54,9 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
     // This callback is called after authorization is successfully completed.
     // You can use this opportunity to launch (or return to) the next activity in the
     // "secured" portion of your application.
+    //
+    // NOTE: this callback may be called on a background thread.
+    //
     @Override
     public void onAuthorizationComplete() {
         returnToMainActivity();
@@ -62,6 +65,9 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
     // This callback is called after authorization has failed.  You can use this
     // opportunity to launch (or return to) some activity outside the "secured"
     // portion of your application.
+    //
+    // NOTE: this callback may be called on a background thread.
+    //
     @Override
     public void onAuthorizationFailed(String reason) {
         returnToMainActivity();
@@ -72,9 +78,14 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
         // TODO - don't call `startActivity` on `MainActivity` if it is finished.
         // NOTE: in this case, MainActivity has a `singleInstance` launch mode, so it will
         // always bring us back to the pre-existing instance of MainActivity.
-        final Intent i = new Intent(this, MainActivity.class);
-        startActivity(i);
-        finish();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Intent i = new Intent(AuthorizationActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
     }
 
 }

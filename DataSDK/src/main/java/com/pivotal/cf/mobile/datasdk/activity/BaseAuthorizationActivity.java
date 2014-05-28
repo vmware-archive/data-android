@@ -17,6 +17,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
     private ApiProvider apiProvider;
     private AuthorizationEngine authorizationEngine;
 
+    // NOTE: These callbacks might be called on background threads.
     public abstract void onAuthorizationComplete();
     public abstract void onAuthorizationFailed(String reason);
 
