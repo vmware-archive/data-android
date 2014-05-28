@@ -135,35 +135,35 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
     }
 
-    public void testClearCredentialsRequiresContext() throws Exception {
-        baseTestClearCredentialsRequires(null, parameters);
+    public void testClearCredentialRequiresContext() throws Exception {
+        baseTestClearCredentialRequires(null, parameters);
     }
 
-    public void testClearCredentialsRequiresParameters() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), null);
+    public void testClearCredentialRequiresParameters() throws Exception {
+        baseTestClearCredentialRequires(getContext(), null);
     }
     
-    public void testClearCredentialsRequiresClientId() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresClientId() throws Exception {
+        baseTestClearCredentialRequires(getContext(), new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
-    public void testClearCredentialsRequiresClientSecret() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresClientSecret() throws Exception {
+        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
-    public void testClearCredentialsRequiresAuthorizationUrl() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresAuthorizationUrl() throws Exception {
+        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
-    public void testClearCredentialsRequiresTokenUrl() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresTokenUrl() throws Exception {
+        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
     }
 
-    public void testClearCredentialsRequiresRedirectUrl() throws Exception {
-        baseTestClearCredentialsRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+    public void testClearCredentialRequiresRedirectUrl() throws Exception {
+        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
     }
 
-    public void testClearCredentials() throws Exception {
+    public void testClearCredential() throws Exception {
         saveSavedTokenResponse();
         getEngine().clearAuthorization(getContext(), parameters);
         assertEquals(1, apiProvider.getApiRequests().size());
@@ -185,7 +185,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         }
     }
 
-    private void baseTestClearCredentialsRequires(Context context, DataParameters parameters) throws Exception {
+    private void baseTestClearCredentialRequires(Context context, DataParameters parameters) throws Exception {
         try {
             getEngine().clearAuthorization(context, parameters);
             fail();
