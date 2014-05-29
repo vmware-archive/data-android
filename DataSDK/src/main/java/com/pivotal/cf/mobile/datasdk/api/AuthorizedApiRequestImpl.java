@@ -44,7 +44,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     private static FileDataStoreFactory dataStoreFactory;
 
     // TODO - these scopes will likely be different in the final product
-    private static final String[] SCOPES = new String[]{"profile", "email"};
+    private static final String[] SCOPES = new String[]{"profile", "email", "openid"};
 
     // TODO - the state token should be randomly generated, but persisted until the end of the flow
     private static final String STATE_TOKEN = "BLORG";
@@ -110,6 +110,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     @Override
     public void obtainAuthorization(Activity activity, DataParameters parameters) {
+        // Does not use the thread pool since it launches an activity.
         final String url = getAuthorizationRequestUrl(parameters);
         Logger.fd("Loading authorization request URL to identify server in external browser: '%s'.", url);
         final Uri uri = Uri.parse(url);
@@ -214,6 +215,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     public Credential loadCredential() {
         try {
             // TODO - make a new parameter for the user ID.
+            // Thankfully, the credential data store itself is thread-safe.
             final Credential credential = flow.loadCredential(authorizationPreferencesProvider.getClientId());
             return credential;
         } catch (IOException e) {
@@ -241,7 +243,6 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
         } catch (IOException e) {
             Logger.ex("Could not clear saved user credentials", e);
-            e.printStackTrace();
         }
     }
 }

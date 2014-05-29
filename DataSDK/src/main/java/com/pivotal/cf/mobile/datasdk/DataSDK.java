@@ -27,6 +27,10 @@ public class DataSDK {
 
     }
 
+    public void obtainAuthorizationSilently() {
+        // TODO - implement - should NOT need an activity
+    }
+
     // TODO - add Javadocs. Note: must be called on UI thread.
     public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
         assertCalledOnUIThread();
