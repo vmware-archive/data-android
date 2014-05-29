@@ -13,9 +13,6 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 public class AuthorizationEngine extends AbstractAuthorizationClient {
 
-    // TODO - remove the state token from this class and bury it in AuthorizedApiRequestImpl
-    private static final String STATE_TOKEN = "BLORG";
-
     public AuthorizationEngine(Context context,
                                ApiProvider apiProvider,
                                AuthorizationPreferencesProvider authorizationPreferencesProvider) {
@@ -77,6 +74,8 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
         authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
+
+        // TODO - if these parameters are different from any existing authorization then the existing authorization must be cleared
     }
 
     private void startAuthorization(Activity activity, DataParameters parameters) throws Exception {
@@ -117,8 +116,6 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
             @Override
             public void onSuccess(TokenResponse tokenResponse) {
-                // TODO - decide if it is safe to call storeTokenResponse on a background thread here.
-                request.storeTokenResponse(tokenResponse);
                 if (activity != null) {
                     activity.onAuthorizationComplete();
                 }
@@ -135,7 +132,6 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     }
 
     // TODO - add Javadocs
-    // TODO - should be run on a worker thread
     public void clearAuthorization(Context context, DataParameters parameters) throws Exception {
         if (context == null) {
             throw new IllegalArgumentException("context may not be null");

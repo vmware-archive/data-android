@@ -23,6 +23,10 @@ public interface AuthorizedApiRequest {
         public void onFailure(String reason);
     }
 
+    public interface LoadCredentialListener {
+        public void onCredentialLoaded(Credential credential);
+    }
+
     public void obtainAuthorization(Activity activity, DataParameters parameters);
 
     public void getAccessToken(String authorizationCode, AuthorizationListener listener);
@@ -33,9 +37,7 @@ public interface AuthorizedApiRequest {
                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
                     HttpOperationListener listener);
 
-    public void storeTokenResponse(TokenResponse tokenResponse);
-
-    public Credential loadCredential();
+    public void loadCredential(LoadCredentialListener listener);
 
     public void clearSavedCredential();
 }

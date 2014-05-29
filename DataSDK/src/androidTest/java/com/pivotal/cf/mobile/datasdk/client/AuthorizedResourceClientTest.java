@@ -82,13 +82,11 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     }
 
     public void testRequiresSavedCredential() throws Exception {
-        try {
-            savePreferences();
-            getClient().get(url, headers, parameters, listener);
-            fail();
-        } catch (AuthorizationException e) {
-            // success
-        }
+        shouldSuccessListenerBeCalled = false;
+        shouldRequestBeSuccessful = false;
+        savePreferences();
+        getClient().get(url, headers, parameters, listener);
+        semaphore.acquire();
     }
 
     public void testGetDoesNotRequiresHeaders() throws Exception {

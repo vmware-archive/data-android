@@ -53,6 +53,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     public void getAccessToken(String authorizationCode, AuthorizationListener listener) {
         didCallGetAccessToken = true;
         if (shouldAuthorizationListenerBeSuccessful) {
+            savedTokenResponse = tokenResponseToReturn;
             listener.onSuccess(tokenResponseToReturn);
         } else {
             listener.onFailure("Fake request failed fakely.");
@@ -74,13 +75,8 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     }
 
     @Override
-    public void storeTokenResponse(TokenResponse tokenResponse) {
-        savedTokenResponse = tokenResponse;
-    }
-
-    @Override
-    public Credential loadCredential() {
-        return credentialToReturn;
+    public void loadCredential(LoadCredentialListener listener) {
+        listener.onCredentialLoaded(credentialToReturn);
     }
 
     @Override

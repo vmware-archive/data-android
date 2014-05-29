@@ -51,6 +51,10 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     private final AuthorizationPreferencesProvider authorizationPreferencesProvider;
     private final ApiProvider apiProvider;
+
+    // TODO - decide if the flow should be in a static field that persists for a long time.
+    // It may be problematic if we are already re-reading the CredentialStore from the
+    // filesystem over and over.
     private AuthorizationCodeFlow flow;
 
     public AuthorizedApiRequestImpl(Context context,
@@ -137,10 +141,13 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             @Override
             public void run() {
                 try {
+                    // TODO - test receiving more kinds of errors (e.g. 401?)
                     final TokenResponse tokenResponse = tokenUrl.execute();
                     if (tokenResponse != null) {
                         Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
                         Logger.d("Authorization flow complete.");
+                        // TODO - make a new parameter for the user ID.
+                        flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
                         listener.onSuccess(tokenResponse);
                     } else {
                         Logger.e("Got null token response.");
@@ -212,37 +219,40 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
-    public Credential loadCredential() {
-        try {
-            // TODO - make a new parameter for the user ID.
-            // Thankfully, the credential data store itself is thread-safe.
-            final Credential credential = flow.loadCredential(authorizationPreferencesProvider.getClientId());
-            return credential;
-        } catch (IOException e) {
-            Logger.ex("Could not load user credentials", e);
-            return null;
-        }
-    }
-
-    public void storeTokenResponse(TokenResponse tokenResponse) {
-        try {
-            // TODO - make a new parameter for the user ID.
-            Logger.d("Saving token response '" + tokenResponse.getAccessToken() + "'.");
-            flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
-        } catch (IOException e) {
-            Logger.ex("Could not store token response", e);
-        }
+    @Override
+    public void loadCredential(final LoadCredentialListener listener) {
+        threadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (listener != null) {
+                    try {
+                        // TODO - make a new parameter for the user ID.
+                        // Thankfully, the credential data store itself is thread-safe.
+                        final Credential credential = flow.loadCredential(authorizationPreferencesProvider.getClientId());
+                        listener.onCredentialLoaded(credential);
+                    } catch (IOException e) {
+                        Logger.ex("Could not load user credentials", e);
+                        listener.onCredentialLoaded(null);
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public void clearSavedCredential() {
-        try {
-            // TODO - make a new parameter for the user ID.
-            Logger.d("Clearing saved token response.");
-            final DataStore<StoredCredential> credentialDataStore = flow.getCredentialDataStore();
-            credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
-        } catch (IOException e) {
-            Logger.ex("Could not clear saved user credentials", e);
-        }
+        threadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // TODO - make a new parameter for the user ID.
+                    Logger.d("Clearing saved token response.");
+                    final DataStore<StoredCredential> credentialDataStore = flow.getCredentialDataStore();
+                    credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
+                } catch (IOException e) {
+                    Logger.ex("Could not clear saved user credentials", e);
+                }
+            }
+        });
     }
 }

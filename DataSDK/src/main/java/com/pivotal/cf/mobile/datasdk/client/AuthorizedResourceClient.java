@@ -43,35 +43,44 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         }
 
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
-        final Credential credential = request.loadCredential();
-        if (credential == null) {
-            throw new AuthorizationException("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
-        }
+        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
 
-        Logger.fd("Making GET call to '%s'.", url);
+            @Override
+            public void onCredentialLoaded(Credential credential) {
 
-        try {
-            request.get(url, headers, credential, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
-                @Override
-                public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-                    // TODO - watch for 401 errors and clear credentials.
-                    if (isSuccessfulHttpStatusCode(httpStatusCode)) {
-                        listener.onSuccess(httpStatusCode, contentType, result);
-                    } else {
-                        listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
-                    }
+                if (credential == null) {
+                    listener.onFailure("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
+                    return;
                 }
 
-                @Override
-                public void onFailure(String reason) {
-                    listener.onFailure(reason);
-                }
-            });
+                Logger.fd("Making GET call to '%s'.", url);
 
-        } catch (Exception e) {
-            Logger.ex("Could not perform authorized GET request", e);
-            listener.onFailure("Could not perform authorized GET request: " + e.getLocalizedMessage());
-        }
+                try {
+                    request.get(url, headers, credential, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
+
+                        @Override
+                        public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                            // TODO - watch for 401 errors and clear credentials.
+                            if (isSuccessfulHttpStatusCode(httpStatusCode)) {
+                                listener.onSuccess(httpStatusCode, contentType, result);
+                            } else {
+                                listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(String reason) {
+                            listener.onFailure(reason);
+                        }
+                    });
+
+                } catch (Exception e) {
+                    Logger.ex("Could not perform authorized GET request", e);
+                    listener.onFailure("Could not perform authorized GET request: " + e.getLocalizedMessage());
+                }
+            }
+        });
+
     }
 
     private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {

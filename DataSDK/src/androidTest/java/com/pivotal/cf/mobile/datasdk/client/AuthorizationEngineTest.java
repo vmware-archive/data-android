@@ -3,11 +3,16 @@ package com.pivotal.cf.mobile.datasdk.client;
 import android.app.Activity;
 import android.content.Context;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.activity.BaseAuthorizationActivity;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
+import com.pivotal.cf.mobile.datasdk.api.FakeAuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
+
+import java.util.concurrent.Semaphore;
 
 public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTest<AuthorizationEngine> {
 
@@ -167,8 +172,17 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         saveSavedTokenResponse();
         getEngine().clearAuthorization(getContext(), parameters);
         assertEquals(1, apiProvider.getApiRequests().size());
-        assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
-        assertNull(apiProvider.getApiRequests().get(0).loadCredential());
+        final FakeAuthorizedApiRequest request = apiProvider.getApiRequests().get(0);
+        assertNull(request.getSavedTokenResponse());
+        final Semaphore credentialSemaphore = new Semaphore(0);
+        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
+            @Override
+            public void onCredentialLoaded(Credential credential) {
+                assertNull(credential);
+                credentialSemaphore.release();
+            }
+        });
+        credentialSemaphore.acquire();
     }
     
     private void saveSavedTokenResponse() {
