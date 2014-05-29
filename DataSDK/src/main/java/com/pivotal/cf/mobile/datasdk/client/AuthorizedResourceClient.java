@@ -1,13 +1,12 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
 import android.content.Context;
-import android.os.AsyncTask;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
-import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
@@ -28,7 +27,8 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         super(context, apiProvider, authorizationPreferencesProvider);
     }
 
-    // TODO provide documents - including which exceptions can get thrown
+    // TODO provide documentation - including which exceptions can get thrown
+    // This method may or may not be called from a background thread.
     // NOTE - listener may be called on a background thread
     public void get(final URL url,
                     final Map<String, Object> headers,
@@ -37,6 +37,7 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
         verifyGetArguments(url, parameters, listener);
 
+        // TODO - the data parameters are obviously available since they are being passed in the arguments. fix this error check below:
         if (!areAuthorizationPreferencesAvailable()) {
             throw new AuthorizationException("Authorization parameters have not been set. You must authorize with DataSDK.obtainAuthorization first.");
         }
@@ -46,44 +47,31 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         if (credential == null) {
             throw new AuthorizationException("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
         }
-        // TODO - remove this async task. there is already a threadpool inside AuthorizedApiRequestImpl.
 
-        final AsyncTask<Void, Void, Void> task = new AsyncTask<Void, Void, Void>() {
+        Logger.fd("Making GET call to '%s'.", url);
 
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                Logger.fd("Making GET call to '%s'.", url);
-
-                // TODO - add headers
-
-                try {
-                    request.get(url, headers, credential, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
-                        @Override
-                        public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-                            // TODO - watch for 401 errors and clear credentials.
-                            if (isSuccessfulHttpStatusCode(httpStatusCode)) {
-                                listener.onSuccess(httpStatusCode, contentType, result);
-                            } else {
-                                listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(String reason) {
-                            listener.onFailure(reason);
-                        }
-                    });
-
-                } catch (Exception e) {
-                    Logger.ex("Could not perform authorized GET request", e);
-                    listener.onFailure("Could not perform authorized GET request: " + e.getLocalizedMessage());
+        try {
+            request.get(url, headers, credential, authorizationPreferencesProvider, new AuthorizedApiRequest.HttpOperationListener() {
+                @Override
+                public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                    // TODO - watch for 401 errors and clear credentials.
+                    if (isSuccessfulHttpStatusCode(httpStatusCode)) {
+                        listener.onSuccess(httpStatusCode, contentType, result);
+                    } else {
+                        listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
+                    }
                 }
 
-                return null;
-            }
-        };
-        task.execute();
+                @Override
+                public void onFailure(String reason) {
+                    listener.onFailure(reason);
+                }
+            });
+
+        } catch (Exception e) {
+            Logger.ex("Could not perform authorized GET request", e);
+            listener.onFailure("Could not perform authorized GET request: " + e.getLocalizedMessage());
+        }
     }
 
     private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
