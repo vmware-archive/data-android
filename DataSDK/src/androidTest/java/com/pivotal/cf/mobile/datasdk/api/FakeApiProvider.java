@@ -1,7 +1,5 @@
 package com.pivotal.cf.mobile.datasdk.api;
 
-import android.content.Context;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.http.HttpRequestFactory;
@@ -17,6 +15,7 @@ public class FakeApiProvider implements ApiProvider {
     private List<FakeAuthorizedApiRequest> apiRequests = new LinkedList<FakeAuthorizedApiRequest>();
     private boolean shouldAuthorizationListenerBeSuccessful;
     private boolean shouldAuthorizedApiRequestBeSuccessful;
+    private boolean shouldUnauthorizedListenerBeCalled;
     private int httpStatus;
     private String contentType;
     private String contentData;
@@ -36,12 +35,12 @@ public class FakeApiProvider implements ApiProvider {
     }
 
     @Override
-    public AuthorizedApiRequest getAuthorizedApiRequest(Context context,
-                                                        AuthorizationPreferencesProvider authorizationPreferencesProvider) {
+    public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
         final FakeAuthorizedApiRequest apiRequest = new FakeAuthorizedApiRequest(
                 shouldAuthorizationListenerBeSuccessful,
                 shouldAuthorizedApiRequestBeSuccessful,
+                shouldUnauthorizedListenerBeCalled,
                 httpStatus,
                 contentType,
                 contentData,
@@ -55,6 +54,10 @@ public class FakeApiProvider implements ApiProvider {
 
     public void setShouldAuthorizedApiRequestBeSuccessful(boolean b) {
         shouldAuthorizedApiRequestBeSuccessful = b;
+    }
+
+    public void setShouldUnauthorizedListenerBeCalled(boolean b) {
+        shouldUnauthorizedListenerBeCalled = b;
     }
 
     public void setHttpRequestResults(int httpStatus, String contentType, String contentData) {
@@ -82,5 +85,4 @@ public class FakeApiProvider implements ApiProvider {
     public List<FakeAuthorizedApiRequest> getApiRequests() {
         return Collections.unmodifiableList(apiRequests);
     }
-
 }

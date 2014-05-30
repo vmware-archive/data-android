@@ -1,6 +1,5 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
-import android.content.Context;
 import android.test.AndroidTestCase;
 
 import com.google.api.client.auth.oauth2.BearerToken;
@@ -14,7 +13,7 @@ import com.pivotal.cf.mobile.datasdk.prefs.FakeAuthorizationPreferences;
 import java.net.URL;
 import java.util.concurrent.Semaphore;
 
-public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAuthorizationClient> extends AndroidTestCase {
+public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizationClient> extends AndroidTestCase {
 
     protected static final String TEST_CLIENT_SECRET = "TEST_CLIENT_SECRET";
     protected static final String TEST_CLIENT_ID = "TEST_CLIENT_ID";
@@ -28,8 +27,7 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
     protected Semaphore semaphore;
     protected Credential credential;
 
-    protected abstract T construct(Context context,
-                                   AuthorizationPreferencesProvider preferencesProvider,
+    protected abstract T construct(AuthorizationPreferencesProvider preferencesProvider,
                                    ApiProvider apiProvider);
 
     @Override
@@ -52,18 +50,9 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
         preferences.setRedirectUrl(TEST_REDIRECT_URL);
     }
 
-    public void testRequiresContext() {
-        try {
-            construct(null, preferences, apiProvider);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        }
-    }
-
     public void testRequiresAuthorizationPreferencesProvider() {
         try {
-            construct(getContext(), null, apiProvider);
+            construct(null, apiProvider);
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -72,7 +61,7 @@ public abstract class AbstractAuthorizedResourceClientTest<T extends AbstractAut
 
     public void testRequiresHttpRequestFactoryProvider() {
         try {
-            construct(getContext(), preferences, null);
+            construct(preferences, null);
             fail();
         } catch (IllegalArgumentException e) {
             // success

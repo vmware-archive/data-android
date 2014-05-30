@@ -20,6 +20,7 @@ public interface AuthorizedApiRequest {
 
     public interface HttpOperationListener {
         public void onSuccess(int httpStatusCode, String contentType, InputStream result);
+        public void onUnauthorized();
         public void onFailure(String reason);
     }
 
@@ -39,5 +40,7 @@ public interface AuthorizedApiRequest {
 
     public void loadCredential(LoadCredentialListener listener);
 
-    public void clearSavedCredential();
+    public void clearSavedCredentialAsynchronously();
+
+    public void clearSavedCredentialSynchronously();
 }

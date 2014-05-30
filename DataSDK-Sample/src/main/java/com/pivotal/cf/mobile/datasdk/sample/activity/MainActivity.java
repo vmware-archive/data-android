@@ -118,6 +118,11 @@ public class MainActivity extends BaseMainActivity {
                 }
 
                 @Override
+                public void onUnauthorized() {
+                    Logger.e("GET failed. Not authorized.");
+                }
+
+                @Override
                 public void onFailure(String reason) {
                     Logger.e("GET userInfo onFailure reason: '" + reason + "'.");
                 }

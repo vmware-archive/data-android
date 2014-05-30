@@ -35,8 +35,8 @@ public class DataSDK {
     public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
-        final ApiProvider apiProvider = new ApiProviderImpl();
-        final AuthorizationEngine engine = new AuthorizationEngine(activity, apiProvider, preferences);
+        final ApiProvider apiProvider = new ApiProviderImpl(activity);
+        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
         engine.obtainAuthorization(activity, parameters);
     }
 
@@ -44,16 +44,16 @@ public class DataSDK {
     public void clearAuthorization(Context context, DataParameters parameters) throws Exception {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
-        final ApiProvider apiProvider = new ApiProviderImpl();
-        final AuthorizationEngine engine = new AuthorizationEngine(context, apiProvider, preferences);
-        engine.clearAuthorization(context, parameters);
+        final ApiProvider apiProvider = new ApiProviderImpl(context);
+        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
+        engine.clearAuthorization(parameters);
     }
 
     // TODO - add Javadocs. Note: does not to be called on UI thread.
     public AuthorizedResourceClient getClient(Context context) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
-        final ApiProvider apiProvider = new ApiProviderImpl();
-        return new AuthorizedResourceClient(context, apiProvider, preferences);
+        final ApiProvider apiProvider = new ApiProviderImpl(context);
+        return new AuthorizedResourceClient(apiProvider, preferences);
     }
 
     private void assertCalledOnUIThread() throws AuthorizationException {

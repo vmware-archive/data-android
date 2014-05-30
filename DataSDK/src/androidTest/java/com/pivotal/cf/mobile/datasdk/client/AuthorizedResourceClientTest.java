@@ -1,9 +1,10 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
-import android.content.Context;
-
+import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
+import com.pivotal.cf.mobile.datasdk.api.FakeAuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
@@ -12,8 +13,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
-public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClientTest<AuthorizedResourceClient> {
+public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<AuthorizedResourceClient> {
 
     private static final String TEST_HTTP_GET_URL = "http://test.get.url";
     private static final String TEST_CONTENT_TYPE = "test/content-type";
@@ -27,6 +29,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
     private AuthorizedResourceClient.Listener listener;
     private boolean shouldSuccessListenerBeCalled;
     private boolean shouldRequestBeSuccessful;
+    private boolean shouldUnauthorizedListenerBeCalled;
     private int expectedHttpStatusCode;
     private String expectedContentType;
     private String expectedContentData;
@@ -52,6 +55,13 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
             }
 
             @Override
+            public void onUnauthorized() {
+                assertTrue(shouldUnauthorizedListenerBeCalled);
+                assertFalse(shouldSuccessListenerBeCalled);
+                semaphore.release();
+            }
+
+            @Override
             public void onFailure(String reason) {
                 assertFalse(shouldSuccessListenerBeCalled);
                 semaphore.release();
@@ -59,16 +69,55 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         };
     }
 
+    @Override
+    protected AuthorizedResourceClient construct(AuthorizationPreferencesProvider preferencesProvider,
+                                                 ApiProvider apiProvider) {
+
+        return new AuthorizedResourceClient(apiProvider, preferencesProvider);
+    }
+
+    private AuthorizedResourceClient getClient() {
+        return new AuthorizedResourceClient(apiProvider, preferences);
+    }
+
     public void testGetRequiresUrl() throws Exception {
         baseTestGetRequires(null, headers, parameters, listener);
+    }
+
+    public void testGetRequiresListener() throws Exception {
+        baseTestGetRequires(url, headers, parameters, null);
     }
 
     public void testGetRequiresParameters() throws Exception {
         baseTestGetRequires(url, headers, null, listener);
     }
 
-    public void testGetRequiresListener() throws Exception {
-        baseTestGetRequires(url, headers, parameters, null);
+    public void testObtainAuthorizationRequiresNotNullClientId() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresNotEmptyClientId() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresNotNullClientSecret() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresNotEmptyClientSecret() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresAuthorizationUrl() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresTokenUrl() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL), listener);
+    }
+
+    public void testObtainAuthorizationRequiresRedirectUrl() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null), listener);
     }
 
     public void testRequiresAuthorizationParameters() throws Exception {
@@ -120,39 +169,38 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         setupFailedRequest();
         getClient().get(url, headers, parameters, listener);
         semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
     }
 
     public void testFailedGet404() throws Exception {
         setupSuccessfulRequestWithFailedHttpStatus(404, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         getClient().get(url, headers, parameters, listener);
         semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+    }
+
+    public void testUnauthorized() throws Exception {
+        setupFailedUnauthorized();
+        getClient().get(url, headers, parameters, listener);
+        semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertCredential(null, apiProvider.getApiRequests().get(0));
+    }
+
+    private void assertCredential(final Credential expectedCredential, FakeAuthorizedApiRequest request) throws InterruptedException {
+        final Semaphore credentialSemaphore = new Semaphore(0);
+        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
+            @Override
+            public void onCredentialLoaded(Credential credential) {
+                assertEquals(expectedCredential, credential);
+                credentialSemaphore.release();
+            }
+        });
+        credentialSemaphore.acquire();
     }
 
     // TODO - add test showing that credentials are cleared after a 401 error
 
-    @Override
-    protected AuthorizedResourceClient construct(Context context,
-                                                 AuthorizationPreferencesProvider preferencesProvider,
-                                                 ApiProvider apiProvider) {
-
-        return new AuthorizedResourceClient(context, apiProvider, preferencesProvider);
-    }
-
-    private AuthorizedResourceClient getClient() {
-        return new AuthorizedResourceClient(getContext(), apiProvider, preferences);
-    }
-
-    private void baseTestGetRequires(final URL url,
-                                     final Map<String, Object> headers,
-                                     DataParameters parameters,
-                                     final AuthorizedResourceClient.Listener listener) throws Exception {
-        try {
-            getClient().get(url, headers, parameters, listener);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        }
-    }
 
     private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {
         savePreferences();
@@ -171,6 +219,16 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
     }
 
+    private void setupFailedUnauthorized() {
+        savePreferences();
+        saveCredential();
+        shouldSuccessListenerBeCalled = false;
+        shouldRequestBeSuccessful = false;
+        shouldUnauthorizedListenerBeCalled = true;
+        apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
+        apiProvider.setShouldUnauthorizedListenerBeCalled(shouldUnauthorizedListenerBeCalled);
+    }
+
     private void setupSuccessfulRequestWithFailedHttpStatus(int httpStatusCode, String contentType, String contentData) {
         savePreferences();
         saveCredential();
@@ -186,4 +244,18 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedResourceClie
         expectedContentData = contentData;
         apiProvider.setHttpRequestResults(httpStatusCode, contentType, contentData);
     }
+
+
+    private void baseTestGetRequires(final URL url,
+                                     final Map<String, Object> headers,
+                                     DataParameters parameters,
+                                     final AuthorizedResourceClient.Listener listener) throws Exception {
+        try {
+            getClient().get(url, headers, parameters, listener);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
 }

@@ -74,10 +74,9 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
     }
 
     private void returnToMainActivity() {
-        // TODO - pass error reason back to `MainActivity`?
-        // TODO - don't call `startActivity` on `MainActivity` if it is finished.
         // NOTE: in this case, MainActivity has a `singleInstance` launch mode, so it will
-        // always bring us back to the pre-existing instance of MainActivity.
+        // always bring us back to the pre-existing instance of MainActivity (or start a new
+        // one if necessary).
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

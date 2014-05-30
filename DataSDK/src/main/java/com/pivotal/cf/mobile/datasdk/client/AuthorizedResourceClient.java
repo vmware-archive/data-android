@@ -1,7 +1,5 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
-import android.content.Context;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
@@ -17,14 +15,14 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
     public interface Listener {
         public void onSuccess(int httpStatusCode, String contentType, InputStream result);
+        public void onUnauthorized();
         public void onFailure(String reason);
     }
 
-    public AuthorizedResourceClient(Context context,
-                                    ApiProvider apiProvider,
+    public AuthorizedResourceClient(ApiProvider apiProvider,
                                     AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
-        super(context, apiProvider, authorizationPreferencesProvider);
+        super(apiProvider, authorizationPreferencesProvider);
     }
 
     // TODO provide documentation - including which exceptions can get thrown
@@ -42,7 +40,7 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
             throw new AuthorizationException("Authorization parameters have not been set. You must authorize with DataSDK.obtainAuthorization first.");
         }
 
-        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(context, authorizationPreferencesProvider);
+        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
         request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
 
             @Override
@@ -60,12 +58,17 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
 
                         @Override
                         public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
-                            // TODO - watch for 401 errors and clear credentials.
                             if (isSuccessfulHttpStatusCode(httpStatusCode)) {
                                 listener.onSuccess(httpStatusCode, contentType, result);
                             } else {
                                 listener.onFailure("Received failure HTTP status code: '" + httpStatusCode + "'");
                             }
+                        }
+
+                        @Override
+                        public void onUnauthorized() {
+                            request.clearSavedCredentialSynchronously();
+                            listener.onUnauthorized();
                         }
 
                         @Override
@@ -91,11 +94,9 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
         }
-        if (parameters == null) {
-            throw new IllegalArgumentException("parameters may not be null");
-        }
         if (listener == null) {
             throw new IllegalArgumentException("listener may not be null");
         }
+        verifyDataParameters(parameters);
     }
 }

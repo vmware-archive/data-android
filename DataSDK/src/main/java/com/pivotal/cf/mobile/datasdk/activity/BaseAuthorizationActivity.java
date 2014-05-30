@@ -48,7 +48,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
             authorizationPreferencesProvider = new AuthorizationPreferencesProviderImpl(this);
         }
         if (apiProvider == null) {
-            apiProvider = new ApiProviderImpl();
+            apiProvider = new ApiProviderImpl(this);
         }
     }
 
@@ -72,7 +72,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
 
     private void setupAuthorizationEngine() {
         if (authorizationEngine == null) {
-            authorizationEngine = new AuthorizationEngine(this, apiProvider, authorizationPreferencesProvider);
+            authorizationEngine = new AuthorizationEngine(apiProvider, authorizationPreferencesProvider);
         }
     }
 

@@ -1,8 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
-import android.app.Application;
-import android.content.Context;
-
+import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
@@ -10,25 +8,19 @@ public class AbstractAuthorizationClient {
 
     // TODO - we might be able to get rid of many of these fields since they have been buried in the ApiProvider
 
-    protected Context context;
     protected ApiProvider apiProvider;
     protected AuthorizationPreferencesProvider authorizationPreferencesProvider;
 
-    public AbstractAuthorizationClient(Context context,
-                                       ApiProvider apiProvider,
+    public AbstractAuthorizationClient(ApiProvider apiProvider,
                                        AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
-        verifyArguments(context, authorizationPreferencesProvider, apiProvider);
-        saveArguments(context, authorizationPreferencesProvider, apiProvider);
+        verifyArguments(authorizationPreferencesProvider, apiProvider);
+        saveArguments(authorizationPreferencesProvider, apiProvider);
     }
 
-    private void verifyArguments(Context context,
-                                 AuthorizationPreferencesProvider authorizationPreferencesProvider,
+    private void verifyArguments(AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                  ApiProvider apiProvider) {
 
-        if (context == null) {
-            throw new IllegalArgumentException("context may not be null");
-        }
         if (authorizationPreferencesProvider == null) {
             throw new IllegalArgumentException("authorizationPreferencesProvider may not be null");
         }
@@ -37,14 +29,8 @@ public class AbstractAuthorizationClient {
         }
     }
 
-    private void saveArguments(Context context,
-                               AuthorizationPreferencesProvider authorizationPreferencesProvider,
+    private void saveArguments(AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                ApiProvider apiProvider) {
-        if (!(context instanceof Application)) {
-            this.context = context.getApplicationContext();
-        } else {
-            this.context = context;
-        }
         this.authorizationPreferencesProvider = authorizationPreferencesProvider;
         this.apiProvider = apiProvider;
     }
@@ -66,5 +52,26 @@ public class AbstractAuthorizationClient {
             return false;
         }
         return true;
+    }
+
+    protected void verifyDataParameters(DataParameters parameters) {
+        if (parameters == null) {
+            throw new IllegalArgumentException("parameters may not be null");
+        }
+        if (parameters.getClientId() == null || parameters.getClientId().isEmpty()) {
+            throw new IllegalArgumentException("parameters.clientId may not be null or empty");
+        }
+        if (parameters.getClientSecret() == null || parameters.getClientSecret().isEmpty()) {
+            throw new IllegalArgumentException("parameters.clientSecret may not be null or empty");
+        }
+        if (parameters.getAuthorizationUrl() == null) {
+            throw new IllegalArgumentException("parameters.authorizationUrl may not be null");
+        }
+        if (parameters.getTokenUrl() == null) {
+            throw new IllegalArgumentException("parameters.tokenUrl may not be null");
+        }
+        if (parameters.getRedirectUrl() == null) {
+            throw new IllegalArgumentException("parameters.redirectUrl may not be null");
+        }
     }
 }

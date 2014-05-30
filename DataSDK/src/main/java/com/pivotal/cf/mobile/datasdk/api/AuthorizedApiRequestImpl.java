@@ -44,7 +44,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     private static FileDataStoreFactory dataStoreFactory;
 
     // TODO - these scopes will likely be different in the final product
-    private static final String[] SCOPES = new String[]{"profile", "email", "openid"};
+    private static final String[] SCOPES = new String[]{/*"profile", "email",*/ "openid"};
 
     // TODO - the state token should be randomly generated, but persisted until the end of the flow
     private static final String STATE_TOKEN = "BLORG";
@@ -127,6 +127,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
         authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
         authorizationUrl.setState(STATE_TOKEN);
+        authorizationUrl.set("access_type", "offline");
         return authorizationUrl.build();
     }
 
@@ -145,6 +146,10 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     final TokenResponse tokenResponse = tokenUrl.execute();
                     if (tokenResponse != null) {
                         Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
+                        Logger.fd("Access token expires in %d seconds.", tokenResponse.getExpiresInSeconds());
+                        if (tokenResponse.getRefreshToken() != null) {
+                            Logger.fd("Received refresh token from identify server: '%s'.", tokenResponse.getRefreshToken());
+                        }
                         Logger.d("Authorization flow complete.");
                         // TODO - make a new parameter for the user ID.
                         flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
@@ -180,18 +185,27 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
                     addHeadersToRequest(headers, request);
                     final HttpResponse response = request.execute();
+
                     if (listener != null) {
                         final int statusCode = response.getStatusCode();
                         final String contentType = response.getContentType();
                         final InputStream inputStream = response.getContent();
                         listener.onSuccess(statusCode, contentType, inputStream);
                     }
+
                 } catch (com.google.api.client.http.HttpResponseException e) {
 
-                    // TODO - Check for an HttpResponseException indicating that the token has expired.
-                    Logger.ex("Could not perform GET request", e);
-                    if (listener != null) {
-                        listener.onFailure("Could not perform GET request: '" +e.getLocalizedMessage() + "'.");
+                    final int statusCode = e.getStatusCode();
+                    if (isUnauthorizedHttpStatusCode(statusCode)) {
+                        Logger.e("Could not perform GET request: 401 Unauthorized");
+                        if (listener != null) {
+                            listener.onUnauthorized();
+                        }
+                    } else {
+                        Logger.ex("Could not perform GET request", e);
+                        if (listener != null) {
+                            listener.onFailure("Could not perform GET request: '" + e.getLocalizedMessage() + "'.");
+                        }
                     }
 
                 } catch (IOException e) {
@@ -205,6 +219,10 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                 }
             }
         });
+    }
+
+    private boolean isUnauthorizedHttpStatusCode(int httpStatusCode) {
+        return httpStatusCode == 401;
     }
 
     private void addHeadersToRequest(Map<String, Object> headers, HttpRequest request) {
@@ -227,7 +245,6 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                 if (listener != null) {
                     try {
                         // TODO - make a new parameter for the user ID.
-                        // Thankfully, the credential data store itself is thread-safe.
                         final Credential credential = flow.loadCredential(authorizationPreferencesProvider.getClientId());
                         listener.onCredentialLoaded(credential);
                     } catch (IOException e) {
@@ -240,19 +257,24 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     }
 
     @Override
-    public void clearSavedCredential() {
+    public void clearSavedCredentialAsynchronously() {
         threadPool.execute(new Runnable() {
             @Override
             public void run() {
-                try {
-                    // TODO - make a new parameter for the user ID.
-                    Logger.d("Clearing saved token response.");
-                    final DataStore<StoredCredential> credentialDataStore = flow.getCredentialDataStore();
-                    credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
-                } catch (IOException e) {
-                    Logger.ex("Could not clear saved user credentials", e);
-                }
+                clearSavedCredentialSynchronously();
             }
         });
+    }
+
+    @Override
+    public void clearSavedCredentialSynchronously() {
+        try {
+            // TODO - make a new parameter for the user ID.
+            Logger.d("Clearing saved token response.");
+            final DataStore<StoredCredential> credentialDataStore = flow.getCredentialDataStore();
+            credentialDataStore.delete(authorizationPreferencesProvider.getClientId());
+        } catch (IOException e) {
+            Logger.ex("Could not clear saved user credentials", e);
+        }
     }
 }

@@ -1,7 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
 import android.app.Activity;
-import android.content.Context;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
@@ -14,7 +13,7 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.util.concurrent.Semaphore;
 
-public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTest<AuthorizationEngine> {
+public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<AuthorizationEngine> {
 
     private static final String TEST_AUTHORIZATION_CODE = "TEST AUTHORIZATION CODE";
     private static final String TEST_EXPECTED_ACCESS_TOKEN = "TEST EXPECTED ACCESS TOKEN";
@@ -57,15 +56,14 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
     }
 
     @Override
-    protected AuthorizationEngine construct(Context context,
-                                            AuthorizationPreferencesProvider preferencesProvider,
+    protected AuthorizationEngine construct(AuthorizationPreferencesProvider preferencesProvider,
                                             ApiProvider apiProvider) {
 
-        return new AuthorizationEngine(context, apiProvider, preferencesProvider);
+        return new AuthorizationEngine(apiProvider, preferencesProvider);
     }
 
     private AuthorizationEngine getEngine() {
-        return new AuthorizationEngine(getContext(), apiProvider, preferences);
+        return new AuthorizationEngine(apiProvider, preferences);
     }
 
     public void testObtainAuthorizationRequiresActivity() throws Exception {
@@ -76,12 +74,20 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         baseTestObtainAuthorizationRequires(activity, null);
     }
 
-    public void testObtainAuthorizationRequiresClientId() throws Exception {
+    public void testObtainAuthorizationRequiresNotNullClientId() throws Exception {
         baseTestObtainAuthorizationRequires(activity, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
-    public void testObtainAuthorizationRequiresClientSecret() throws Exception {
+    public void testObtainAuthorizationRequiresNotEmptyClientId() throws Exception {
+        baseTestObtainAuthorizationRequires(activity, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    }
+
+    public void testObtainAuthorizationRequiresNotNullClientSecret() throws Exception {
         baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    }
+
+    public void testObtainAuthorizationRequiresNotEmptyClientSecret() throws Exception {
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
     public void testObtainAuthorizationRequiresAuthorizationUrl() throws Exception {
@@ -117,6 +123,18 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         assertEquals(0, apiProvider.getApiRequests().size());
     }
 
+    public void testAuthorizationCodeReceivedRequiresActivity() throws Exception {
+        baseTestAuthorizationCodeReceivedRequires(null, TEST_AUTHORIZATION_CODE);
+    }
+
+    public void testAuthorizationCodeReceivedRequiresNonNullAuthorizationCode() throws Exception {
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, null);
+    }
+
+    public void testAuthorizationCodeReceivedRequiresNonEmptyAuthorizationCode() throws Exception {
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, "");
+    }
+
     public void testAuthorizationCodeReceivedSuccessfully() throws Exception {
         savePreferences();
         shouldBaseAuthorizationActivityListenerBeSuccessful = true;
@@ -140,37 +158,41 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
     }
 
-    public void testClearCredentialRequiresContext() throws Exception {
-        baseTestClearCredentialRequires(null, parameters);
-    }
-
     public void testClearCredentialRequiresParameters() throws Exception {
-        baseTestClearCredentialRequires(getContext(), null);
+        baseTestClearCredentialRequires(null);
     }
     
-    public void testClearCredentialRequiresClientId() throws Exception {
-        baseTestClearCredentialRequires(getContext(), new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresNotNullClientId() throws Exception {
+        baseTestClearCredentialRequires(new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
-    public void testClearCredentialRequiresClientSecret() throws Exception {
-        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    public void testClearCredentialRequiresNotEmptyClientId() throws Exception {
+        baseTestClearCredentialRequires(new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    }
+
+    public void testClearCredentialRequiresNotNullClientSecret() throws Exception {
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+    }
+
+    public void testClearCredentialRequiresNotEmptyClientSecret() throws Exception {
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
     public void testClearCredentialRequiresAuthorizationUrl() throws Exception {
-        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
     }
 
     public void testClearCredentialRequiresTokenUrl() throws Exception {
-        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
     }
 
     public void testClearCredentialRequiresRedirectUrl() throws Exception {
-        baseTestClearCredentialRequires(getContext(), new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
     }
 
     public void testClearCredential() throws Exception {
         saveSavedTokenResponse();
-        getEngine().clearAuthorization(getContext(), parameters);
+        getEngine().clearAuthorization(parameters);
         assertEquals(1, apiProvider.getApiRequests().size());
         final FakeAuthorizedApiRequest request = apiProvider.getApiRequests().get(0);
         assertNull(request.getSavedTokenResponse());
@@ -199,9 +221,18 @@ public class AuthorizationEngineTest extends AbstractAuthorizedResourceClientTes
         }
     }
 
-    private void baseTestClearCredentialRequires(Context context, DataParameters parameters) throws Exception {
+    private void baseTestAuthorizationCodeReceivedRequires(BaseAuthorizationActivity activity, String authorizationCode) throws Exception {
         try {
-            getEngine().clearAuthorization(context, parameters);
+            getEngine().authorizationCodeReceived(activity, authorizationCode);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    private void baseTestClearCredentialRequires(DataParameters parameters) throws Exception {
+        try {
+            getEngine().clearAuthorization(parameters);
             fail();
         } catch (IllegalArgumentException e) {
             // success

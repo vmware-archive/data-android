@@ -1,5 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.api;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -11,6 +12,22 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 public class ApiProviderImpl implements ApiProvider {
 
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    private final Context context;
+
+    public ApiProviderImpl(Context context) {
+        this.context = getApplicationContext(context);
+    }
+
+    private Context getApplicationContext(Context context) {
+        if (context == null) {
+            throw new IllegalArgumentException("context may not be null");
+        }
+        if (context instanceof Application) {
+            return context;
+        } else {
+            return context.getApplicationContext();
+        }
+    }
 
     @Override
     public HttpTransport getTransport() {
@@ -23,7 +40,7 @@ public class ApiProviderImpl implements ApiProvider {
     }
 
     @Override
-    public AuthorizedApiRequest getAuthorizedApiRequest(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider) throws Exception {
+    public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) throws Exception {
         return new AuthorizedApiRequestImpl(context, authorizationPreferencesProvider, this);
     }
 }
