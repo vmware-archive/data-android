@@ -84,35 +84,44 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) throws Exception {
 
         Logger.fd("Received authorization code from identity server: '%s'.", authorizationCode);
-        verityAuthorizationCodeReceivedParameters(activity, authorizationCode);
+
+        if (activity == null) {
+            throw new IllegalArgumentException("activity may not be null");
+        }
 
         if (!areAuthorizationPreferencesAvailable()) {
             throw new AuthorizationException("Authorization parameters have not been set.");
         }
 
-        // TODO - ensure that an authorization flow is already active
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
-        request.getAccessToken(authorizationCode, new AuthorizedApiRequest.AuthorizationListener() {
 
-            @Override
-            public void onSuccess(TokenResponse tokenResponse) {
-                activity.onAuthorizationComplete();
-            }
-
-            @Override
-            public void onFailure(String reason) {
-                // TODO - should we clear the credentials?
-                activity.onAuthorizationFailed(reason);
-            }
-        });
-    }
-
-    private void verityAuthorizationCodeReceivedParameters(BaseAuthorizationActivity activity, String authorizationCode) {
-        if (activity == null) {
-            throw new IllegalArgumentException("activity may not be null");
-        }
+        // If no authorization was returned then clear any saved credentials and return an error
         if (authorizationCode == null || authorizationCode.isEmpty()) {
-            throw new IllegalArgumentException("authorizationCode may not be null or empty");
+
+            request.clearSavedCredentialAsynchronously(new AuthorizedApiRequest.ClearSavedCredentialListener() {
+
+                @Override
+                public void onSavedCredentialCleared() {
+                    activity.onAuthorizationFailed("no authorization code was returned.");
+                }
+            });
+
+        } else {
+
+            // TODO - ensure that an authorization flow is already active
+            request.getAccessToken(authorizationCode, new AuthorizedApiRequest.AuthorizationListener() {
+
+                @Override
+                public void onSuccess(TokenResponse tokenResponse) {
+                    activity.onAuthorizationComplete();
+                }
+
+                @Override
+                public void onFailure(String reason) {
+                    // TODO - should we clear the credentials?
+                    activity.onAuthorizationFailed(reason);
+                }
+            });
         }
     }
 
@@ -121,7 +130,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         verifyDataParameters(parameters);
         saveDataParameters(parameters);
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
-        request.clearSavedCredentialAsynchronously();
+        request.clearSavedCredentialAsynchronously(null);
     }
 
 }

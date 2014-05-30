@@ -257,11 +257,14 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     }
 
     @Override
-    public void clearSavedCredentialAsynchronously() {
+    public void clearSavedCredentialAsynchronously(final ClearSavedCredentialListener listener) {
         threadPool.execute(new Runnable() {
             @Override
             public void run() {
                 clearSavedCredentialSynchronously();
+                if (listener != null) {
+                    listener.onSavedCredentialCleared();
+                }
             }
         });
     }

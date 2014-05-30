@@ -128,11 +128,21 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testAuthorizationCodeReceivedRequiresNonNullAuthorizationCode() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, null);
+        baseTestAuthorizationCodeReceivedWithInvalidAuthorizationCode(null);
     }
 
     public void testAuthorizationCodeReceivedRequiresNonEmptyAuthorizationCode() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, "");
+        baseTestAuthorizationCodeReceivedWithInvalidAuthorizationCode("");
+    }
+
+    private void baseTestAuthorizationCodeReceivedWithInvalidAuthorizationCode(String authorizationCode) throws Exception {
+        savePreferences();
+        saveCredential();
+        shouldBaseAuthorizationActivityListenerBeSuccessful = false;
+        getEngine().authorizationCodeReceived(authorizationActivity, authorizationCode);
+        semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        assertCredential(null, apiProvider.getApiRequests().get(0));
     }
 
     public void testAuthorizationCodeReceivedSuccessfully() throws Exception {

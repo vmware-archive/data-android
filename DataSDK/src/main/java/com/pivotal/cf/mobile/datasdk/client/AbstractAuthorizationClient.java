@@ -6,8 +6,6 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 public class AbstractAuthorizationClient {
 
-    // TODO - we might be able to get rid of many of these fields since they have been buried in the ApiProvider
-
     protected ApiProvider apiProvider;
     protected AuthorizationPreferencesProvider authorizationPreferencesProvider;
 

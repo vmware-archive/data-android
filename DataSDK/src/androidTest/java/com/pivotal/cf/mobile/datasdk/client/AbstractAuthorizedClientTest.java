@@ -6,7 +6,9 @@ import com.google.api.client.auth.oauth2.BearerToken;
 import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.api.FakeApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.FakeAuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.FakeAuthorizationPreferences;
 
@@ -72,4 +74,15 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
         apiProvider.setCredential(credential);
     }
 
+    protected void assertCredential(final Credential expectedCredential, FakeAuthorizedApiRequest request) throws InterruptedException {
+        final Semaphore credentialSemaphore = new Semaphore(0);
+        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
+            @Override
+            public void onCredentialLoaded(Credential credential) {
+                assertEquals(expectedCredential, credential);
+                credentialSemaphore.release();
+            }
+        });
+        credentialSemaphore.acquire();
+    }
 }

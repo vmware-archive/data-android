@@ -1,10 +1,7 @@
 package com.pivotal.cf.mobile.datasdk.client;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
-import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
-import com.pivotal.cf.mobile.datasdk.api.FakeAuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
@@ -13,7 +10,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<AuthorizedResourceClient> {
 
@@ -186,21 +182,6 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         assertEquals(1, apiProvider.getApiRequests().size());
         assertCredential(null, apiProvider.getApiRequests().get(0));
     }
-
-    private void assertCredential(final Credential expectedCredential, FakeAuthorizedApiRequest request) throws InterruptedException {
-        final Semaphore credentialSemaphore = new Semaphore(0);
-        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
-            @Override
-            public void onCredentialLoaded(Credential credential) {
-                assertEquals(expectedCredential, credential);
-                credentialSemaphore.release();
-            }
-        });
-        credentialSemaphore.acquire();
-    }
-
-    // TODO - add test showing that credentials are cleared after a 401 error
-
 
     private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {
         savePreferences();

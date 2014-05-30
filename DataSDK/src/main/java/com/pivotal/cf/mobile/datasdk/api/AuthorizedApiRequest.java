@@ -28,6 +28,10 @@ public interface AuthorizedApiRequest {
         public void onCredentialLoaded(Credential credential);
     }
 
+    public interface ClearSavedCredentialListener {
+        public void onSavedCredentialCleared();
+    }
+
     public void obtainAuthorization(Activity activity, DataParameters parameters);
 
     public void getAccessToken(String authorizationCode, AuthorizationListener listener);
@@ -40,7 +44,7 @@ public interface AuthorizedApiRequest {
 
     public void loadCredential(LoadCredentialListener listener);
 
-    public void clearSavedCredentialAsynchronously();
+    public void clearSavedCredentialAsynchronously(ClearSavedCredentialListener listener);
 
     public void clearSavedCredentialSynchronously();
 }

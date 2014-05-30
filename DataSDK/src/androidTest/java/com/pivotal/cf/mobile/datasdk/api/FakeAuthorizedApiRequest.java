@@ -86,8 +86,11 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     }
 
     @Override
-    public void clearSavedCredentialAsynchronously() {
+    public void clearSavedCredentialAsynchronously(ClearSavedCredentialListener listener) {
         clearSavedCredentialSynchronously();
+        if (listener != null) {
+            listener.onSavedCredentialCleared();
+        }
     }
 
     @Override
