@@ -37,6 +37,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" />
+<!--                <data android:host="mobile.cf.pivotal.com" /> -->
                 <data android:host="android.sample.app" />
                 <data android:pathPrefix="/oauth2callback" />
             </intent-filter>
