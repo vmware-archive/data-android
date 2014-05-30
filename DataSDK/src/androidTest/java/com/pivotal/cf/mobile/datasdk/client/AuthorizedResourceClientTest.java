@@ -207,7 +207,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         shouldRequestBeSuccessful = false;
         shouldUnauthorizedListenerBeCalled = true;
         apiProvider.setShouldAuthorizedApiRequestBeSuccessful(shouldRequestBeSuccessful);
-        apiProvider.setShouldUnauthorizedListenerBeCalled(shouldUnauthorizedListenerBeCalled);
+        apiProvider.setShouldAuthorizedApiRequestBeUnauthorized(shouldUnauthorizedListenerBeCalled);
     }
 
     private void setupSuccessfulRequestWithFailedHttpStatus(int httpStatusCode, String contentType, String contentData) {

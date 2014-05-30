@@ -14,9 +14,10 @@ import java.util.Map;
 
 public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
-    private final boolean shouldAuthorizationListenerBeSuccessful;
+    private final boolean shouldGetAccessTokenBeSuccessful;
+    private final boolean shouldGetAccessTokenBeUnauthorized;
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
-    private final boolean shouldUnauthorizedListenerBeCalled;
+    private final boolean shouldAuthorizedApiRequestBeUnauthorized;
     private final String contentData;
     private final String contentType;
     private final int httpStatusCode;
@@ -27,9 +28,10 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     private Map<String, Object> requestHeaders;
     private Credential credentialToReturn;
 
-    public FakeAuthorizedApiRequest(boolean shouldAuthorizationListenerBeSuccessful,
+    public FakeAuthorizedApiRequest(boolean shouldGetAccessTokenBeSuccessful,
+                                    boolean shouldGetAccessTokenBeUnauthorized,
                                     boolean shouldAuthorizedApiRequestBeSuccessful,
-                                    boolean shouldUnauthorizedListenerBeCalled,
+                                    boolean shouldAuthorizedApiRequestBeUnauthorized,
                                     int httpStatus,
                                     String contentType,
                                     String contentData,
@@ -37,9 +39,10 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
                                     TokenResponse tokenResponseToReturn,
                                     Credential credentialToReturn) {
 
-        this.shouldAuthorizationListenerBeSuccessful = shouldAuthorizationListenerBeSuccessful;
+        this.shouldGetAccessTokenBeSuccessful = shouldGetAccessTokenBeSuccessful;
+        this.shouldGetAccessTokenBeUnauthorized = shouldGetAccessTokenBeUnauthorized;
         this.shouldAuthorizedApiRequestBeSuccessful = shouldAuthorizedApiRequestBeSuccessful;
-        this.shouldUnauthorizedListenerBeCalled = shouldUnauthorizedListenerBeCalled;
+        this.shouldAuthorizedApiRequestBeUnauthorized = shouldAuthorizedApiRequestBeUnauthorized;
         this.httpStatusCode = httpStatus;
         this.contentType = contentType;
         this.contentData = contentData;
@@ -55,9 +58,11 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     @Override
     public void getAccessToken(String authorizationCode, AuthorizationListener listener) {
         didCallGetAccessToken = true;
-        if (shouldAuthorizationListenerBeSuccessful) {
+        if (shouldGetAccessTokenBeSuccessful) {
             savedTokenResponse = tokenResponseToReturn;
             listener.onSuccess(tokenResponseToReturn);
+        } else if (shouldGetAccessTokenBeUnauthorized) {
+            listener.onAuthorizationDenied();
         } else {
             listener.onFailure("Fake request failed fakely.");
         }
@@ -73,7 +78,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         this.requestHeaders = headers;
         if (shouldAuthorizedApiRequestBeSuccessful) {
             listener.onSuccess(httpStatusCode, contentType, getInputStream());
-        } else if (shouldUnauthorizedListenerBeCalled) {
+        } else if (shouldAuthorizedApiRequestBeUnauthorized) {
             listener.onUnauthorized();
         } else {
             listener.onFailure("Fake request failed fakely.");

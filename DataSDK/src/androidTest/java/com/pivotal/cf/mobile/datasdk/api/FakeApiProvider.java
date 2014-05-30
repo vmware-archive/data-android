@@ -13,9 +13,10 @@ import java.util.List;
 public class FakeApiProvider implements ApiProvider {
 
     private List<FakeAuthorizedApiRequest> apiRequests = new LinkedList<FakeAuthorizedApiRequest>();
-    private boolean shouldAuthorizationListenerBeSuccessful;
+    private boolean shouldGetAccessTokenBeSuccessful;
+    private boolean shouldGetAccessTokenBeUnauthorized;
     private boolean shouldAuthorizedApiRequestBeSuccessful;
-    private boolean shouldUnauthorizedListenerBeCalled;
+    private boolean shouldAuthorizedApiRequestBeUnauthorized;
     private int httpStatus;
     private String contentType;
     private String contentData;
@@ -38,9 +39,10 @@ public class FakeApiProvider implements ApiProvider {
     public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
         final FakeAuthorizedApiRequest apiRequest = new FakeAuthorizedApiRequest(
-                shouldAuthorizationListenerBeSuccessful,
+                shouldGetAccessTokenBeSuccessful,
+                shouldGetAccessTokenBeUnauthorized,
                 shouldAuthorizedApiRequestBeSuccessful,
-                shouldUnauthorizedListenerBeCalled,
+                shouldAuthorizedApiRequestBeUnauthorized,
                 httpStatus,
                 contentType,
                 contentData,
@@ -56,8 +58,12 @@ public class FakeApiProvider implements ApiProvider {
         shouldAuthorizedApiRequestBeSuccessful = b;
     }
 
-    public void setShouldUnauthorizedListenerBeCalled(boolean b) {
-        shouldUnauthorizedListenerBeCalled = b;
+    public void setShouldGetAccessTokenBeUnauthorized(boolean b) {
+        shouldGetAccessTokenBeUnauthorized = b;
+    }
+
+    public void setShouldAuthorizedApiRequestBeUnauthorized(boolean b) {
+        shouldAuthorizedApiRequestBeUnauthorized = b;
     }
 
     public void setHttpRequestResults(int httpStatus, String contentType, String contentData) {
@@ -66,8 +72,8 @@ public class FakeApiProvider implements ApiProvider {
         this.contentData = contentData;
     }
 
-    public void setShouldAuthorizationListenerBeSuccessful(boolean b) {
-        shouldAuthorizationListenerBeSuccessful = b;
+    public void setShouldGetAccessTokenBeSuccessful(boolean b) {
+        shouldGetAccessTokenBeSuccessful = b;
     }
 
     public void setTokenResponseToReturn(TokenResponse tokenResponse) {

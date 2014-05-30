@@ -117,8 +117,13 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
                 }
 
                 @Override
+                public void onAuthorizationDenied() {
+                    request.clearSavedCredentialSynchronously();
+                    activity.onAuthorizationDenied();
+                }
+
+                @Override
                 public void onFailure(String reason) {
-                    // TODO - should we clear the credentials?
                     activity.onAuthorizationFailed(reason);
                 }
             });

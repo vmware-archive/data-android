@@ -51,23 +51,39 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
         // it here.
     }
 
-    // This callback is called after authorization is successfully completed.
-    // You can use this opportunity to launch (or return to) the next activity in the
-    // "secured" portion of your application.
-    //
-    // NOTE: this callback may be called on a background thread.
-    //
+    /**
+     * This callback is called after authorization is successfully completed.
+     * You can use this opportunity to launch (or return to) the next activity in the
+     * "secured" portion of your application.
+     *
+     * NOTE: this callback may be called on a background thread.
+     */
     @Override
     public void onAuthorizationComplete() {
         returnToMainActivity();
     }
 
-    // This callback is called after authorization has failed.  You can use this
-    // opportunity to launch (or return to) some activity outside the "secured"
-    // portion of your application.
-    //
-    // NOTE: this callback may be called on a background thread.
-    //
+    /**
+     * This callback is called when authorization has been denied.  You can use this
+     * callback to launch (or return to) some activity outside the "secured" portion
+     * of your application.
+     *
+     * NOTE: this callback may be called on a background thread.
+     */
+    @Override
+    public void onAuthorizationDenied() {
+        returnToMainActivity();
+    }
+
+    /**
+     * This callback is called after authorization has failed due to some other
+     * reason (e.g.: network connectivity).  You can use this callback to launch
+     * (or return to) some activity outside the "secured" portion of your application.
+     *
+     * NOTE: this callback may be called on a background thread.
+     *
+     * @param reason  The reason that the authorization attempt could not be completed.
+     */
     @Override
     public void onAuthorizationFailed(String reason) {
         returnToMainActivity();

@@ -24,6 +24,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     private TokenResponse savedTokenResponse;
 
     private boolean shouldBaseAuthorizationActivityListenerBeSuccessful;
+    private boolean shouldBaseAuthorizationActivityListenerAuthorizationDenied;
 
     private class FakeActivity extends Activity {
         // Empty
@@ -34,12 +35,21 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         @Override
         public void onAuthorizationComplete() {
             assertTrue(shouldBaseAuthorizationActivityListenerBeSuccessful);
+            assertFalse(shouldBaseAuthorizationActivityListenerAuthorizationDenied);
+            semaphore.release();
+        }
+
+        @Override
+        public void onAuthorizationDenied() {
+            assertFalse(shouldBaseAuthorizationActivityListenerBeSuccessful);
+            assertTrue(shouldBaseAuthorizationActivityListenerAuthorizationDenied);
             semaphore.release();
         }
 
         @Override
         public void onAuthorizationFailed(String reason) {
             assertFalse(shouldBaseAuthorizationActivityListenerBeSuccessful);
+            assertFalse(shouldBaseAuthorizationActivityListenerAuthorizationDenied);
             semaphore.release();
         }
     }
@@ -148,7 +158,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testAuthorizationCodeReceivedSuccessfully() throws Exception {
         savePreferences();
         shouldBaseAuthorizationActivityListenerBeSuccessful = true;
-        apiProvider.setShouldAuthorizationListenerBeSuccessful(true);
+        apiProvider.setShouldGetAccessTokenBeSuccessful(true);
         apiProvider.setTokenResponseToReturn(expectedTokenResponse);
         getEngine().authorizationCodeReceived(authorizationActivity, TEST_AUTHORIZATION_CODE);
         semaphore.acquire();
@@ -157,10 +167,25 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         assertEquals(expectedTokenResponse, apiProvider.getApiRequests().get(0).getSavedTokenResponse());
     }
 
+    public void testAuthorizationCodeReceivedUnauthorized() throws Exception {
+        saveCredential();
+        savePreferences();
+        shouldBaseAuthorizationActivityListenerBeSuccessful = false;
+        shouldBaseAuthorizationActivityListenerAuthorizationDenied = true;
+        apiProvider.setShouldGetAccessTokenBeUnauthorized(true);
+        getEngine().authorizationCodeReceived(authorizationActivity, TEST_AUTHORIZATION_CODE);
+        semaphore.acquire();
+        assertEquals(1, apiProvider.getApiRequests().size());
+        final FakeAuthorizedApiRequest request = apiProvider.getApiRequests().get(0);
+        assertTrue(request.didCallGetAccessToken());
+        assertNull(request.getSavedTokenResponse());
+        assertCredential(null, request);
+    }
+
     public void testAuthorizationCodeReceivedFailure() throws Exception {
         savePreferences();
         shouldBaseAuthorizationActivityListenerBeSuccessful = false;
-        apiProvider.setShouldAuthorizationListenerBeSuccessful(false);
+        apiProvider.setShouldGetAccessTokenBeSuccessful(false);
         getEngine().authorizationCodeReceived(authorizationActivity, TEST_AUTHORIZATION_CODE);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());

@@ -19,6 +19,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
 
     // NOTE: These callbacks might be called on background threads.
     public abstract void onAuthorizationComplete();
+    public abstract void onAuthorizationDenied();
     public abstract void onAuthorizationFailed(String reason);
 
     // TODO - do we need to onCreate and provide a null content view?

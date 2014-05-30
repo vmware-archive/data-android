@@ -13,6 +13,7 @@ import com.google.api.client.auth.oauth2.ClientParametersAuthentication;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.auth.oauth2.TokenResponseException;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,13 +40,9 @@ import java.util.concurrent.Executors;
 public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     private static final ExecutorService threadPool = Executors.newSingleThreadExecutor();
-
-    // TODO - should this item should be provided via the constructor (i.e.: dependency injection)?
     private static final JsonFactory JSON_FACTORY = new JacksonFactory();
+    private static final List<String> SCOPES = Arrays.asList("offline_access", "openid");
     private static FileDataStoreFactory dataStoreFactory;
-
-    // TODO - these scopes will likely be different in the final product
-    private static final String[] SCOPES = new String[]{/*"profile", "email",*/ "openid"};
 
     // TODO - the state token should be randomly generated, but persisted until the end of the flow
     private static final String STATE_TOKEN = "BLORG";
@@ -102,7 +100,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     new ClientParametersAuthentication(clientId, clientSecret),
                     clientId,
                     authorizationURL.toString())
-                    .setScopes(Arrays.asList(SCOPES))
+                    .setScopes(SCOPES)
                     .setDataStoreFactory(dataStoreFactory).build();
 
         } catch (IOException e) {
@@ -127,7 +125,6 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
         authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
         authorizationUrl.setState(STATE_TOKEN);
-        authorizationUrl.set("access_type", "offline");
         return authorizationUrl.build();
     }
 
@@ -135,21 +132,21 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     public void getAccessToken(final String authorizationCode, final AuthorizationListener listener) {
 
         final AuthorizationCodeTokenRequest tokenUrl = flow.newTokenRequest(authorizationCode);
-        tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
 
+        tokenUrl.setRedirectUri(authorizationPreferencesProvider.getRedirectUrl().toString());
         threadPool.execute(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    // TODO - test receiving more kinds of errors (e.g. 401?)
+                    Logger.fd("Requesting access and refresh tokens with authorization code '%s'.", authorizationCode);
                     final TokenResponse tokenResponse = tokenUrl.execute();
                     if (tokenResponse != null) {
                         Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
-                        Logger.fd("Access token expires in %d seconds.", tokenResponse.getExpiresInSeconds());
                         if (tokenResponse.getRefreshToken() != null) {
                             Logger.fd("Received refresh token from identify server: '%s'.", tokenResponse.getRefreshToken());
                         }
+                        Logger.fd("Access token expires in %d seconds.", tokenResponse.getExpiresInSeconds());
                         Logger.d("Authorization flow complete.");
                         // TODO - make a new parameter for the user ID.
                         flow.createAndStoreCredential(tokenResponse, authorizationPreferencesProvider.getClientId());
@@ -158,6 +155,14 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                         Logger.e("Got null token response.");
                         // TODO - report failure to callback - provide a better error message
                         listener.onFailure("Got null token response.");
+                    }
+                } catch (TokenResponseException e) {
+                    Logger.ex("Could not get tokens.", e);
+                    if (e.getStatusCode() == 401) { // TODO - not sure how to test getting a 401 error here.
+                        clearSavedCredentialSynchronously();
+                        listener.onAuthorizationDenied();
+                    } else {
+                        listener.onFailure("Error getting access token: '" + e.getLocalizedMessage() + "'.");
                     }
                 } catch (Exception e) {
                     Logger.ex("Could not get tokens.", e);

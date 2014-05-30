@@ -15,6 +15,7 @@ public interface AuthorizedApiRequest {
 
     public interface AuthorizationListener {
         public void onSuccess(TokenResponse tokenResponse);
+        public void onAuthorizationDenied();
         public void onFailure(String reason);
     }
 
