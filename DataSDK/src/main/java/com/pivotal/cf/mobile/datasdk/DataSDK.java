@@ -27,26 +27,30 @@ public class DataSDK {
 
     }
 
-    public void obtainAuthorizationSilently() {
-        // TODO - implement - should NOT need an activity
+    // TODO - add Javadocs.  Must be called on UI thread?
+    public void setParameters(Context context, DataParameters parameters) throws Exception {
+        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
+        final ApiProvider apiProvider = new ApiProviderImpl(context);
+        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
+        engine.setParameters(parameters);
     }
 
     // TODO - add Javadocs. Note: must be called on UI thread.
-    public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
+    public void obtainAuthorization(Activity activity) throws Exception {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
         final ApiProvider apiProvider = new ApiProviderImpl(activity);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.obtainAuthorization(activity, parameters);
+        engine.obtainAuthorization(activity);
     }
 
     // TODO - add Javadocs. Note: must be called on UI thread.
-    public void clearAuthorization(Context context, DataParameters parameters) throws Exception {
+    public void clearAuthorization(Context context) throws Exception {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.clearAuthorization(parameters);
+        engine.clearAuthorization();
     }
 
     // TODO - add Javadocs. Note: does not to be called on UI thread.

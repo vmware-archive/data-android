@@ -119,7 +119,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
     public void testRequiresAuthorizationParameters() throws Exception {
         try {
             saveCredential();
-            getClient().get(url, headers, parameters, listener);
+            getClient().get(url, headers, listener);
             fail();
         } catch (AuthorizationException e) {
             // success
@@ -130,13 +130,13 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         shouldSuccessListenerBeCalled = false;
         shouldRequestBeSuccessful = false;
         savePreferences();
-        getClient().get(url, headers, parameters, listener);
+        getClient().get(url, headers, listener);
         semaphore.acquire();
     }
 
     public void testGetDoesNotRequiresHeaders() throws Exception {
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
-        getClient().get(url, null, parameters, listener);
+        getClient().get(url, null, listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertNull(apiProvider.getApiRequests().get(0).getRequestHeaders());
@@ -145,7 +145,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
     public void testSuccessfulGet() throws Exception {
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
-        getClient().get(url, new HashMap<String, Object>(headers), parameters, listener);
+        getClient().get(url, new HashMap<String, Object>(headers), listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertEquals(headers, apiProvider.getApiRequests().get(0).getRequestHeaders());
@@ -155,7 +155,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         setupSuccessfulRequest(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
         headers.put(TEST_HEADER_NAME, TEST_HEADER_VALUE);
         apiProvider.setHttpRequestResults(TEST_HTTP_STATUS_CODE, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
-        getClient().get(url, new HashMap<String, Object>(headers), parameters, listener);
+        getClient().get(url, new HashMap<String, Object>(headers), listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertEquals(headers, apiProvider.getApiRequests().get(0).getRequestHeaders());
@@ -163,21 +163,21 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
 
     public void testFailedGet() throws Exception {
         setupFailedRequest();
-        getClient().get(url, headers, parameters, listener);
+        getClient().get(url, headers, listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
     }
 
     public void testFailedGet404() throws Exception {
         setupSuccessfulRequestWithFailedHttpStatus(404, TEST_CONTENT_TYPE, TEST_CONTENT_DATA);
-        getClient().get(url, headers, parameters, listener);
+        getClient().get(url, headers, listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
     }
 
     public void testUnauthorized() throws Exception {
         setupFailedUnauthorized();
-        getClient().get(url, headers, parameters, listener);
+        getClient().get(url, headers, listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertCredential(null, apiProvider.getApiRequests().get(0));
@@ -232,9 +232,14 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
                                      DataParameters parameters,
                                      final AuthorizedResourceClient.Listener listener) throws Exception {
         try {
-            getClient().get(url, headers, parameters, listener);
+            if (parameters != null) {
+                getClient().setParameters(parameters);
+            }
+            getClient().get(url, headers, listener);
             fail();
         } catch (IllegalArgumentException e) {
+            // success
+        } catch (AuthorizationException e) {
             // success
         }
     }

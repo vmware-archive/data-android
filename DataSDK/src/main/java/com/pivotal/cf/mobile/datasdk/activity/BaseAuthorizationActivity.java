@@ -22,8 +22,6 @@ public abstract class BaseAuthorizationActivity extends Activity {
     public abstract void onAuthorizationDenied();
     public abstract void onAuthorizationFailed(String reason);
 
-    // TODO - do we need to onCreate and provide a null content view?
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -38,9 +36,6 @@ public abstract class BaseAuthorizationActivity extends Activity {
                 onAuthorizationFailed("Could not provide access code to Authorization Engine :" + e.getLocalizedMessage());
             }
         }
-
-        // TODO - finish here?
-//        finish();
     }
 
     private void setupRequirements() {

@@ -18,10 +18,10 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         super(apiProvider, authorizationPreferencesProvider);
     }
 
+
     /**
      * Starts the authorization process.
-     *
-     * @param activity   an already-running activity to use as the base of the authorization process.  May not be null.
+     *  @param activity   an already-running activity to use as the base of the authorization process.  May not be null.
      *                   This activity *MUST* have an intent filter in the AndroidManifest.xml file that captures the
      *                   redirect URL sent by the server.  e.g.:
      *
@@ -34,34 +34,22 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      *                      <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
      *                   </intent-filter>
      *
-     * @param parameters Parameters object defining the client identification and API endpoints used by the
-     *                   AuthorizationEngine.  May not be null.  None of its contents may be null.
      */
     // TODO - describe thrown exceptions
-    public void obtainAuthorization(Activity activity, DataParameters parameters) throws Exception {
+    public void obtainAuthorization(Activity activity) throws Exception {
         if (activity == null) {
             throw new IllegalArgumentException("activity may not be null");
         }
-        verifyDataParameters(parameters);
-        saveDataParameters(parameters);
-        startAuthorization(activity, parameters);
+        checkIfAuthorizationPreferencesAreSaved();
+        startAuthorization(activity);
     }
 
-    private void saveDataParameters(DataParameters parameters) {
-        authorizationPreferencesProvider.setClientId(parameters.getClientId());
-        authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
-        authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
-        authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
-        authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
 
-        // TODO - if these parameters are different from any existing authorization then the existing authorization must be cleared
-    }
-
-    private void startAuthorization(Activity activity, DataParameters parameters) throws Exception {
+    private void startAuthorization(Activity activity) throws Exception {
 
         // Launches external browser to do complete authentication
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
-        request.obtainAuthorization(activity, parameters);
+        request.obtainAuthorization(activity);
     }
 
     /**
@@ -89,9 +77,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
             throw new IllegalArgumentException("activity may not be null");
         }
 
-        if (!areAuthorizationPreferencesAvailable()) {
-            throw new AuthorizationException("Authorization parameters have not been set.");
-        }
+        checkIfAuthorizationPreferencesAreSaved();
 
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
 
@@ -131,9 +117,8 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     }
 
     // TODO - add Javadocs
-    public void clearAuthorization(DataParameters parameters) throws Exception {
-        verifyDataParameters(parameters);
-        saveDataParameters(parameters);
+    public void clearAuthorization() throws Exception {
+        checkIfAuthorizationPreferencesAreSaved();
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
         request.clearSavedCredentialAsynchronously(null);
     }

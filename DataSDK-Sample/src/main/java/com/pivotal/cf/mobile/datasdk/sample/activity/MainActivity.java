@@ -43,6 +43,11 @@ public class MainActivity extends BaseMainActivity {
         super.onResume();
         updateCurrentBaseRowColour();
         dataSDK = DataSDK.getInstance();
+        try {
+            dataSDK.setParameters(this, getDataParameters());
+        } catch (Exception e) {
+            addLogMessage("Could not set parameters: " + e.getLocalizedMessage());
+        }
     }
 
     @Override
@@ -77,7 +82,7 @@ public class MainActivity extends BaseMainActivity {
 
     private void doAuthorize() {
         try {
-            dataSDK.obtainAuthorization(this, getDataParameters());
+            dataSDK.obtainAuthorization(this);
         } catch (Exception e) {
             addLogMessage("Could not obtain authorization: '" + e + "'.");
         }
@@ -85,7 +90,7 @@ public class MainActivity extends BaseMainActivity {
 
     private void doClearAuthorization() {
         try {
-            dataSDK.clearAuthorization(this, getDataParameters());
+            dataSDK.clearAuthorization(this);
         } catch (Exception e) {
             addLogMessage("Could not clear authorization: '" + e.getLocalizedMessage() + "'.");
         }
@@ -95,7 +100,7 @@ public class MainActivity extends BaseMainActivity {
         final URL userInfoUrl = getUserInfoUrl();
         final DataParameters parameters = getDataParameters();
         try {
-            dataSDK.getClient(this).get(userInfoUrl, null, parameters, new AuthorizedResourceClient.Listener() {
+            dataSDK.getClient(this).get(userInfoUrl, null, new AuthorizedResourceClient.Listener() {
 
                 @Override
                 public void onSuccess(int httpStatusCode, String contentType, InputStream result) {

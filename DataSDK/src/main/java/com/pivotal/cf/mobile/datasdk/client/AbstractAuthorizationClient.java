@@ -33,26 +33,41 @@ public class AbstractAuthorizationClient {
         this.apiProvider = apiProvider;
     }
 
-    protected boolean areAuthorizationPreferencesAvailable() {
-        if (authorizationPreferencesProvider.getClientId() == null) {
-            return false;
+    protected void checkIfAuthorizationPreferencesAreSaved() throws AuthorizationException {
+        if (authorizationPreferencesProvider.getClientId() == null || authorizationPreferencesProvider.getClientId().isEmpty()) {
+            throw new AuthorizationException("parameters.clientId may not be null or empty");
         }
-        if (authorizationPreferencesProvider.getClientSecret() == null) {
-            return false;
+        if (authorizationPreferencesProvider.getClientSecret() == null || authorizationPreferencesProvider.getClientSecret().isEmpty()) {
+            throw new AuthorizationException("parameters.clientSecret may not be null or empty");
         }
         if (authorizationPreferencesProvider.getAuthorizationUrl() == null) {
-            return false;
+            throw new AuthorizationException("parameters.authorizationUrl may not be null");
         }
         if (authorizationPreferencesProvider.getTokenUrl() == null) {
-            return false;
+            throw new AuthorizationException("parameters.tokenUrl may not be null");
         }
         if (authorizationPreferencesProvider.getRedirectUrl() == null) {
-            return false;
+            throw new AuthorizationException("parameters.redirectUrl may not be null");
         }
-        return true;
     }
 
-    protected void verifyDataParameters(DataParameters parameters) {
+
+    // TODO - write Javadocs
+    public void setParameters(DataParameters parameters) {
+        verifyDataParameters(parameters);
+        saveDataParameters(parameters);
+        // TODO - if parameters have been modified since the last time they were saved then clear any saved credentials.
+    }
+
+    private void saveDataParameters(DataParameters parameters) {
+        authorizationPreferencesProvider.setClientId(parameters.getClientId());
+        authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
+        authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
+        authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
+        authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
+    }
+
+    private void verifyDataParameters(DataParameters parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("parameters may not be null");
         }

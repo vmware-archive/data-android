@@ -33,7 +33,7 @@ public interface AuthorizedApiRequest {
         public void onSavedCredentialCleared();
     }
 
-    public void obtainAuthorization(Activity activity, DataParameters parameters);
+    public void obtainAuthorization(Activity activity);
 
     public void getAccessToken(String authorizationCode, AuthorizationListener listener);
 

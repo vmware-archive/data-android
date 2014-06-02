@@ -2,7 +2,6 @@ package com.pivotal.cf.mobile.datasdk.client;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.common.util.Logger;
-import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
@@ -30,15 +29,10 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
     // NOTE - listener may be called on a background thread
     public void get(final URL url,
                     final Map<String, Object> headers,
-                    DataParameters parameters,
                     final Listener listener) throws Exception {
 
-        verifyGetArguments(url, parameters, listener);
-
-        // TODO - the data parameters are obviously available since they are being passed in the arguments. fix this error check below:
-        if (!areAuthorizationPreferencesAvailable()) {
-            throw new AuthorizationException("Authorization parameters have not been set. You must authorize with DataSDK.obtainAuthorization first.");
-        }
+        verifyGetArguments(url, listener);
+        checkIfAuthorizationPreferencesAreSaved();
 
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
         request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
@@ -90,13 +84,12 @@ public class AuthorizedResourceClient extends AbstractAuthorizationClient {
         return httpStatusCode >= 200 && httpStatusCode < 300;
     }
 
-    private void verifyGetArguments(URL url, DataParameters parameters, Listener listener) {
+    private void verifyGetArguments(URL url, Listener listener) {
         if (url == null) {
             throw new IllegalArgumentException("url may not be null");
         }
         if (listener == null) {
             throw new IllegalArgumentException("listener may not be null");
         }
-        verifyDataParameters(parameters);
     }
 }

@@ -23,7 +23,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.DataStore;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.pivotal.cf.mobile.common.util.Logger;
-import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
@@ -47,8 +46,8 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     // TODO - the state token should be randomly generated, but persisted until the end of the flow
     private static final String STATE_TOKEN = "BLORG";
 
-    private final AuthorizationPreferencesProvider authorizationPreferencesProvider;
-    private final ApiProvider apiProvider;
+    private AuthorizationPreferencesProvider authorizationPreferencesProvider;
+    private ApiProvider apiProvider;
 
     // TODO - decide if the flow should be in a static field that persists for a long time.
     // It may be problematic if we are already re-reading the CredentialStore from the
@@ -59,13 +58,27 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                     ApiProvider apiProvider) throws Exception {
 
-        // TODO - ensure arguments are not null
-        // TODO - once arguments have settled down, make separate methods to verify and save them.
-
-        this.authorizationPreferencesProvider = authorizationPreferencesProvider;
-        this.apiProvider = apiProvider;
+        verifyArguments(context, authorizationPreferencesProvider, apiProvider);
+        saveArguments(authorizationPreferencesProvider, apiProvider);
         setupDataStore(context);
         setupFlow();
+    }
+
+    private void verifyArguments(Context context, AuthorizationPreferencesProvider authorizationPreferencesProvider, ApiProvider apiProvider) {
+        if (context == null) {
+            throw new IllegalArgumentException("context may not be null");
+        }
+        if (authorizationPreferencesProvider == null) {
+            throw new IllegalArgumentException("authorizationPreferencesProvider may not be null");
+        }
+        if (apiProvider == null) {
+            throw new IllegalArgumentException("apiProvider may not be null");
+        }
+    }
+
+    private void saveArguments(AuthorizationPreferencesProvider authorizationPreferencesProvider, ApiProvider apiProvider) {
+        this.authorizationPreferencesProvider = authorizationPreferencesProvider;
+        this.apiProvider = apiProvider;
     }
 
     private void setupDataStore(Context context) {
@@ -111,9 +124,9 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     }
 
     @Override
-    public void obtainAuthorization(Activity activity, DataParameters parameters) {
+    public void obtainAuthorization(Activity activity) {
         // Does not use the thread pool since it launches an activity.
-        final String url = getAuthorizationRequestUrl(parameters);
+        final String url = getAuthorizationRequestUrl();
         Logger.fd("Loading authorization request URL to identify server in external browser: '%s'.", url);
         final Uri uri = Uri.parse(url);
         final Intent i = new Intent(Intent.ACTION_VIEW, uri);
@@ -121,9 +134,10 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         activity.startActivity(i); // Launches external browser to do complete authentication
     }
 
-    private String getAuthorizationRequestUrl(DataParameters parameters) {
+    private String getAuthorizationRequestUrl() {
         final AuthorizationCodeRequestUrl authorizationUrl = flow.newAuthorizationUrl();
-        authorizationUrl.setRedirectUri(parameters.getRedirectUrl().toString());
+        final String redirectUrl = authorizationPreferencesProvider.getRedirectUrl().toString();
+        authorizationUrl.setRedirectUri(redirectUrl);
         authorizationUrl.setState(STATE_TOKEN);
         return authorizationUrl.build();
     }
