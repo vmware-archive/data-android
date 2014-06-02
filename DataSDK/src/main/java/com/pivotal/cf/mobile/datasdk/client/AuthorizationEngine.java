@@ -4,7 +4,6 @@ import android.app.Activity;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.common.util.Logger;
-import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.activity.BaseAuthorizationActivity;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;

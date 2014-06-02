@@ -180,7 +180,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         getClient().get(url, headers, listener);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
-        assertCredential(null, apiProvider.getApiRequests().get(0));
+        assertCredentialEquals(null, apiProvider);
     }
 
     private void setupSuccessfulRequest(int httpStatusCode, String contentType, String contentData) {

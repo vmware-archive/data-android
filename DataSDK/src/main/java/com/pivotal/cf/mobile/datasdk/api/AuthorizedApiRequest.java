@@ -4,7 +4,6 @@ import android.app.Activity;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;

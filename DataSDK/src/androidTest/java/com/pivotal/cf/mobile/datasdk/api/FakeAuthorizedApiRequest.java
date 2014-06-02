@@ -13,6 +13,7 @@ import java.util.Map;
 
 public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
+    private final FakeApiProvider apiProvider;
     private final boolean shouldGetAccessTokenBeSuccessful;
     private final boolean shouldGetAccessTokenBeUnauthorized;
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
@@ -25,9 +26,9 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     private TokenResponse tokenResponseToReturn;
     private TokenResponse savedTokenResponse;
     private Map<String, Object> requestHeaders;
-    private Credential credentialToReturn;
 
-    public FakeAuthorizedApiRequest(boolean shouldGetAccessTokenBeSuccessful,
+    public FakeAuthorizedApiRequest(FakeApiProvider apiProvider,
+                                    boolean shouldGetAccessTokenBeSuccessful,
                                     boolean shouldGetAccessTokenBeUnauthorized,
                                     boolean shouldAuthorizedApiRequestBeSuccessful,
                                     boolean shouldAuthorizedApiRequestBeUnauthorized,
@@ -35,9 +36,9 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
                                     String contentType,
                                     String contentData,
                                     TokenResponse savedTokenResponse,
-                                    TokenResponse tokenResponseToReturn,
-                                    Credential credentialToReturn) {
+                                    TokenResponse tokenResponseToReturn) {
 
+        this.apiProvider = apiProvider;
         this.shouldGetAccessTokenBeSuccessful = shouldGetAccessTokenBeSuccessful;
         this.shouldGetAccessTokenBeUnauthorized = shouldGetAccessTokenBeUnauthorized;
         this.shouldAuthorizedApiRequestBeSuccessful = shouldAuthorizedApiRequestBeSuccessful;
@@ -47,7 +48,6 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         this.contentData = contentData;
         this.savedTokenResponse = savedTokenResponse;
         this.tokenResponseToReturn = tokenResponseToReturn;
-        this.credentialToReturn = credentialToReturn;
     }
 
     public void obtainAuthorization(Activity activity) {
@@ -86,7 +86,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
     @Override
     public void loadCredential(LoadCredentialListener listener) {
-        listener.onCredentialLoaded(credentialToReturn);
+        listener.onCredentialLoaded(apiProvider.getCredential());
     }
 
     @Override
@@ -100,7 +100,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     @Override
     public void clearSavedCredentialSynchronously() {
         savedTokenResponse = null;
-        credentialToReturn = null;
+        apiProvider.setCredential(null);
     }
 
     public TokenResponse getSavedTokenResponse() {

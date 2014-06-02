@@ -39,6 +39,7 @@ public class FakeApiProvider implements ApiProvider {
     public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) {
 
         final FakeAuthorizedApiRequest apiRequest = new FakeAuthorizedApiRequest(
+                this,
                 shouldGetAccessTokenBeSuccessful,
                 shouldGetAccessTokenBeUnauthorized,
                 shouldAuthorizedApiRequestBeSuccessful,
@@ -47,8 +48,8 @@ public class FakeApiProvider implements ApiProvider {
                 contentType,
                 contentData,
                 savedTokenResponse,
-                expectedTokenResponse,
-                credential);
+                expectedTokenResponse
+        );
 
         apiRequests.add(apiRequest);
         return apiRequest;
@@ -86,6 +87,10 @@ public class FakeApiProvider implements ApiProvider {
 
     public void setCredential(Credential credential) {
         this.credential = credential;
+    }
+
+    public Credential getCredential() {
+        return credential;
     }
 
     public List<FakeAuthorizedApiRequest> getApiRequests() {

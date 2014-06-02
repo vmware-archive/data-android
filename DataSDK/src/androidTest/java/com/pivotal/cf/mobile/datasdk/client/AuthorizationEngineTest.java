@@ -193,7 +193,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testAuthorizationCodeReceivedRequiresRedirectUrl() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE,new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
     }
 
     private void baseTestAuthorizationCodeReceivedWithInvalidAuthorizationCode(String authorizationCode) throws Exception {
@@ -203,7 +203,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         getEngine().authorizationCodeReceived(authorizationActivity, authorizationCode);
         semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
-        assertCredential(null, apiProvider.getApiRequests().get(0));
+        assertCredentialEquals(null, apiProvider);
     }
 
     public void testAuthorizationCodeReceivedSuccessfully() throws Exception {
@@ -230,7 +230,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         final FakeAuthorizedApiRequest request = apiProvider.getApiRequests().get(0);
         assertTrue(request.didCallGetAccessToken());
         assertNull(request.getSavedTokenResponse());
-        assertCredential(null, request);
+        assertCredentialEquals(null, apiProvider);
     }
 
     public void testAuthorizationCodeReceivedFailure() throws Exception {
