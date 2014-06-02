@@ -104,6 +104,53 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
     }
 
+    public void testCallingSetParametersWithSameParametersWillNotClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        getEngine().setParameters(parameters);
+        assertCredentialEquals(credential, apiProvider);
+    }
+
+    public void testChangingClientIdWillClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID_2, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(null, apiProvider);
+    }
+
+    public void testChangingClientSecretWillClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET_2, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(null, apiProvider);
+    }
+
+    public void testChangingAuthorizationUrlWillClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL_2, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(null, apiProvider);
+    }
+
+    public void testChangingTokenUrlWillClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL_2, TEST_REDIRECT_URL);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(null, apiProvider);
+    }
+
+    public void testChangingRedirectUrlWillClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL_2);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(null, apiProvider);
+    }
+
     public void testObtainAuthorizationRequiresActivity() throws Exception {
         baseTestObtainAuthorizationRequires(null, parameters);
     }

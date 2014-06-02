@@ -2,6 +2,7 @@ package com.pivotal.cf.mobile.datasdk.client;
 
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
+import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 public class AbstractAuthorizationClient {
@@ -51,20 +52,14 @@ public class AbstractAuthorizationClient {
         }
     }
 
-
     // TODO - write Javadocs
-    public void setParameters(DataParameters parameters) {
+    public void setParameters(DataParameters parameters) throws Exception {
         verifyDataParameters(parameters);
+        if (!isInitialParameters() && areParametersUpdated(parameters)) {
+            final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
+            request.clearSavedCredentialAsynchronously(null);
+        }
         saveDataParameters(parameters);
-        // TODO - if parameters have been modified since the last time they were saved then clear any saved credentials.
-    }
-
-    private void saveDataParameters(DataParameters parameters) {
-        authorizationPreferencesProvider.setClientId(parameters.getClientId());
-        authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
-        authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
-        authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
-        authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
     }
 
     private void verifyDataParameters(DataParameters parameters) {
@@ -87,4 +82,40 @@ public class AbstractAuthorizationClient {
             throw new IllegalArgumentException("parameters.redirectUrl may not be null");
         }
     }
+
+    private boolean isInitialParameters() {
+        return authorizationPreferencesProvider.getClientId() == null ||
+                authorizationPreferencesProvider.getClientSecret() == null ||
+                authorizationPreferencesProvider.getAuthorizationUrl() == null ||
+                authorizationPreferencesProvider.getTokenUrl() == null ||
+                authorizationPreferencesProvider.getRedirectUrl() == null;
+    }
+
+    private boolean areParametersUpdated(DataParameters parameters) {
+        if (!authorizationPreferencesProvider.getClientId().equals(parameters.getClientId())) {
+            return true;
+        }
+        if (!authorizationPreferencesProvider.getClientSecret().equals(parameters.getClientSecret())) {
+            return true;
+        }
+        if (!authorizationPreferencesProvider.getAuthorizationUrl().equals(parameters.getAuthorizationUrl())) {
+            return true;
+        }
+        if (!authorizationPreferencesProvider.getTokenUrl().equals(parameters.getTokenUrl())) {
+            return true;
+        }
+        if (!authorizationPreferencesProvider.getRedirectUrl().equals(parameters.getRedirectUrl())) {
+            return true;
+        }
+        return false;
+    }
+
+    private void saveDataParameters(DataParameters parameters) {
+        authorizationPreferencesProvider.setClientId(parameters.getClientId());
+        authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
+        authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
+        authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
+        authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
+    }
+
 }
