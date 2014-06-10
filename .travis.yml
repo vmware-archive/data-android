@@ -13,9 +13,9 @@ branches:
 env:
     global:
         # Sets the ORG_GRADLE_PROPERTY_MAVEN_USER environment variable
-        - secure: "Hkd+KItH6fePUEuUsZmsnqrcEYj/Pumf+QwQIC3n2Kkvflbmx9dvZpzldfa4cRONcLA6vIFyEMepTjK03FUzOThElZEJjBwDbvbmJWDgtGGLkfHGqUIJ+QgV5Jg1/dZUa2+CBzkkXMtZ14ZQB48ICays9zpigsnZqBGicu88Hdo="
+        - secure: "IfSxYvGdpGRQndDmLXBdJsk/lj980vBJLSS26s6cNmhqAJF2AG1PvxA2aa3epHmbXP3j2nrEA9zU34V7ErUqEZDap+KKflYmPk7reH0m15v7bEuPQl0g7Dk5BT56UKgcVdJwvh84O3plXvZVK8JNoheoOtaZbHyMx4TxdsS9H0s="
         # Sets the ORG_GRADLE_PROPERTY_MAVEN_PASS environment variable
-        - secure: "DP0nRAmwhw9IYEF4uE1jY2GxY3cZtDimNUQ6lwLvDJGlQoyJOdDEFjB0/8wEXVr/DCqZrr4e6nQ+UaSd/lhyEpRx9Rjc/ww/V//L4TIvz7GEVI6P1gEbxkMmYOBFpZSX+J6d3sZ5jFKW+kgWlVy2p5WNK02DEO/1Bp0awXaABC8="
+        - secure: "M9QU83bq0QqYgzNEe6ZQih7GhBJNcvZOhqa/jXrMQkEKOkS2jDGvr6EioXQBch1SW4FZBZoY4SqaLYPF9yqAIvNHgjtBa9BsKvZ+04Bpk5uXj1cb3kZ0ccdLilxlJ++uMoAi2E2ZIo3cL+b61JpEGkcEcwcE8wxjIHXY4Qj/ecc="
 
 before_install:
     # Install base Android SDK
