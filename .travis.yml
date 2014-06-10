@@ -18,7 +18,7 @@ before_install:
 - emulator -avd test-avd -no-skin -no-audio -no-window &
 
 before_script:
-- wait_for_emulator
+- wait_for_emulator.sh
 
 script:
 - "./gradlew assemble connectedCheck"
