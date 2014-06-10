@@ -1,37 +1,24 @@
-language: java
-jdk: oraclejdk7
-
-#notifications:
-#    webhooks:
-#      - http://pulse.pivotallabs.com/projects/765e14dd-7466-44da-8ef5-9ab8d7cdd9cd/status
-    
+language: android
+android:
+  components:
+  - build-tools-19.0.2
 branches:
-    only:
-      - master
-      - travis-test
-
+  only:
+  - master
+  - travis-test
 env:
-    global:
-        # Sets the ORG_GRADLE_PROPERTY_MAVEN_USER environment variable
-        - secure: "IfSxYvGdpGRQndDmLXBdJsk/lj980vBJLSS26s6cNmhqAJF2AG1PvxA2aa3epHmbXP3j2nrEA9zU34V7ErUqEZDap+KKflYmPk7reH0m15v7bEuPQl0g7Dk5BT56UKgcVdJwvh84O3plXvZVK8JNoheoOtaZbHyMx4TxdsS9H0s="
-        # Sets the ORG_GRADLE_PROPERTY_MAVEN_PASS environment variable
-        - secure: "M9QU83bq0QqYgzNEe6ZQih7GhBJNcvZOhqa/jXrMQkEKOkS2jDGvr6EioXQBch1SW4FZBZoY4SqaLYPF9yqAIvNHgjtBa9BsKvZ+04Bpk5uXj1cb3kZ0ccdLilxlJ++uMoAi2E2ZIo3cL+b61JpEGkcEcwcE8wxjIHXY4Qj/ecc="
+  global:
+  - secure: Rh0EaEBPqBrEUWPnvM3qdVfQek1Y89zaG9wEPYTPvsGPVV5P7mc4V1nlc3GD2T++YPcSWo/QZwn80THQdkDvht0kxdaaJYcJiH6ZkhQylG1voq88BDGqwyAM/2yvIdG12wuBMyiVqKMZW0d3zy7VHbsrz9xdTlgK82p/BYtuuNU=
+  - secure: Vat9uUbmBvbdnIWhhr4NVGxx25VpzsBo5VAf44oTzY6Eh3Ya3ECM+8pAr/6BJph7O7TDAcVDC/D5LL2K7OHOBRx+ike8W1GOa005dtj5gYxW96gZ3wLOB+CqCnPfHdyU8Jp+Rd0IAFMlNo/6q+QyIXu98g+H8rArsSqhjRwt+bE=
 
 before_install:
-    # Install base Android SDK
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq libstdc++6:i386 lib32z1
-    - export COMPONENTS=build-tools-19.0.3,android-19,sysimg-19,android-18,sysimg-18,extra-android-support,extra-google-google_play_services,extra-google-gcm,extra-android-m2repository,extra-google-m2repository,extra-android-support-v4,addon-google_apis-google-18,addon-google_apis-google-17,addon-google_apis-google-19,android-17,android-19,addon-google_apis-google-16,android-16
-    - export ANDROID_TARGET=android-19
-    - export ANDROID_ABI=armeabi-v7a
-    - curl -L https://raw.github.com/embarkmobile/android-sdk-installer/version-1/android-sdk-installer | bash /dev/stdin --install=$COMPONENTS
-    - source ~/.android-sdk-installer/env
-    # Create and start emulator
-    - echo no | android create avd --force --name test-avd --target $ANDROID_TARGET --abi $ANDROID_ABI
-    - emulator -avd test-avd -no-skin -no-audio -no-window &
+- export ANDROID_TARGET=android-19
+- export ANDROID_ABI=armeabi-v7a
+- echo no | android create avd --force --name test-avd --target $ANDROID_TARGET --abi $ANDROID_ABI
+- emulator -avd test-avd -no-skin -no-audio -no-window &
 
 before_script:
-    - wait_for_emulator
+- wait_for_emulator
 
 script:
-    - ./gradlew assemble connectedCheck
+- "./gradlew assemble connectedCheck"
