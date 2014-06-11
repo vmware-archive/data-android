@@ -11,6 +11,10 @@ env:
   - secure: Rh0EaEBPqBrEUWPnvM3qdVfQek1Y89zaG9wEPYTPvsGPVV5P7mc4V1nlc3GD2T++YPcSWo/QZwn80THQdkDvht0kxdaaJYcJiH6ZkhQylG1voq88BDGqwyAM/2yvIdG12wuBMyiVqKMZW0d3zy7VHbsrz9xdTlgK82p/BYtuuNU=
   - secure: Vat9uUbmBvbdnIWhhr4NVGxx25VpzsBo5VAf44oTzY6Eh3Ya3ECM+8pAr/6BJph7O7TDAcVDC/D5LL2K7OHOBRx+ike8W1GOa005dtj5gYxW96gZ3wLOB+CqCnPfHdyU8Jp+Rd0IAFMlNo/6q+QyIXu98g+H8rArsSqhjRwt+bE=
 
+notifications:
+    webhooks:
+      - http://pulse.pivotallabs.com/projects/a81ad59a-5f91-4b66-9fe1-caf46382da1d/status
+
 before_install:
 - export ANDROID_TARGET=android-19
 - export ANDROID_ABI=armeabi-v7a
