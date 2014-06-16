@@ -19,8 +19,8 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected static final String TEST_CLIENT_SECRET_2 = "TEST_CLIENT_SECRET_2";
     protected static final String TEST_CLIENT_ID = "TEST_CLIENT_ID";
     protected static final String TEST_CLIENT_ID_2 = "TEST_CLIENT_ID_2";
-    protected static URL TEST_REDIRECT_URL;
-    protected static URL TEST_REDIRECT_URL_2;
+    protected static String TEST_REDIRECT_URL;
+    protected static String TEST_REDIRECT_URL_2;
     protected static URL TEST_AUTHORIZATION_URL;
     protected static URL TEST_AUTHORIZATION_URL_2;
     protected static URL TEST_TOKEN_URL;
@@ -41,10 +41,10 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
         apiProvider = new FakeApiProvider();
         TEST_AUTHORIZATION_URL = new URL("https://test.authorization.url");
         TEST_TOKEN_URL = new URL("https://test.token.url");
-        TEST_REDIRECT_URL = new URL("https://test.redirect.url");
+        TEST_REDIRECT_URL = "https://test.redirect.url";
         TEST_AUTHORIZATION_URL_2 = new URL("https://test.authorization.url.2");
         TEST_TOKEN_URL_2 = new URL("https://test.token.url.2");
-        TEST_REDIRECT_URL_2 = new URL("https://test.redirect.url.2");
+        TEST_REDIRECT_URL_2 = "https://test.redirect.url.2";
         parameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);

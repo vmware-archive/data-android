@@ -120,21 +120,12 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     }
 
     @Override
-    public URL getRedirectUrl() {
-        final String preference = getSharedPreferences().getString(PROPERTY_REDIRECT_URL, null);
-        if (preference == null) {
-            return null;
-        }
-        try {
-            return new URL(preference);
-        } catch (MalformedURLException e) {
-            Logger.w("Invalid redirect URL stored in preferences: " + preference);
-            return null;
-        }
+    public String getRedirectUrl() {
+        return getSharedPreferences().getString(PROPERTY_REDIRECT_URL, null);
     }
 
     @Override
-    public void setRedirectUrl(URL redirectUrl) {
+    public void setRedirectUrl(String redirectUrl) {
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
         if (redirectUrl != null) {

@@ -112,8 +112,12 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL), listener);
     }
 
-    public void testObtainAuthorizationRequiresRedirectUrl() throws Exception {
+    public void testObtainAuthorizationRequiresNotNullRedirectUrl() throws Exception {
         baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null), listener);
+    }
+
+    public void testObtainAuthorizationRequiresNotEmptyRedirectUrl() throws Exception {
+        baseTestGetRequires(url, headers, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, ""), listener);
     }
 
     public void testRequiresAuthorizationParameters() throws Exception {

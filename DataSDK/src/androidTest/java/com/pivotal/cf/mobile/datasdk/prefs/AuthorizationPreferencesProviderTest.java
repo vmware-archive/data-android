@@ -62,10 +62,10 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
 
     public void testSetRedirectUrl() throws Exception {
         final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setRedirectUrl(new URL(REDIRECT_URL));
-        assertEquals(new URL(REDIRECT_URL), prefs1.getRedirectUrl());
+        prefs1.setRedirectUrl(REDIRECT_URL);
+        assertEquals(REDIRECT_URL, prefs1.getRedirectUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(new URL(REDIRECT_URL), prefs2.getRedirectUrl());
+        assertEquals(REDIRECT_URL, prefs2.getRedirectUrl());
     }
     
     private AuthorizationPreferencesProviderImpl getPrefs() {

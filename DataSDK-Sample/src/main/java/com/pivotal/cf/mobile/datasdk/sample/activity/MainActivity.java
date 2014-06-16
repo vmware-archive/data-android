@@ -141,7 +141,7 @@ public class MainActivity extends BaseMainActivity {
 
         final URL authorizationUrl = getAuthorizationUrl();
         final URL tokenUrl = getTokenUrl();
-        final URL redirectUrl = getRedirectUrl();
+        final String redirectUrl = getRedirectUrl();
 
         return new DataParameters(
                 Preferences.getClientId(this),
@@ -169,13 +169,8 @@ public class MainActivity extends BaseMainActivity {
         }
     }
 
-    private URL getRedirectUrl() {
-        try {
-            return new URL(Preferences.getRedirectUrl(this));
-        } catch (MalformedURLException e) {
-            Logger.e("Invalid redirect URL: " + e.getLocalizedMessage());
-            return null;
-        }
+    private String getRedirectUrl() {
+        return Preferences.getRedirectUrl(this);
     }
 
     private URL getUserInfoUrl() {

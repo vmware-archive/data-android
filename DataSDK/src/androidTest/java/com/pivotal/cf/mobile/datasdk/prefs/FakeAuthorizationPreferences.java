@@ -8,7 +8,7 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     private String clientSecret;
     private URL authorizationUrl;
     private URL tokenUrl;
-    private URL redirectUrl;
+    private String redirectUrl;
 
     @Override
     public String getClientId() {
@@ -51,12 +51,12 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     }
 
     @Override
-    public URL getRedirectUrl() {
+    public String getRedirectUrl() {
         return redirectUrl;
     }
 
     @Override
-    public void setRedirectUrl(URL redirectUrl) {
+    public void setRedirectUrl(String redirectUrl) {
         this.redirectUrl = redirectUrl;
     }
 }

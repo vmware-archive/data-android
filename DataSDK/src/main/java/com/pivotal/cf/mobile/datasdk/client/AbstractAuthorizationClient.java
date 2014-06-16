@@ -47,7 +47,7 @@ public class AbstractAuthorizationClient {
         if (authorizationPreferencesProvider.getTokenUrl() == null) {
             throw new AuthorizationException("parameters.tokenUrl may not be null");
         }
-        if (authorizationPreferencesProvider.getRedirectUrl() == null) {
+        if (authorizationPreferencesProvider.getRedirectUrl() == null || authorizationPreferencesProvider.getRedirectUrl().isEmpty()) {
             throw new AuthorizationException("parameters.redirectUrl may not be null");
         }
     }
@@ -78,7 +78,7 @@ public class AbstractAuthorizationClient {
         if (parameters.getTokenUrl() == null) {
             throw new IllegalArgumentException("parameters.tokenUrl may not be null");
         }
-        if (parameters.getRedirectUrl() == null) {
+        if (parameters.getRedirectUrl() == null || parameters.getRedirectUrl().isEmpty()) {
             throw new IllegalArgumentException("parameters.redirectUrl may not be null");
         }
     }

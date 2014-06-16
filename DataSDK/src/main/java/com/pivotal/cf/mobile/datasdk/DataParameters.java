@@ -8,9 +8,9 @@ public class DataParameters {
     private final String clientSecret;
     private final URL authorizationUrl;
     private final URL tokenUrl;
-    private final URL redirectUrl;
+    private final String redirectUrl;
 
-    public DataParameters(String clientId, String clientSecret, URL authorizationUrl, URL tokenUrl, URL redirectUrl) {
+    public DataParameters(String clientId, String clientSecret, URL authorizationUrl, URL tokenUrl, String redirectUrl) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authorizationUrl = authorizationUrl;
@@ -34,7 +34,7 @@ public class DataParameters {
         return tokenUrl;
     }
 
-    public URL getRedirectUrl() {
+    public String getRedirectUrl() {
         return redirectUrl;
     }
 
