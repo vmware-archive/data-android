@@ -9,6 +9,7 @@ import com.pivotal.cf.mobile.datasdk.api.ApiProviderImpl;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationEngine;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
+import com.pivotal.cf.mobile.datasdk.data.PCFObject;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
 
