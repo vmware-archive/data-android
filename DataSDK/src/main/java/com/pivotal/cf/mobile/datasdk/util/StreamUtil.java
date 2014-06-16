@@ -1,5 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,5 +20,9 @@ public class StreamUtil {
         }
 
         return new String(byteArrayOutputStream.toByteArray());
+    }
+
+    public static InputStream getInputStream(String contentData) {
+        return new ByteArrayInputStream(contentData.getBytes());
     }
 }

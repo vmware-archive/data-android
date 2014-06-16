@@ -5,9 +5,8 @@ import android.app.Activity;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
+import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -19,6 +18,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
     private final boolean shouldAuthorizedApiRequestBeUnauthorized;
     private final String contentData;
+    private String contentEncoding;
     private final String contentType;
     private final int httpStatusCode;
     private boolean didCallObtainAuthorization;
@@ -76,7 +76,7 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
         this.requestHeaders = headers;
         if (shouldAuthorizedApiRequestBeSuccessful) {
-            listener.onSuccess(httpStatusCode, contentType, getInputStream());
+            listener.onSuccess(httpStatusCode, contentType, contentEncoding, StreamUtil.getInputStream(contentData));
         } else if (shouldAuthorizedApiRequestBeUnauthorized) {
             listener.onUnauthorized();
         } else {
@@ -119,7 +119,4 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         return requestHeaders;
     }
 
-    private InputStream getInputStream() {
-        return new ByteArrayInputStream(contentData.getBytes());
-    }
 }

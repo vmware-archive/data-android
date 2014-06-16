@@ -11,7 +11,7 @@ import com.pivotal.cf.mobile.common.sample.activity.BasePreferencesActivity;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.DataParameters;
 import com.pivotal.cf.mobile.datasdk.DataSDK;
-import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClientImpl;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.util.Preferences;
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
@@ -100,10 +100,10 @@ public class MainActivity extends BaseMainActivity {
         final URL userInfoUrl = getUserInfoUrl();
         final DataParameters parameters = getDataParameters();
         try {
-            dataSDK.getClient(this).get(userInfoUrl, null, new AuthorizedResourceClient.Listener() {
+            dataSDK.getClient(this).get(userInfoUrl, null, new AuthorizedResourceClientImpl.Listener() {
 
                 @Override
-                public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+                public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream result) {
                     Logger.d("GET userInfo onSuccess");
                     if (httpStatusCode >= 200 && httpStatusCode < 300) {
                         if (contentType.startsWith("application/json")) {

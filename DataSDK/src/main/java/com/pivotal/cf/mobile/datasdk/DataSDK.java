@@ -9,7 +9,7 @@ import com.pivotal.cf.mobile.datasdk.api.ApiProviderImpl;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationEngine;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
-import com.pivotal.cf.mobile.datasdk.data.PCFObject;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClientImpl;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProviderImpl;
 
@@ -58,7 +58,7 @@ public class DataSDK {
     public AuthorizedResourceClient getClient(Context context) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
-        return new AuthorizedResourceClient(apiProvider, preferences);
+        return new AuthorizedResourceClientImpl(apiProvider, preferences);
     }
 
     private void assertCalledOnUIThread() throws AuthorizationException {

@@ -11,7 +11,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<AuthorizedResourceClient> {
+public class AuthorizedResourceClientImplTest extends AbstractAuthorizedClientTest<AuthorizedResourceClientImpl> {
 
     private static final String TEST_HTTP_GET_URL = "http://test.get.url";
     private static final String TEST_CONTENT_TYPE = "test/content-type";
@@ -22,7 +22,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
 
     private URL url;
     private Map<String, Object> headers;
-    private AuthorizedResourceClient.Listener listener;
+    private AuthorizedResourceClientImpl.Listener listener;
     private boolean shouldSuccessListenerBeCalled;
     private boolean shouldRequestBeSuccessful;
     private boolean shouldUnauthorizedListenerBeCalled;
@@ -35,10 +35,10 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
         super.setUp();
         url = new URL(TEST_HTTP_GET_URL);
         headers = new HashMap<String, Object>();
-        listener = new AuthorizedResourceClient.Listener() {
+        listener = new AuthorizedResourceClientImpl.Listener() {
 
             @Override
-            public void onSuccess(int httpStatusCode, String contentType, InputStream result) {
+            public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream result) {
                 assertTrue(shouldSuccessListenerBeCalled);
                 assertEquals(expectedHttpStatusCode, httpStatusCode);
                 assertEquals(expectedContentType, contentType);
@@ -66,14 +66,14 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
     }
 
     @Override
-    protected AuthorizedResourceClient construct(AuthorizationPreferencesProvider preferencesProvider,
+    protected AuthorizedResourceClientImpl construct(AuthorizationPreferencesProvider preferencesProvider,
                                                  ApiProvider apiProvider) {
 
-        return new AuthorizedResourceClient(apiProvider, preferencesProvider);
+        return new AuthorizedResourceClientImpl(apiProvider, preferencesProvider);
     }
 
-    private AuthorizedResourceClient getClient() {
-        return new AuthorizedResourceClient(apiProvider, preferences);
+    private AuthorizedResourceClientImpl getClient() {
+        return new AuthorizedResourceClientImpl(apiProvider, preferences);
     }
 
     public void testGetRequiresUrl() throws Exception {
@@ -234,7 +234,7 @@ public class AuthorizedResourceClientTest extends AbstractAuthorizedClientTest<A
     private void baseTestGetRequires(final URL url,
                                      final Map<String, Object> headers,
                                      DataParameters parameters,
-                                     final AuthorizedResourceClient.Listener listener) throws Exception {
+                                     final AuthorizedResourceClientImpl.Listener listener) throws Exception {
         try {
             if (parameters != null) {
                 getClient().setParameters(parameters);

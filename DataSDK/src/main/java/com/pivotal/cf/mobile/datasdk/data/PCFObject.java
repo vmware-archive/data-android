@@ -1,7 +1,13 @@
 package com.pivotal.cf.mobile.datasdk.data;
 
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.pivotal.cf.mobile.common.util.Logger;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +16,11 @@ import java.util.Set;
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
 public class PCFObject implements Map<String, Object> {
 
+    private static final String JSON_CONTENT_TYPE = "application/json";
     private AuthorizedResourceClient client;
     private String className;
     private Map<String, Object> map;
+    private String objectId;
 
     public PCFObject(AuthorizedResourceClient client, String className) {
         verifyArguments(client, className);
@@ -38,8 +46,102 @@ public class PCFObject implements Map<String, Object> {
         map = new HashMap<String, Object>();
     }
 
+    // Properties
+
+    public void setObjectId(String objectId) {
+        this.objectId = objectId;
+    }
+
+    public String getObjectId() {
+        return objectId;
+    }
+
+    // Data synchronization methods
+
+
+    public void fetch(final DataListener listener) throws AuthorizationException, DataException {
+        if (objectId == null || objectId.isEmpty()) {
+            throw new DataException("objectId may not be null or empty");
+        }
+
+        // TODO - add URL and headers (if any)
+        client.get(null, null, new AuthorizedResourceClient.Listener() {
+
+            @Override
+            public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
+
+                if (!isSuccessfulHttpStatusCode(httpStatusCode)) {
+                    returnError("Received failure status code " + httpStatusCode + ".");
+                    return;
+                }
+
+                if (!contentType.equals(JSON_CONTENT_TYPE)) {
+                    returnError("Unsupported content type \"" + contentType + "\".");
+                    return;
+                }
+
+                try {
+                    setFieldsFromStream(inputStream, contentEncoding);
+                } catch (Exception e) {
+                    returnError(e.getLocalizedMessage());
+                    return;
+                }
+
+                if (listener != null) {
+                    listener.onSuccess(PCFObject.this);
+                }
+            }
+
+            @Override
+            public void onUnauthorized() {
+                if (listener != null) {
+                    listener.onUnauthorized(PCFObject.this);
+                };
+            }
+
+            @Override
+            public void onFailure(String reason) {
+                Logger.e("Error fetching PCFObject data: \"" + reason + "\".");
+                returnError(reason);
+            }
+
+            private void returnError(String reason) {
+                if (listener != null) {
+                    listener.onFailure(PCFObject.this, reason);
+                }
+            }
+        });
+    }
+
+    private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
+        return httpStatusCode >= 200 && httpStatusCode < 300;
+    }
+
+    private void setFieldsFromStream(InputStream in, String contentEncoding) throws Exception {
+        // TODO - assume UTF-8 if no character encoding available
+        final JsonReader reader = new JsonReader(new InputStreamReader(in, contentEncoding));
+        reader.beginObject();
+        while(reader.hasNext()) {
+            final String key = reader.nextName();
+            final JsonToken token = reader.peek();
+            // TODO - support more complicated object types
+            if (token == JsonToken.STRING) {
+                final String value = reader.nextString();
+                map.put(key, value);
+            } else if (token == JsonToken.BOOLEAN) {
+                map.put(key, reader.nextBoolean());
+            } else if (token == JsonToken.NUMBER) {
+                // Sadly, GSON gives no help determining if a value is an int, double, or long.
+                // We must always assume that it's a double value.
+                map.put(key, reader.nextDouble());
+            }
+        }
+        reader.endObject();
+    }
+
 
     // Map<String, Object> methods
+
     @Override
     public void clear() {
         map.clear();

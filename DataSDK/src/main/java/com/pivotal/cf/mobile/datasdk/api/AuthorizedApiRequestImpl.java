@@ -56,7 +56,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
     public AuthorizedApiRequestImpl(Context context,
                                     AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                                    ApiProvider apiProvider) throws Exception {
+                                    ApiProvider apiProvider) throws AuthorizationException {
 
         verifyArguments(context, authorizationPreferencesProvider, apiProvider);
         saveArguments(authorizationPreferencesProvider, apiProvider);
@@ -93,7 +93,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         }
     }
 
-    private void setupFlow() throws Exception {
+    private void setupFlow() throws AuthorizationException {
 
         try {
             final String clientId = authorizationPreferencesProvider.getClientId();
@@ -208,8 +208,9 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     if (listener != null) {
                         final int statusCode = response.getStatusCode();
                         final String contentType = response.getContentType();
+                        final String contentEncoding = response.getContentEncoding();
                         final InputStream inputStream = response.getContent();
-                        listener.onSuccess(statusCode, contentType, inputStream);
+                        listener.onSuccess(statusCode, contentType, contentEncoding, inputStream);
                     }
 
                 } catch (com.google.api.client.http.HttpResponseException e) {

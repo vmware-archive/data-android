@@ -7,6 +7,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 public class ApiProviderImpl implements ApiProvider {
@@ -40,7 +41,7 @@ public class ApiProviderImpl implements ApiProvider {
     }
 
     @Override
-    public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) throws Exception {
+    public AuthorizedApiRequest getAuthorizedApiRequest(AuthorizationPreferencesProvider authorizationPreferencesProvider) throws AuthorizationException {
         return new AuthorizedApiRequestImpl(context, authorizationPreferencesProvider, this);
     }
 }

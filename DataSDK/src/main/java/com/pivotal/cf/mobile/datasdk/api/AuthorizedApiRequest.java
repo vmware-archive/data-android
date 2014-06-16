@@ -19,7 +19,7 @@ public interface AuthorizedApiRequest {
     }
 
     public interface HttpOperationListener {
-        public void onSuccess(int httpStatusCode, String contentType, InputStream result);
+        public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream result);
         public void onUnauthorized();
         public void onFailure(String reason);
     }
