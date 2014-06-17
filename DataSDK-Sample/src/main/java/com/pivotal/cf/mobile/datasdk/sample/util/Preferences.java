@@ -26,6 +26,7 @@ public class Preferences {
     public static final String REDIRECT_URL = "test_redirect_url";
     public static final String AUTHORIZATION_URL = "test_authorization_url";
     public static final String TOKEN_URL = "test_token_url";
+    public static final String DATA_SERVICES_URL = "test_data_services_url";
     public static final String USER_INFO_URL = "test_user_info_url";
 
     public static final String[] PREFERENCE_NAMES = {
@@ -34,6 +35,7 @@ public class Preferences {
             REDIRECT_URL,
             AUTHORIZATION_URL,
             TOKEN_URL,
+            DATA_SERVICES_URL,
             USER_INFO_URL
     };
 
@@ -55,6 +57,10 @@ public class Preferences {
 
     public static String getTokenUrl(Context context) {
         return getSharedPreferences(context).getString(TOKEN_URL, null);
+    }
+
+    public static String getDataServicesUrl(Context context) {
+        return getSharedPreferences(context).getString(DATA_SERVICES_URL, null);
     }
 
     public static String getUserInfoUrl(Context context) {

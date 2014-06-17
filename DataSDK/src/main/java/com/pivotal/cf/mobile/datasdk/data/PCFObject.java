@@ -8,6 +8,8 @@ import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,9 +65,7 @@ public class PCFObject implements Map<String, Object> {
             throw new DataException("objectId may not be null or empty");
         }
 
-        // TODO - add URL and headers (if any)
-
-        client.executeHttpRequest("GET", null, null, "", "", null, new AuthorizedResourceClient.Listener() {
+        client.executeDataServicesRequest("GET", className, objectId, null, "", "", null, new AuthorizedResourceClient.Listener() {
 
             @Override
             public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
@@ -75,10 +75,12 @@ public class PCFObject implements Map<String, Object> {
                     return;
                 }
 
-                if (!contentType.equals(JSON_CONTENT_TYPE)) {
-                    returnError("Unsupported content type \"" + contentType + "\".");
-                    return;
-                }
+                // TODO - restore this test once the server starts to send meaningful content-types.
+
+//                if (!contentType.contains(JSON_CONTENT_TYPE)) {
+//                    returnError("Unsupported content type \"" + contentType + "\".");
+//                    return;
+//                }
 
                 try {
                     parseJsonAndSetFields(inputStream, contentEncoding);
@@ -118,7 +120,11 @@ public class PCFObject implements Map<String, Object> {
     }
 
     private void parseJsonAndSetFields(InputStream in, String contentEncoding) throws Exception {
-        // TODO - assume UTF-8 if no character encoding available
+
+        if (contentEncoding == null) {
+            contentEncoding = "utf-8";
+        }
+
         final JsonReader reader = new JsonReader(new InputStreamReader(in, contentEncoding));
         reader.beginObject();
         while(reader.hasNext()) {

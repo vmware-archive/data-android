@@ -142,13 +142,15 @@ public class MainActivity extends BaseMainActivity {
         final URL authorizationUrl = getAuthorizationUrl();
         final URL tokenUrl = getTokenUrl();
         final String redirectUrl = getRedirectUrl();
+        final URL dataServicesUrl = getDataServicesUrl();
 
         return new DataParameters(
                 Preferences.getClientId(this),
                 Preferences.getClientSecret(this),
                 authorizationUrl,
                 tokenUrl,
-                redirectUrl);
+                redirectUrl,
+                dataServicesUrl);
     }
 
     private URL getAuthorizationUrl() {
@@ -165,6 +167,15 @@ public class MainActivity extends BaseMainActivity {
             return new URL(Preferences.getTokenUrl(this));
         } catch (MalformedURLException e) {
             Logger.e("Invalid token URL: " + e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    private URL getDataServicesUrl() {
+        try {
+            return new URL(Preferences.getDataServicesUrl(this));
+        } catch (MalformedURLException e) {
+            Logger.e("Invalid data services URL: " + e.getLocalizedMessage());
             return null;
         }
     }

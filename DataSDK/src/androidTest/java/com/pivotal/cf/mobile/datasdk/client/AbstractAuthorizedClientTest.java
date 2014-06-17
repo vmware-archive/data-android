@@ -25,6 +25,8 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected static URL TEST_AUTHORIZATION_URL_2;
     protected static URL TEST_TOKEN_URL;
     protected static URL TEST_TOKEN_URL_2;
+    protected static URL TEST_DATA_SERVICES_URL;
+    protected static URL TEST_DATA_SERVICES_URL_2;
 
     protected FakeApiProvider apiProvider;
     protected FakeAuthorizationPreferences preferences;
@@ -42,10 +44,12 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
         TEST_AUTHORIZATION_URL = new URL("https://test.authorization.url");
         TEST_TOKEN_URL = new URL("https://test.token.url");
         TEST_REDIRECT_URL = "https://test.redirect.url";
+        TEST_DATA_SERVICES_URL = new URL("https://test.data.services.url");
         TEST_AUTHORIZATION_URL_2 = new URL("https://test.authorization.url.2");
         TEST_TOKEN_URL_2 = new URL("https://test.token.url.2");
         TEST_REDIRECT_URL_2 = "https://test.redirect.url.2";
-        parameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        TEST_DATA_SERVICES_URL_2 = new URL("https://test.data.services.url.2");
+        parameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);
     }
@@ -56,6 +60,7 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
         preferences.setAuthorizationUrl(TEST_AUTHORIZATION_URL);
         preferences.setTokenUrl(TEST_TOKEN_URL);
         preferences.setRedirectUrl(TEST_REDIRECT_URL);
+        preferences.setDataServicesUrl(TEST_DATA_SERVICES_URL);
     }
 
     public void testRequiresAuthorizationPreferencesProvider() {

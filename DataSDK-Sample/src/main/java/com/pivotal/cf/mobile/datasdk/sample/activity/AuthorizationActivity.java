@@ -60,7 +60,7 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
      */
     @Override
     public void onAuthorizationComplete() {
-        returnToMainActivity();
+        showDataEditorActivity();
     }
 
     /**
@@ -97,6 +97,17 @@ public class AuthorizationActivity extends BaseAuthorizationActivity {
             @Override
             public void run() {
                 final Intent i = new Intent(AuthorizationActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+        });
+    }
+
+    private void showDataEditorActivity() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Intent i = new Intent(AuthorizationActivity.this, DataEditorActivity.class);
                 startActivity(i);
                 finish();
             }

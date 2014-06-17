@@ -11,6 +11,7 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
     private static final String REDIRECT_URL = "https://test.redirect.url";
     private static final String AUTHORIZATION_URL = "https://test.authorization.url";
     private static final String TOKEN_URL = "https://test.token.url";
+    private static final String DATA_SERVICES_URL = "https://test.data.services.url";
 
     @Override
     protected void setUp() throws Exception {
@@ -67,7 +68,15 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
         assertEquals(REDIRECT_URL, prefs2.getRedirectUrl());
     }
-    
+
+    public void testSetDataServicesUrl() throws Exception {
+        final AuthorizationPreferencesProvider prefs1 = getPrefs();
+        prefs1.setDataServicesUrl(new URL(DATA_SERVICES_URL));
+        assertEquals(new URL(DATA_SERVICES_URL), prefs1.getDataServicesUrl());
+        final AuthorizationPreferencesProvider prefs2 = getPrefs();
+        assertEquals(new URL(DATA_SERVICES_URL), prefs2.getDataServicesUrl());
+    }
+
     private AuthorizationPreferencesProviderImpl getPrefs() {
         return new AuthorizationPreferencesProviderImpl(getContext());
     }

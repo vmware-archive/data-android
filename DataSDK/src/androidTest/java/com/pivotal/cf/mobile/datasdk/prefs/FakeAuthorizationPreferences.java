@@ -9,6 +9,7 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     private URL authorizationUrl;
     private URL tokenUrl;
     private String redirectUrl;
+    private URL dataServicesUrl;
 
     @Override
     public String getClientId() {
@@ -58,5 +59,15 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     @Override
     public void setRedirectUrl(String redirectUrl) {
         this.redirectUrl = redirectUrl;
+    }
+
+    @Override
+    public URL getDataServicesUrl() {
+        return dataServicesUrl;
+    }
+
+    @Override
+    public void setDataServicesUrl(URL dataServicesUrl) {
+        this.dataServicesUrl = dataServicesUrl;
     }
 }

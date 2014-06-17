@@ -1,4 +1,5 @@
 dependencies {
-    compile 'com.pivotal.cf.mobile:SampleAppCore:0.5-RELEASE'
     compile project(':DataSDK')
+    compile 'com.pivotal.cf.mobile:SampleAppCore:0.5-RELEASE'
+    compile 'com.android.support:appcompat-v7:19.+'
 }

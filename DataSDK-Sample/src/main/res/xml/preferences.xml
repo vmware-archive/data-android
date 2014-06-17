@@ -54,6 +54,16 @@
             android:maxLines="1"/>
 
         <EditTextPreference
+            android:key="test_data_services_url"
+            android:title="@string/pref_title_data_services_url"
+            android:defaultValue="@string/pref_default_data_services_url"
+            android:persistent="true"
+            android:selectAllOnFocus="true"
+            android:inputType="text"
+            android:singleLine="true"
+            android:maxLines="1"/>
+
+        <EditTextPreference
             android:key="test_user_info_url"
             android:title="@string/pref_title_user_info_url"
             android:defaultValue="@string/pref_default_user_info_url"

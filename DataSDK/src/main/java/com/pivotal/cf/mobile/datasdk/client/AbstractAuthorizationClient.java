@@ -50,6 +50,9 @@ public class AbstractAuthorizationClient {
         if (authorizationPreferencesProvider.getRedirectUrl() == null || authorizationPreferencesProvider.getRedirectUrl().isEmpty()) {
             throw new AuthorizationException("parameters.redirectUrl may not be null");
         }
+        if (authorizationPreferencesProvider.getDataServicesUrl() == null) {
+            throw new AuthorizationException("parameters.getDataServicesUrl may not be null");
+        }
     }
 
     // TODO - write Javadocs
@@ -81,6 +84,9 @@ public class AbstractAuthorizationClient {
         if (parameters.getRedirectUrl() == null || parameters.getRedirectUrl().isEmpty()) {
             throw new IllegalArgumentException("parameters.redirectUrl may not be null");
         }
+        if (parameters.getDataServicesUrl() == null) {
+            throw new IllegalArgumentException("parameters.dataServicesUrl may not be null");
+        }
     }
 
     private boolean isInitialParameters() {
@@ -88,7 +94,8 @@ public class AbstractAuthorizationClient {
                 authorizationPreferencesProvider.getClientSecret() == null ||
                 authorizationPreferencesProvider.getAuthorizationUrl() == null ||
                 authorizationPreferencesProvider.getTokenUrl() == null ||
-                authorizationPreferencesProvider.getRedirectUrl() == null;
+                authorizationPreferencesProvider.getRedirectUrl() == null ||
+                authorizationPreferencesProvider.getDataServicesUrl() == null;
     }
 
     private boolean areParametersUpdated(DataParameters parameters) {
@@ -116,5 +123,6 @@ public class AbstractAuthorizationClient {
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
         authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
+        authorizationPreferencesProvider.setDataServicesUrl(parameters.getDataServicesUrl());
     }
 }

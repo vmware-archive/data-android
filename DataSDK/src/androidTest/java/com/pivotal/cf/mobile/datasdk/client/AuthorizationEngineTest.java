@@ -77,35 +77,39 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testSetParametersRequiresNotNullClientId() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresNotEmptyClientId() throws Exception {
-        baseTestSetParametersRequires(new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresNotNullClientSecret() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresNotEmptyClientSecret() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresAuthorizationUrl() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresTokenUrl() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresNotNullRedirectUrl() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null, TEST_DATA_SERVICES_URL));
     }
 
     public void testSetParametersRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, ""));
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, "", TEST_DATA_SERVICES_URL));
+    }
+
+    public void testSetParametersRequiresDataServices() throws Exception {
+        baseTestSetParametersRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, null));
     }
 
     public void testCallingSetParametersWithSameParametersWillNotClearCredentials() throws Exception {
@@ -118,7 +122,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testChangingClientIdWillClearCredentials() throws Exception {
         getEngine().setParameters(parameters);
         saveCredential();
-        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID_2, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID_2, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         getEngine().setParameters(modifiedParameters);
         assertCredentialEquals(null, apiProvider);
     }
@@ -126,7 +130,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testChangingClientSecretWillClearCredentials() throws Exception {
         getEngine().setParameters(parameters);
         saveCredential();
-        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET_2, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET_2, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         getEngine().setParameters(modifiedParameters);
         assertCredentialEquals(null, apiProvider);
     }
@@ -134,7 +138,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testChangingAuthorizationUrlWillClearCredentials() throws Exception {
         getEngine().setParameters(parameters);
         saveCredential();
-        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL_2, TEST_TOKEN_URL, TEST_REDIRECT_URL);
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL_2, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         getEngine().setParameters(modifiedParameters);
         assertCredentialEquals(null, apiProvider);
     }
@@ -142,7 +146,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testChangingTokenUrlWillClearCredentials() throws Exception {
         getEngine().setParameters(parameters);
         saveCredential();
-        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL_2, TEST_REDIRECT_URL);
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL_2, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         getEngine().setParameters(modifiedParameters);
         assertCredentialEquals(null, apiProvider);
     }
@@ -150,9 +154,17 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     public void testChangingRedirectUrlWillClearCredentials() throws Exception {
         getEngine().setParameters(parameters);
         saveCredential();
-        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL_2);
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL_2, TEST_DATA_SERVICES_URL);
         getEngine().setParameters(modifiedParameters);
         assertCredentialEquals(null, apiProvider);
+    }
+
+    public void testChangingDataServicesUrlDoesNotClearCredentials() throws Exception {
+        getEngine().setParameters(parameters);
+        saveCredential();
+        final DataParameters modifiedParameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL_2);
+        getEngine().setParameters(modifiedParameters);
+        assertCredentialEquals(credential, apiProvider);
     }
 
     public void testObtainAuthorizationRequiresActivity() throws Exception {
@@ -164,35 +176,39 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testObtainAuthorizationRequiresNotNullClientId() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresNotEmptyClientId() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresNotNullClientSecret() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresNotEmptyClientSecret() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresAuthorizationUrl() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresTokenUrl() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresNotNullRedirectUrl() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null, TEST_DATA_SERVICES_URL));
     }
 
     public void testObtainAuthorizationRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, ""));
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, "", TEST_DATA_SERVICES_URL));
+    }
+
+    public void testObtainAuthorizationRequiresDataServicesUrl() throws Exception {
+        baseTestObtainAuthorizationRequires(activity, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, null));
     }
 
     public void testObtainAuthorization() throws Exception {
@@ -224,35 +240,39 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testAuthorizationCodeReceivedRequiresNotNullClientId() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresNotEmptyClientId() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresNotNullClientSecret() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresNotEmptyClientSecret() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresAuthorizationUrl() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresTokenUrl() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresNotNullRedirectUrl() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null, TEST_DATA_SERVICES_URL));
     }
 
     public void testAuthorizationCodeReceivedRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, ""));
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, "", TEST_DATA_SERVICES_URL));
+    }
+
+    public void testAuthorizationCodeReceivedRequiresDataServicesUrl() throws Exception {
+        baseTestAuthorizationCodeReceivedRequires(authorizationActivity, TEST_AUTHORIZATION_CODE, new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, null));
     }
 
     private void baseTestAuthorizationCodeReceivedWithInvalidAuthorizationCode(String authorizationCode) throws Exception {
@@ -308,35 +328,39 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     }
 
     public void testClearCredentialRequiresNotNullClientId() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresNotEmptyClientId() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresNotNullClientSecret() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresNotEmptyClientSecret() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresAuthorizationUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresTokenUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresNotNullRedirectUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, null, TEST_DATA_SERVICES_URL));
     }
 
     public void testClearCredentialRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, ""));
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, "", TEST_DATA_SERVICES_URL));
+    }
+
+    public void testClearCredentialRequiresDataServicesUrl() throws Exception {
+        baseTestClearCredentialRequires(new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, null));
     }
 
     public void testClearCredential() throws Exception {

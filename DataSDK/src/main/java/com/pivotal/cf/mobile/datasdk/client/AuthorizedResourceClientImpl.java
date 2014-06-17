@@ -4,10 +4,12 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.api.ApiProvider;
 import com.pivotal.cf.mobile.datasdk.api.AuthorizedApiRequest;
+import com.pivotal.cf.mobile.datasdk.data.DataException;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
@@ -18,6 +20,28 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
 
         super(apiProvider, authorizationPreferencesProvider);
     }
+
+    @Override
+    public void executeDataServicesRequest(final String method,
+                                           final String className,
+                                           final String objectId,
+                                           final Map<String, Object> headers,
+                                           String contentType,
+                                           String contentEncoding,
+                                           final OutputStream contentData,
+                                           final Listener listener) throws AuthorizationException, DataException {
+
+        URL requestUrl;
+        try {
+            final URL dataServicesUrl = authorizationPreferencesProvider.getDataServicesUrl();
+            requestUrl = new URL(dataServicesUrl, className + "/" + objectId);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException(e);
+        }
+
+        executeHttpRequest(method, requestUrl, headers, contentType, contentEncoding, contentData, listener);
+    }
+
 
     // TODO provide documentation - including which exceptions can get thrown
     // This method may or may not be called from a background thread.

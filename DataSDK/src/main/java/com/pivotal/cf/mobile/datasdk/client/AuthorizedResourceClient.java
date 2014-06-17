@@ -15,6 +15,15 @@ public interface AuthorizedResourceClient {
         public void onFailure(String reason);
     }
 
+    public void executeDataServicesRequest(final String method,
+                                           final String className,
+                                           final String objectId,
+                                           final Map<String, Object> headers,
+                                           String contentType,
+                                           String contentEncoding,
+                                           final OutputStream contentData,
+                                           final Listener listener) throws AuthorizationException, DataException;
+
     public void executeHttpRequest(final String method,
                                    final URL url,
                                    final Map<String, Object> headers,

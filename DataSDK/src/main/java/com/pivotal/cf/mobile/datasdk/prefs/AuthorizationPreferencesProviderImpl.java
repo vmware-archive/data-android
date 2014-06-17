@@ -18,6 +18,7 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     private static final String PROPERTY_AUTHORIZATION_URL = "authorization_url";
     private static final String PROPERTY_TOKEN_URL = "token_url";
     private static final String PROPERTY_REDIRECT_URL = "redirect_url";
+    private static final String PROPERTY_DATA_SERVICES_URL = "data_services_url";
 
     private Context context;
 
@@ -135,6 +136,32 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
         }
         editor.commit();
     }
+
+
+
+    @Override
+    public URL getDataServicesUrl() {
+        final String preference = getSharedPreferences().getString(PROPERTY_DATA_SERVICES_URL, null);
+        if (preference == null) {
+            return null;
+        }
+        try {
+            return new URL(preference);
+        } catch (MalformedURLException e) {
+            Logger.w("Invalid data services URL stored in preferences: " + preference);
+            return null;
+        }    }
+
+    @Override
+    public void setDataServicesUrl(URL dataServicesUrl) {
+        final SharedPreferences prefs = getSharedPreferences();
+        final SharedPreferences.Editor editor = prefs.edit();
+        if (dataServicesUrl != null) {
+            editor.putString(PROPERTY_DATA_SERVICES_URL, dataServicesUrl.toString());
+        } else {
+            editor.putString(PROPERTY_DATA_SERVICES_URL, null);
+        }
+        editor.commit();    }
 
     public void clear() {
         getSharedPreferences().edit().clear().commit();

@@ -4,37 +4,24 @@
     <!-- TODO - clean up these comments once the server stabilizes. -->
 
     <!-- The default Client ID for this client's account on the data server.                                         -->
-<!--    <string name="pref_default_client_id">c6bc0d1d-b186-421f-8ce6-f8925ab492d8</string>-->
+    <string name="pref_default_client_id">739e8ae7-e518-4eac-b100-ceec2dd65459</string>
 
     <!-- The default Client Secret for this client's account on the data server.                                     -->
-<!--    <string name="pref_default_client_secret">AKH47Z7hkXepx_pI7Na6dxKIktTLR3zaGpKhBYgUm07lxNInC5Ylorm27nq4Lr2hqPkSsOipqmZVYdjjoxQf3Rg</string>-->
+    <string name="pref_default_client_secret">AON8owWAztcnrnWDyOb1j_WOIS0LrnFbVoAzUATAYEjO92LGaq4ZG60-TCAxM6hAStfdrj9rY29_t6dJ_yO2Vno</string>
 
     <!-- The default redirect URL used during authorization.                                                         -->
-<!--    <string name="pref_default_redirect_url">https://android.sample.app/oauth2callback</string>-->
+    <string name="pref_default_redirect_url">com.pivotal.PCFDataServices://identity/oauth2callback</string>
 
     <!-- The URI used to start the user authorization flow.                                                          -->
-<!--    <string name="pref_default_authorization_url">http://cfmos-identity.cfapps.io/oauth/authorize</string>-->
+    <string name="pref_default_authorization_url">http://ident.one.pepsi.cf-app.com/oauth/authorize</string>
 
     <!-- The URI used to get access tokens.                                                                          -->
-<!--    <string name="pref_default_token_url">http://cfmos-identity.cfapps.io/token</string>-->
+    <string name="pref_default_token_url">http://ident.one.pepsi.cf-app.com/token</string>
+
+    <!-- the URI base for the data services server.                                                                  -->
+    <string name="pref_default_data_services_url">http://data-service.one.pepsi.cf-app.com</string>
 
     <!-- The URI used to get user info.                                                                              -->
-<!--    <string name="pref_default_user_info_url">http://cfmos-identity.cfapps.io/userinfo</string>-->
-
-<!--
-    <string name="pref_default_client_id">947045348411-lf2k2rpp7gmhgonthk2l39221ei36ugq.apps.googleusercontent.com</string>
-    <string name="pref_default_client_secret">cYvu_h-koYhJYYzKk7aEXpxr</string>
-    <string name="pref_default_redirect_url">https://mobile.cf.pivotal.com/oauth2callback</string>
-    <string name="pref_default_authorization_url">https://accounts.google.com/o/oauth2/auth</string>
-    <string name="pref_default_token_url">https://accounts.google.com/o/oauth2/token</string>
-    <string name="pref_default_user_info_url">https://www.googleapis.com/oauth2/v1/userinfo</string>
--->
-
-    <string name="pref_default_client_id">739e8ae7-e518-4eac-b100-ceec2dd65459</string>
-    <string name="pref_default_client_secret">AON8owWAztcnrnWDyOb1j_WOIS0LrnFbVoAzUATAYEjO92LGaq4ZG60-TCAxM6hAStfdrj9rY29_t6dJ_yO2Vno</string>
-    <string name="pref_default_redirect_url">com.pivotal.PCFDataServices://identity/oauth2callback</string>
-    <string name="pref_default_authorization_url">http://ident.one.pepsi.cf-app.com/oauth/authorize</string>
-    <string name="pref_default_token_url">http://ident.one.pepsi.cf-app.com/token</string>
     <string name="pref_default_user_info_url">http://ident.one.pepsi.cf-app.com/userinfo</string>
 
 </resources>

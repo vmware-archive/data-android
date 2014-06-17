@@ -15,5 +15,9 @@
     <string name="title_activity_authorization">Data Sample App Authorization</string>
     <string name="authorization_label">Waiting to receive access token from identity server...</string>
     <string name="action_get_user_info">Get User Info</string>
+    <string name="title_activity_data_editor">Data Editor</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="pref_title_data_services_url">Data Services URL</string>
 
 </resources>

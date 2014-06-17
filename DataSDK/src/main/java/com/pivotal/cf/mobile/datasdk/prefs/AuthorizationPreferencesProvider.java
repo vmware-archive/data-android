@@ -18,4 +18,7 @@ public interface AuthorizationPreferencesProvider {
 
     public String getRedirectUrl();
     public void setRedirectUrl(String redirectUrl);
+
+    public URL getDataServicesUrl();
+    public void setDataServicesUrl(URL dataServicesUrl);
 }
