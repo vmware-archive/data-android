@@ -30,11 +30,11 @@
     <string name="pref_default_user_info_url">https://www.googleapis.com/oauth2/v1/userinfo</string>
 -->
 
-    <string name="pref_default_client_id">85c5ff61-bdb3-458d-b3c4-c9d107c242aa</string>
-    <string name="pref_default_client_secret">F8gYixjQEayOF_MBw_-csh3Hje16Kgmb3ej79NAaCfma-upOgs_sM23WxWd1Iq8J3KFSgsUqvnxvgEUJMh-JzA</string>
-    <string name="pref_default_redirect_url">https://android.sample.app/oauth2callback</string>
-    <string name="pref_default_authorization_url">http://cfms-identity.one.pepsi.cf-app.com/oauth/authorize</string>
-    <string name="pref_default_token_url">http://cfms-identity.one.pepsi.cf-app.com/token</string>
-    <string name="pref_default_user_info_url">http://cfms-identity.one.pepsi.cf-app.com/userinfo</string>
+    <string name="pref_default_client_id">739e8ae7-e518-4eac-b100-ceec2dd65459</string>
+    <string name="pref_default_client_secret">AON8owWAztcnrnWDyOb1j_WOIS0LrnFbVoAzUATAYEjO92LGaq4ZG60-TCAxM6hAStfdrj9rY29_t6dJ_yO2Vno</string>
+    <string name="pref_default_redirect_url">com.pivotal.PCFDataServices://identity/oauth2callback</string>
+    <string name="pref_default_authorization_url">http://ident.one.pepsi.cf-app.com/oauth/authorize</string>
+    <string name="pref_default_token_url">http://ident.one.pepsi.cf-app.com/token</string>
+    <string name="pref_default_user_info_url">http://ident.one.pepsi.cf-app.com/userinfo</string>
 
 </resources>

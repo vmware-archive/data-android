@@ -36,9 +36,8 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" />
-<!--                <data android:host="mobile.cf.pivotal.com" /> -->
-                <data android:host="android.sample.app" />
+                <data android:scheme="com.pivotal.pcfdataservices" /> <!-- must be all lowercase, even if the redirect URL itself contains uppercase characters -->
+                <data android:host="identity" />
                 <data android:pathPrefix="/oauth2callback" />
             </intent-filter>
             <meta-data
