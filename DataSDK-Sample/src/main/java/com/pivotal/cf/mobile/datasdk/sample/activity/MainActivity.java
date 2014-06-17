@@ -100,7 +100,7 @@ public class MainActivity extends BaseMainActivity {
         final URL userInfoUrl = getUserInfoUrl();
         final DataParameters parameters = getDataParameters();
         try {
-            dataSDK.getClient(this).get(userInfoUrl, null, new AuthorizedResourceClientImpl.Listener() {
+            dataSDK.getClient(this).executeHttpRequest("GET", userInfoUrl, null, "", "", null, new AuthorizedResourceClientImpl.Listener() {
 
                 @Override
                 public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream result) {

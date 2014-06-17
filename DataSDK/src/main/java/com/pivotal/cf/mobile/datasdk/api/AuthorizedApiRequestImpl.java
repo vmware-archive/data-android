@@ -188,11 +188,15 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     }
 
     @Override
-    public void get(URL url,
-                    final Map<String, Object> headers,
-                    Credential credential,
-                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                    final HttpOperationListener listener) {
+    public void executeHttpRequest(String method,
+                                   URL url,
+                                   final Map<String, Object> headers,
+                                   String contentType,
+                                   String contentEncoding,
+                                   OutputStream contentData,
+                                   Credential credential,
+                                   AuthorizationPreferencesProvider authorizationPreferencesProvider,
+                                   final HttpOperationListener listener) {
 
         final HttpRequestFactory requestFactory = apiProvider.getFactory(credential);
         final GenericUrl requestUrl = new GenericUrl(url);
@@ -202,6 +206,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             @Override
             public void run() {
                 try {
+                    // TODO - apply given method, contentType, contentEncoding, contentData
                     final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
                     addHeadersToRequest(headers, request);
                     final HttpResponse response = request.execute();
@@ -241,20 +246,6 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             }
         });
     }
-
-    @Override
-    public void executeHttpRequest(String method,
-                                   URL url,
-                                   Map<String, Object> headers,
-                                   String contentType,
-                                   String contentEncoding,
-                                   OutputStream contentData,
-                                   AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                                   HttpOperationListener listener) {
-
-
-    }
-
 
     private boolean isUnauthorizedHttpStatusCode(int httpStatusCode) {
         return httpStatusCode == 401;

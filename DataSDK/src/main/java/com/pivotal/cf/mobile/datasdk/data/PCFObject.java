@@ -58,14 +58,14 @@ public class PCFObject implements Map<String, Object> {
 
     // Data synchronization methods
 
-
     public void fetch(final DataListener listener) throws AuthorizationException, DataException {
         if (objectId == null || objectId.isEmpty()) {
             throw new DataException("objectId may not be null or empty");
         }
 
         // TODO - add URL and headers (if any)
-        client.get(null, null, new AuthorizedResourceClient.Listener() {
+
+        client.executeHttpRequest("GET", null, null, "", "", null, new AuthorizedResourceClient.Listener() {
 
             @Override
             public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
@@ -138,7 +138,6 @@ public class PCFObject implements Map<String, Object> {
         }
         reader.endObject();
     }
-
 
     // Map<String, Object> methods
 

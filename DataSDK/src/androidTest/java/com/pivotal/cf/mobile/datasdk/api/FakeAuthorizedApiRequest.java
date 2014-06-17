@@ -74,29 +74,13 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     }
 
     @Override
-    public void get(URL url,
-                    Map<String, Object> headers,
-                    Credential credential,
-                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                    HttpOperationListener listener) {
-
-        this.requestHeaders = headers;
-        if (shouldAuthorizedApiRequestBeSuccessful) {
-            listener.onSuccess(returnedHttpStatusCode, resultContentType, resultContentEncoding, StreamUtil.getInputStream(resultContentData));
-        } else if (shouldAuthorizedApiRequestBeUnauthorized) {
-            listener.onUnauthorized();
-        } else {
-            listener.onFailure("Fake request failed fakely.");
-        }
-    }
-
-    @Override
     public void executeHttpRequest(String method,
                                    URL url,
                                    Map<String, Object> headers,
                                    String contentType,
                                    String contentEncoding,
                                    OutputStream contentData,
+                                   Credential credential,
                                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                    HttpOperationListener listener) {
 

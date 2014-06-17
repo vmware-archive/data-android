@@ -15,10 +15,6 @@ public interface AuthorizedResourceClient {
         public void onFailure(String reason);
     }
 
-    public void get(final URL url,
-                    final Map<String, Object> headers,
-                    final Listener listener) throws AuthorizationException;
-
     public void executeHttpRequest(final String method,
                                    final URL url,
                                    final Map<String, Object> headers,

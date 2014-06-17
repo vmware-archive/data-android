@@ -4,7 +4,6 @@ import android.app.Activity;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
@@ -38,18 +37,13 @@ public interface AuthorizedApiRequest {
 
     public void getAccessToken(String authorizationCode, AuthorizationListener listener);
 
-    public void get(URL url,
-                    Map<String, Object> headers,
-                    Credential credential,
-                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
-                    HttpOperationListener listener);
-
     public void executeHttpRequest(String method,
                                    URL url,
                                    Map<String, Object> headers,
                                    String contentType,
                                    String contentEncoding,
                                    OutputStream contentData,
+                                   Credential credential,
                                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                    HttpOperationListener listener);
 

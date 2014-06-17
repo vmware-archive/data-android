@@ -117,5 +117,4 @@ public class AbstractAuthorizationClient {
         authorizationPreferencesProvider.setTokenUrl(parameters.getTokenUrl());
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
     }
-
 }

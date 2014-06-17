@@ -10,30 +10,24 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
 
     private boolean isSuccessful;
     private int httpStatusCode;
-    private String contentType;
-    private String contentEncoding;
-    private String contentData;
+    private String returnedContentType;
+    private String returnedContentEncoding;
+    private String returnedContentData;
 
     public void setupSuccessfulGetResults(String contentType, String contentEncoding, String contentData) {
         this.httpStatusCode = 200;
         this.isSuccessful = true;
-        this.contentType = contentType;
-        this.contentEncoding = contentEncoding;
-        this.contentData = contentData;
+        this.returnedContentType = contentType;
+        this.returnedContentEncoding = contentEncoding;
+        this.returnedContentData = contentData;
     }
 
     public void setupFailedHttpStatusCode(int httpStatusCode) {
         this.httpStatusCode = httpStatusCode;
         this.isSuccessful = true;
-        this.contentType = "application/json";
-        this.contentEncoding = "utf-8";
-        this.contentData = "{}";
-    }
-
-    public void get(URL url, Map<String, Object> headers, Listener listener) throws AuthorizationException {
-        if (isSuccessful) {
-            listener.onSuccess(httpStatusCode, contentType, contentEncoding, StreamUtil.getInputStream(contentData));
-        }
+        this.returnedContentType = "application/json";
+        this.returnedContentEncoding = "utf-8";
+        this.returnedContentData = "{}";
     }
 
     @Override
@@ -45,6 +39,9 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
                                    final OutputStream contentData,
                                    final Listener listener) throws AuthorizationException {
 
+        if (isSuccessful) {
+            listener.onSuccess(httpStatusCode, returnedContentType, returnedContentEncoding, StreamUtil.getInputStream(returnedContentData));
+        }
 
     }
 
