@@ -58,7 +58,7 @@ public abstract class BaseAuthorizationActivity extends Activity {
         if (intent.getData() == null) {
             return false;
         }
-        return intent.getData().toString().startsWith(authorizationPreferencesProvider.getRedirectUrl().toString());
+        return intent.getData().toString().toLowerCase().startsWith(authorizationPreferencesProvider.getRedirectUrl().toString().toLowerCase());
     }
 
     // TODO - find a way to get the state token in here

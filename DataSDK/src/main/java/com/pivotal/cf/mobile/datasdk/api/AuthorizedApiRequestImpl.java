@@ -29,6 +29,7 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -240,6 +241,20 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             }
         });
     }
+
+    @Override
+    public void executeHttpRequest(String method,
+                                   URL url,
+                                   Map<String, Object> headers,
+                                   String contentType,
+                                   String contentEncoding,
+                                   OutputStream contentData,
+                                   AuthorizationPreferencesProvider authorizationPreferencesProvider,
+                                   HttpOperationListener listener) {
+
+
+    }
+
 
     private boolean isUnauthorizedHttpStatusCode(int httpStatusCode) {
         return httpStatusCode == 401;

@@ -81,7 +81,7 @@ public class PCFObject implements Map<String, Object> {
                 }
 
                 try {
-                    setFieldsFromStream(inputStream, contentEncoding);
+                    parseJsonAndSetFields(inputStream, contentEncoding);
                 } catch (Exception e) {
                     returnError(e.getLocalizedMessage());
                     return;
@@ -117,7 +117,7 @@ public class PCFObject implements Map<String, Object> {
         return httpStatusCode >= 200 && httpStatusCode < 300;
     }
 
-    private void setFieldsFromStream(InputStream in, String contentEncoding) throws Exception {
+    private void parseJsonAndSetFields(InputStream in, String contentEncoding) throws Exception {
         // TODO - assume UTF-8 if no character encoding available
         final JsonReader reader = new JsonReader(new InputStreamReader(in, contentEncoding));
         reader.beginObject();

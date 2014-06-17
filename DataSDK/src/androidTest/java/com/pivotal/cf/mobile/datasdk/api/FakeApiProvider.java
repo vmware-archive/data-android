@@ -18,8 +18,9 @@ public class FakeApiProvider implements ApiProvider {
     private boolean shouldAuthorizedApiRequestBeSuccessful;
     private boolean shouldAuthorizedApiRequestBeUnauthorized;
     private int httpStatus;
-    private String contentType;
-    private String contentData;
+    private String resultContentType;
+    private String resultContentEncoding;
+    private String resultContentData;
     private Credential credential;
     private TokenResponse expectedTokenResponse;
     private TokenResponse savedTokenResponse;
@@ -45,8 +46,9 @@ public class FakeApiProvider implements ApiProvider {
                 shouldAuthorizedApiRequestBeSuccessful,
                 shouldAuthorizedApiRequestBeUnauthorized,
                 httpStatus,
-                contentType,
-                contentData,
+                resultContentType,
+                resultContentEncoding,
+                resultContentData,
                 savedTokenResponse,
                 expectedTokenResponse
         );
@@ -67,10 +69,11 @@ public class FakeApiProvider implements ApiProvider {
         shouldAuthorizedApiRequestBeUnauthorized = b;
     }
 
-    public void setHttpRequestResults(int httpStatus, String contentType, String contentData) {
+    public void setHttpRequestResults(int httpStatus, String contentType, String contentEncoding, String contentData) {
         this.httpStatus = httpStatus;
-        this.contentType = contentType;
-        this.contentData = contentData;
+        this.resultContentType = contentType;
+        this.resultContentEncoding = contentEncoding;
+        this.resultContentData = contentData;
     }
 
     public void setShouldGetAccessTokenBeSuccessful(boolean b) {

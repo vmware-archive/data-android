@@ -3,6 +3,7 @@ package com.pivotal.cf.mobile.datasdk.client;
 import com.pivotal.cf.mobile.datasdk.data.DataException;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -17,4 +18,12 @@ public interface AuthorizedResourceClient {
     public void get(final URL url,
                     final Map<String, Object> headers,
                     final Listener listener) throws AuthorizationException;
+
+    public void executeHttpRequest(final String method,
+                                   final URL url,
+                                   final Map<String, Object> headers,
+                                   String contentType,
+                                   String contentEncoding,
+                                   final OutputStream contentData,
+                                   final Listener listener) throws AuthorizationException;
 }

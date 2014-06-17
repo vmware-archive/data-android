@@ -7,6 +7,7 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -17,24 +18,28 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
     private final boolean shouldGetAccessTokenBeUnauthorized;
     private final boolean shouldAuthorizedApiRequestBeSuccessful;
     private final boolean shouldAuthorizedApiRequestBeUnauthorized;
-    private final String contentData;
-    private String contentEncoding;
-    private final String contentType;
-    private final int httpStatusCode;
+    private final String resultContentData;
+    private final String resultContentEncoding;
+    private final String resultContentType;
+    private final int returnedHttpStatusCode;
     private boolean didCallObtainAuthorization;
     private boolean didCallGetAccessToken;
     private TokenResponse tokenResponseToReturn;
     private TokenResponse savedTokenResponse;
     private Map<String, Object> requestHeaders;
+    private String requestContentType;
+    private String requestContentEncoding;
+    private URL requestUrl;
 
     public FakeAuthorizedApiRequest(FakeApiProvider apiProvider,
                                     boolean shouldGetAccessTokenBeSuccessful,
                                     boolean shouldGetAccessTokenBeUnauthorized,
                                     boolean shouldAuthorizedApiRequestBeSuccessful,
                                     boolean shouldAuthorizedApiRequestBeUnauthorized,
-                                    int httpStatus,
-                                    String contentType,
-                                    String contentData,
+                                    int resultHttpStatus,
+                                    String resultContentType,
+                                    String resultContentEncoding,
+                                    String resultContentData,
                                     TokenResponse savedTokenResponse,
                                     TokenResponse tokenResponseToReturn) {
 
@@ -43,9 +48,10 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         this.shouldGetAccessTokenBeUnauthorized = shouldGetAccessTokenBeUnauthorized;
         this.shouldAuthorizedApiRequestBeSuccessful = shouldAuthorizedApiRequestBeSuccessful;
         this.shouldAuthorizedApiRequestBeUnauthorized = shouldAuthorizedApiRequestBeUnauthorized;
-        this.httpStatusCode = httpStatus;
-        this.contentType = contentType;
-        this.contentData = contentData;
+        this.returnedHttpStatusCode = resultHttpStatus;
+        this.resultContentType = resultContentType;
+        this.resultContentEncoding = resultContentEncoding;
+        this.resultContentData = resultContentData;
         this.savedTokenResponse = savedTokenResponse;
         this.tokenResponseToReturn = tokenResponseToReturn;
     }
@@ -76,7 +82,30 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
 
         this.requestHeaders = headers;
         if (shouldAuthorizedApiRequestBeSuccessful) {
-            listener.onSuccess(httpStatusCode, contentType, contentEncoding, StreamUtil.getInputStream(contentData));
+            listener.onSuccess(returnedHttpStatusCode, resultContentType, resultContentEncoding, StreamUtil.getInputStream(resultContentData));
+        } else if (shouldAuthorizedApiRequestBeUnauthorized) {
+            listener.onUnauthorized();
+        } else {
+            listener.onFailure("Fake request failed fakely.");
+        }
+    }
+
+    @Override
+    public void executeHttpRequest(String method,
+                                   URL url,
+                                   Map<String, Object> headers,
+                                   String contentType,
+                                   String contentEncoding,
+                                   OutputStream contentData,
+                                   AuthorizationPreferencesProvider authorizationPreferencesProvider,
+                                   HttpOperationListener listener) {
+
+        this.requestUrl = url;
+        this.requestHeaders = headers;
+        this.requestContentType = contentType;
+        this.requestContentEncoding = contentEncoding;
+        if (shouldAuthorizedApiRequestBeSuccessful) {
+            listener.onSuccess(returnedHttpStatusCode, resultContentType, resultContentEncoding, StreamUtil.getInputStream(resultContentData));
         } else if (shouldAuthorizedApiRequestBeUnauthorized) {
             listener.onUnauthorized();
         } else {
@@ -119,4 +148,19 @@ public class FakeAuthorizedApiRequest implements AuthorizedApiRequest {
         return requestHeaders;
     }
 
+    public String getRequestContentType() {
+        return requestContentType;
+    }
+
+    public String getRequestContentEncoding() {
+        return requestContentEncoding;
+    }
+
+    public int getReturnedHttpStatusCode() {
+        return returnedHttpStatusCode;
+    }
+
+    public URL getRequestUrl() {
+        return requestUrl;
+    }
 }

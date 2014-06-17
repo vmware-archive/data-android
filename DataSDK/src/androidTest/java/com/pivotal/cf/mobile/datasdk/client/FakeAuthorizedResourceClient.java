@@ -2,6 +2,7 @@ package com.pivotal.cf.mobile.datasdk.client;
 
 import com.pivotal.cf.mobile.datasdk.util.StreamUtil;
 
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -29,10 +30,22 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
         this.contentData = "{}";
     }
 
-    @Override
     public void get(URL url, Map<String, Object> headers, Listener listener) throws AuthorizationException {
         if (isSuccessful) {
             listener.onSuccess(httpStatusCode, contentType, contentEncoding, StreamUtil.getInputStream(contentData));
         }
     }
+
+    @Override
+    public void executeHttpRequest(final String method,
+                                   final URL url,
+                                   final Map<String, Object> headers,
+                                   String contentType,
+                                   String contentEncoding,
+                                   final OutputStream contentData,
+                                   final Listener listener) throws AuthorizationException {
+
+
+    }
+
 }
