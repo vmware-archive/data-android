@@ -8,8 +8,6 @@ import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +54,10 @@ public class PCFObject implements Map<String, Object> {
 
     public String getObjectId() {
         return objectId;
+    }
+
+    public String getClassName() {
+        return className;
     }
 
     // Data synchronization methods
@@ -206,4 +208,5 @@ public class PCFObject implements Map<String, Object> {
     public Collection<Object> values() {
         return map.values();
     }
+
 }

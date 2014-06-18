@@ -110,6 +110,15 @@ public class PCFObjectTest extends AndroidTestCase {
         }
     }
 
+    public void testReturnsClassName() {
+        assertEquals(TEST_CLASS_NAME, obj.getClassName());
+    }
+
+    public void testObjectId() {
+        obj.setObjectId(TEST_OBJECT_ID);
+        assertEquals(TEST_OBJECT_ID, obj.getObjectId());
+    }
+
     public void testImplementsMap() {
         obj.put(TEST_KEY, TEST_VALUE);
         verifyPopulatedObject();
