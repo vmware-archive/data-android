@@ -19,7 +19,7 @@ import com.pivotal.cf.mobile.datasdk.sample.adapter.DataEditorAdapter;
 public class DataEditorActivity extends ActionBarActivity {
 
     private static final String CLASS_NAME = "objects";
-    private static final String OBJECT_ID = "1234";
+    private static final String OBJECT_ID = "123";
 
     private PCFObject pcfObject;
     private DataEditorAdapter adapter;
@@ -41,13 +41,38 @@ public class DataEditorActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_save) {
-            // TODO - implement save
+            saveObject();
             return true;
         } else if (id == R.id.action_fetch) {
             // TODO - implement fetch
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void saveObject() {
+        pcfObject.setObjectId("123");
+        adapter.updateObject();
+        try {
+            pcfObject.save(new DataListener() {
+                @Override
+                public void onSuccess(PCFObject object) {
+                    showToast("Object saved successfully");
+                }
+
+                @Override
+                public void onUnauthorized(PCFObject object) {
+                    showToast("Authorization error saving object");
+                }
+
+                @Override
+                public void onFailure(PCFObject object, String reason) {
+                    showToast(reason);
+                }
+            });
+        } catch (Exception e) {
+            showToast(e.getLocalizedMessage());
+        }
     }
 
     @Override

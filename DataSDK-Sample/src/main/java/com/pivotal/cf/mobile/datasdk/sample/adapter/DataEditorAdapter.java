@@ -60,6 +60,17 @@ public class DataEditorAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void updateObject() {
+        pcfObject.clear();
+        // TODO - the object data should come from the cells on the screen rather than be hard-coded.
+        pcfObject.put("cats", "fuzzy");
+        pcfObject.put("dogs", "smelly");
+        pcfObject.put("goats", "noisy");
+//        for(final ArrayItem item : items) {
+//            pcfObject.put(item.key, item.value);
+//        }
+    }
+
     @Override
     public int getCount() {
         if (pcfObject != null && items != null) {

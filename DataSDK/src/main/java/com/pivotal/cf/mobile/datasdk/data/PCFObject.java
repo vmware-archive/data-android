@@ -2,12 +2,15 @@ package com.pivotal.cf.mobile.datasdk.data;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +20,7 @@ import java.util.Set;
 public class PCFObject implements Map<String, Object> {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
+    private static final String UTF8_ENCODING = "utf-8";
     private AuthorizedResourceClient client;
     private String className;
     private Map<String, Object> map;
@@ -147,6 +151,77 @@ public class PCFObject implements Map<String, Object> {
         reader.endObject();
     }
 
+
+    public void save(final DataListener listener) throws AuthorizationException, DataException {
+        if (objectId == null || objectId.isEmpty()) {
+            throw new DataException("objectId may not be null or empty");
+        }
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final OutputStreamWriter osw = new OutputStreamWriter(out);
+        final JsonWriter writer = new JsonWriter(osw);
+        try {
+            writer.beginObject();
+            for (final Entry<String, Object> entry : map.entrySet()) {
+                writer.name(entry.getKey());
+                if (entry.getValue() instanceof String) {
+                    writer.value((String) entry.getValue());
+                } else if (entry.getValue() instanceof Boolean) {
+                    writer.value((Boolean) entry.getValue());
+                } else if (entry.getValue() instanceof Float) {
+                    final Float f = (Float) entry.getValue();
+                    writer.value((Double) f.doubleValue());
+                } else if (entry.getValue() instanceof Double) {
+                    writer.value((Double) entry.getValue());
+                } else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Short || entry.getValue() instanceof Byte) {
+                    writer.value((Number) entry.getValue());
+                } else if (entry.getValue() instanceof Long) {
+                    writer.value((Long) entry.getValue());
+                }
+            }
+            writer.endObject();
+            writer.close();
+        } catch (Exception e) {
+            Logger.ex(e);
+            throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
+        }
+
+        client.executeDataServicesRequest("PUT", className, objectId, null, JSON_CONTENT_TYPE, UTF8_ENCODING, out.toByteArray(), new AuthorizedResourceClient.Listener() {
+
+            @Override
+            public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
+
+                if (!isSuccessfulHttpStatusCode(httpStatusCode)) {
+                    returnError("Received failure status code " + httpStatusCode + ".");
+                    return;
+                }
+
+                if (listener != null) {
+                    listener.onSuccess(PCFObject.this);
+                }
+            }
+
+            @Override
+            public void onUnauthorized() {
+                if (listener != null) {
+                    listener.onUnauthorized(PCFObject.this);
+                };
+            }
+
+            @Override
+            public void onFailure(String reason) {
+                Logger.e("Error fetching PCFObject data: \"" + reason + "\".");
+                returnError(reason);
+            }
+
+            private void returnError(String reason) {
+                if (listener != null) {
+                    listener.onFailure(PCFObject.this, reason);
+                }
+            }
+        });
+    }
+
     // Map<String, Object> methods
 
     @Override
@@ -208,5 +283,4 @@ public class PCFObject implements Map<String, Object> {
     public Collection<Object> values() {
         return map.values();
     }
-
 }

@@ -2,7 +2,11 @@ package com.pivotal.cf.mobile.datasdk.data;
 
 import android.test.AndroidTestCase;
 
+import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
 import com.pivotal.cf.mobile.datasdk.client.FakeAuthorizedResourceClient;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -182,7 +186,7 @@ public class PCFObjectTest extends AndroidTestCase {
     }
 
     public void testFetchesEmptyObject() throws Exception {
-        client.setupSuccessfulGetResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "{}");
+        client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "{}");
         obj.setObjectId(TEST_OBJECT_ID);
         obj.fetch(new SimpleSuccessfulDataListener() {
 
@@ -233,8 +237,90 @@ public class PCFObjectTest extends AndroidTestCase {
         }});
     }
 
+    public void testSavesEmptyObject() throws Exception {
+        baseTestSavesSuccessfully(new HashMap<String, Object>() {{
+        }});
+    }
+
+    public void testSavesOneStringField() throws Exception {
+        baseTestSavesSuccessfully(new HashMap<String, Object>() {{
+            put(TEST_KEY, TEST_VALUE);
+        }});
+    }
+
+    public void testSavesThreeStringFields() throws Exception {
+        baseTestSavesSuccessfully(new HashMap<String, Object>() {{
+            put("cats", "fuzzy");
+            put("dogs", "stinky");
+            put("goats", "noisy");
+        }});
+    }
+
+    public void testSavesBooleanFields() throws Exception {
+        baseTestSavesSuccessfully(new HashMap<String, Object>() {{
+            put("boolean_field_1", true);
+            put("boolean_field_2", false);
+        }});
+    }
+
+    public void testSavesNumericFields() throws Exception {
+        baseTestSavesSuccessfully(new HashMap<String, Object>() {{
+            put("float_field_1", 1337.0F);
+            put("float_field_2", 0.0F);
+            put("double_field_1", 1337.0D);
+            put("double_field_2", 0.0D);
+            put("integer_field_1", 1337);
+            put("integer_field_2", 0);
+            put("short_field_1", (short) 1337);
+            put("short_field_2", (short) 0);
+            put("byte_field_1", (byte) 1337);
+            put("byte_field_2", (byte) 0);
+            put("long_field_1", 1337L);
+            put("long_field_2", 0L);
+        }});
+    }
+
+    private void baseTestSavesSuccessfully(Map<String, Object> data) throws AuthorizationException, DataException, InterruptedException, JSONException {
+        client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "");
+        obj.setObjectId(TEST_OBJECT_ID);
+        for(final Map.Entry<String, Object> entry : data.entrySet()) {
+            obj.put(entry.getKey(), entry.getValue());
+        }
+        obj.save(new SimpleSuccessfulDataListener());
+        semaphore.acquire();
+        JSONObject jsonObject = new JSONObject(new String(client.getRequestContentData()));
+        if (data.size() == 0) {
+            assertNull(jsonObject.names());
+        } else {
+            assertEquals(data.size(), jsonObject.names().length());
+        }
+        for(final Map.Entry<String, Object> entry : data.entrySet()) {
+            final Object value = entry.getValue();
+            final String key = entry.getKey();
+            if (value instanceof String) {
+                assertEquals(value, jsonObject.getString(key));
+            } else if (value instanceof Boolean) {
+                assertEquals(value, jsonObject.getBoolean(key));
+            } else if (value instanceof Float) {
+                assertEquals(value, (float) jsonObject.getDouble(key));
+            } else if (value instanceof Double) {
+                assertEquals(value, jsonObject.getDouble(key));
+            } else if (value instanceof Byte) {
+                assertEquals(value, (byte) jsonObject.getInt(key));
+            } else if (value instanceof Short) {
+                assertEquals(value, (short) jsonObject.getInt(key));
+            } else if (value instanceof Integer) {
+                assertEquals(value, jsonObject.getInt(key));
+            } else if (value instanceof Long) {
+                assertEquals(value, jsonObject.getLong(key));
+            } else {
+                throw new JSONException("unknown field type '" + value.getClass() + "'.");
+            }
+        }
+    }
+
     private void baseTestFetchSuccessfully(String contentData, final Map<String, Object> expectedData) throws Exception {
-        client.setupSuccessfulGetResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, contentData);
+        client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, contentData);
         obj.setObjectId(TEST_OBJECT_ID);
         obj.fetch(new SimpleSuccessfulDataListener() {
 
@@ -272,7 +358,7 @@ public class PCFObjectTest extends AndroidTestCase {
     }
 
     private void testFailedFetch(String contentType, String contentEncoding, String contentData) throws Exception {
-        client.setupSuccessfulGetResults(contentType, contentEncoding, contentData);
+        client.setupSuccessfulRequestResults(contentType, contentEncoding, contentData);
         obj.setObjectId(TEST_OBJECT_ID);
         obj.fetch(new SimpleFailedDataListener());
         semaphore.acquire();

@@ -14,7 +14,9 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.StoredCredential;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.auth.oauth2.TokenResponseException;
+import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpContent;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
@@ -29,7 +31,6 @@ import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -188,12 +189,12 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     }
 
     @Override
-    public void executeHttpRequest(String method,
+    public void executeHttpRequest(final String method,
                                    URL url,
                                    final Map<String, Object> headers,
-                                   String contentType,
+                                   final String contentType,
                                    String contentEncoding,
-                                   OutputStream contentData,
+                                   final byte[] contentData,
                                    Credential credential,
                                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                    final HttpOperationListener listener) {
@@ -207,7 +208,18 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
             public void run() {
                 try {
                     // TODO - apply given method, contentType, contentEncoding, contentData
-                    final HttpRequest request = requestFactory.buildGetRequest(requestUrl);
+                    final HttpRequest request;
+                    if (method.equals("GET")) {
+                        request = requestFactory.buildGetRequest(requestUrl);
+                    } else if (method.equals("PUT")) {
+                        // TODO - see if we can provide the content data via a stream rather than
+                        // an byte array (which might consume too much memory)
+                        final HttpContent content = new ByteArrayContent(contentType, contentData);
+                        request = requestFactory.buildPutRequest(requestUrl, content);
+                    } else {
+                        throw new IllegalArgumentException("Unsupported HTTP method '" + method + "'.");
+                    }
+
                     addHeadersToRequest(headers, request);
                     final HttpResponse response = request.execute();
 

@@ -7,7 +7,6 @@ import com.google.api.client.auth.oauth2.TokenResponse;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Map;
 
@@ -42,7 +41,7 @@ public interface AuthorizedApiRequest {
                                    Map<String, Object> headers,
                                    String contentType,
                                    String contentEncoding,
-                                   OutputStream contentData,
+                                   byte[] contentData,
                                    Credential credential,
                                    AuthorizationPreferencesProvider authorizationPreferencesProvider,
                                    HttpOperationListener listener);

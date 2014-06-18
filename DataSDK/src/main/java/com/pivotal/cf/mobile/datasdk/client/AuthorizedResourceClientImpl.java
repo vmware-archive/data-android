@@ -8,7 +8,6 @@ import com.pivotal.cf.mobile.datasdk.data.DataException;
 import com.pivotal.cf.mobile.datasdk.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -22,14 +21,14 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
     }
 
     @Override
-    public void executeDataServicesRequest(final String method,
-                                           final String className,
-                                           final String objectId,
-                                           final Map<String, Object> headers,
+    public void executeDataServicesRequest(String method,
+                                           String className,
+                                           String objectId,
+                                           Map<String, Object> headers,
                                            String contentType,
                                            String contentEncoding,
-                                           final OutputStream contentData,
-                                           final Listener listener) throws AuthorizationException, DataException {
+                                           byte[] contentData,
+                                           Listener listener) throws AuthorizationException, DataException {
 
         URL requestUrl;
         try {
@@ -51,7 +50,7 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
                                    final Map<String, Object> headers,
                                    final String contentType,
                                    final String contentEncoding,
-                                   final OutputStream contentData,
+                                   final byte[] contentData,
                                    final Listener listener) throws AuthorizationException {
 
 
@@ -78,7 +77,7 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
                             headers,
                             contentType,
                             contentEncoding,
-                            null,
+                            contentData,
                             credential,
                             authorizationPreferencesProvider,
                             new AuthorizedApiRequest.HttpOperationListener() {
