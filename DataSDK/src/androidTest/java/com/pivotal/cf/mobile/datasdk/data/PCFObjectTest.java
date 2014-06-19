@@ -1,5 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.data;
 
+import android.os.Parcel;
 import android.test.AndroidTestCase;
 
 import com.pivotal.cf.mobile.datasdk.client.AuthorizationException;
@@ -83,22 +84,13 @@ public class PCFObjectTest extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         client = new FakeAuthorizedResourceClient();
-        obj = new PCFObject(client, TEST_CLASS_NAME);
+        obj = new PCFObject(TEST_CLASS_NAME);
         semaphore = new Semaphore(0);
-    }
-
-    public void testRequiresClient() {
-        try {
-            new PCFObject(null, TEST_CLASS_NAME);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        }
     }
 
     public void testRequiresNotNullClassName() {
         try {
-            new PCFObject(client, null);
+            new PCFObject(null);
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -107,20 +99,48 @@ public class PCFObjectTest extends AndroidTestCase {
 
     public void testRequiresNotEmptyClassName() {
         try {
-            new PCFObject(client, "");
+            new PCFObject("");
             fail();
         } catch (IllegalArgumentException e) {
             // success
         }
     }
 
-    public void testReturnsClassName() {
-        assertEquals(TEST_CLASS_NAME, obj.getClassName());
+    public void testClassName() {
+        obj.setClassName("PENGUINS");
+        assertEquals("PENGUINS", obj.getClassName());
+    }
+
+    public void testClassNameCanNotBeNull() {
+        try {
+            obj.setClassName(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
     }
 
     public void testObjectId() {
         obj.setObjectId(TEST_OBJECT_ID);
         assertEquals(TEST_OBJECT_ID, obj.getObjectId());
+    }
+
+    public void testSetObjectIDCanNotBeNull() {
+        try {
+            obj.setObjectId(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testSetObjectIDCanNotBeEmpty() {
+        try {
+            obj.setObjectId("");
+            fail();
+        } catch (IllegalArgumentException e) {
+            // success
+        }
     }
 
     public void testImplementsMap() {
@@ -137,22 +157,12 @@ public class PCFObjectTest extends AndroidTestCase {
         verifyEmptyObject();
     }
 
-    public void testFetchRequiresNotNullObjectId() throws Exception {
+    public void testFetchRequiresClient() throws Exception {
         try {
-            obj.setObjectId(null);
-            obj.fetch(new SimpleFailedDataListener());
+            obj.setObjectId(TEST_OBJECT_ID);
+            obj.fetch(null, new SimpleFailedDataListener());
             fail();
-        } catch(DataException e) {
-            // success
-        }
-    }
-
-    public void testFetchRequiresNotEmptyObjectId() throws Exception {
-        try {
-            obj.setObjectId("");
-            obj.fetch(new SimpleFailedDataListener());
-            fail();
-        } catch(DataException e) {
+        } catch(IllegalArgumentException e) {
             // success
         }
     }
@@ -181,14 +191,14 @@ public class PCFObjectTest extends AndroidTestCase {
     public void testFetchWithFailedHttpStatus() throws Exception {
         client.setupFailedHttpStatusCode(404);
         obj.setObjectId(TEST_OBJECT_ID);
-        obj.fetch(new SimpleFailedDataListener());
+        obj.fetch(client, new SimpleFailedDataListener());
         semaphore.acquire();
     }
 
     public void testFetchesEmptyObject() throws Exception {
         client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "{}");
         obj.setObjectId(TEST_OBJECT_ID);
-        obj.fetch(new SimpleSuccessfulDataListener() {
+        obj.fetch(client, new SimpleSuccessfulDataListener() {
 
             @Override
             public void onSuccess(PCFObject returnedObject) {
@@ -235,6 +245,17 @@ public class PCFObjectTest extends AndroidTestCase {
         baseTestFetchSuccessfully("{\"limit\":13.37}", new HashMap<String, Object>() {{
             put("limit", 13.37);
         }});
+    }
+
+
+    public void testSaveRequiresClient() throws Exception {
+        try {
+            obj.setObjectId(TEST_OBJECT_ID);
+            obj.save(null, new SimpleFailedDataListener());
+            fail();
+        } catch(IllegalArgumentException e) {
+            // success
+        }
     }
 
     public void testSavesEmptyObject() throws Exception {
@@ -286,7 +307,7 @@ public class PCFObjectTest extends AndroidTestCase {
         for(final Map.Entry<String, Object> entry : data.entrySet()) {
             obj.put(entry.getKey(), entry.getValue());
         }
-        obj.save(new SimpleSuccessfulDataListener());
+        obj.save(client, new SimpleSuccessfulDataListener());
         semaphore.acquire();
         JSONObject jsonObject = new JSONObject(new String(client.getRequestContentData()));
         if (data.size() == 0) {
@@ -322,7 +343,7 @@ public class PCFObjectTest extends AndroidTestCase {
     private void baseTestFetchSuccessfully(String contentData, final Map<String, Object> expectedData) throws Exception {
         client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, contentData);
         obj.setObjectId(TEST_OBJECT_ID);
-        obj.fetch(new SimpleSuccessfulDataListener() {
+        obj.fetch(client, new SimpleSuccessfulDataListener() {
 
             @Override
             public void onSuccess(PCFObject returnedObject) {
@@ -360,8 +381,68 @@ public class PCFObjectTest extends AndroidTestCase {
     private void testFailedFetch(String contentType, String contentEncoding, String contentData) throws Exception {
         client.setupSuccessfulRequestResults(contentType, contentEncoding, contentData);
         obj.setObjectId(TEST_OBJECT_ID);
-        obj.fetch(new SimpleFailedDataListener());
+        obj.fetch(client, new SimpleFailedDataListener());
         semaphore.acquire();
     }
 
+    public void testEquals() {
+        final PCFObject object1 = new PCFObject(TEST_CLASS_NAME);
+        object1.setObjectId(TEST_OBJECT_ID);
+        object1.put(TEST_KEY, TEST_VALUE);
+
+        final PCFObject object2 = new PCFObject(TEST_CLASS_NAME);
+        object2.setObjectId(TEST_OBJECT_ID);
+        object2.put(TEST_KEY, TEST_VALUE);
+
+        final PCFObject object3 = new PCFObject(TEST_CLASS_NAME + "X");
+        object3.setObjectId(TEST_OBJECT_ID);
+        object3.put(TEST_KEY, TEST_VALUE);
+
+        final PCFObject object4 = new PCFObject(TEST_CLASS_NAME);
+        object4.setObjectId(TEST_OBJECT_ID + "X");
+        object4.put(TEST_KEY, TEST_VALUE);
+
+        final PCFObject object5 = new PCFObject(TEST_CLASS_NAME);
+        object5.setObjectId(TEST_OBJECT_ID);
+        object5.put(TEST_KEY, TEST_VALUE + "X");
+
+        final PCFObject object6 = new PCFObject(TEST_CLASS_NAME);
+        object6.setObjectId(TEST_OBJECT_ID);
+        object6.put(TEST_KEY + "X", TEST_VALUE);
+
+        assertEquals(object1, object2);
+        assertFalse(object1.equals(object3));
+        assertFalse(object1.equals(object4));
+        assertFalse(object1.equals(object5));
+        assertFalse(object1.equals(object6));
+        assertFalse(object3.equals(object4));
+        assertFalse(object3.equals(object5));
+        assertFalse(object3.equals(object6));
+        assertFalse(object4.equals(object5));
+        assertFalse(object4.equals(object6));
+        assertFalse(object5.equals(object6));
+    }
+    
+    public void testIsParcelable() {
+        final PCFObject inputPCFObject = new PCFObject(TEST_CLASS_NAME);
+        inputPCFObject.setObjectId(TEST_OBJECT_ID);
+        inputPCFObject.put(TEST_KEY, TEST_VALUE);
+        final PCFObject outputPCFObject = getObjectViaParcel(inputPCFObject);
+        assertNotNull(outputPCFObject);
+        assertEquals(inputPCFObject, outputPCFObject);
+    }
+
+    private PCFObject getObjectViaParcel(PCFObject inputObject) {
+        final Parcel inputParcel = Parcel.obtain();
+        inputObject.writeToParcel(inputParcel, 0);
+        final byte[] bytes = inputParcel.marshall();
+        assertNotNull(bytes);
+        final Parcel outputParcel = Parcel.obtain();
+        outputParcel.unmarshall(bytes, 0, bytes.length);
+        outputParcel.setDataPosition(0);
+        final PCFObject outputEvent = PCFObject.CREATOR.createFromParcel(outputParcel);
+        inputParcel.recycle();
+        outputParcel.recycle();
+        return outputEvent;
+    }
 }

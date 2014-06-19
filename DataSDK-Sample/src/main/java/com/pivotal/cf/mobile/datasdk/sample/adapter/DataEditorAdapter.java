@@ -1,6 +1,9 @@
 package com.pivotal.cf.mobile.datasdk.sample.adapter;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,18 +23,80 @@ public class DataEditorAdapter extends BaseAdapter {
 
     private static final int[] baseRowColours = new int[]{0xddeeff, 0xddffee};
     private final LayoutInflater inflater;
+    private final Activity activity;
     private List<ArrayItem> items = Collections.emptyList();
     private PCFObject pcfObject;
+    private boolean deleteMode;
+
     private View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             ((EditText) v).setCursorVisible(hasFocus);
+            if (hasFocus) {
+//                activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+//                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+//                imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT,0);
+            } else {
+                // Save data when focus is lost
+                if (v.getTag() instanceof ViewHolder) {
+                    final ViewHolder viewHolder = (ViewHolder) v.getTag();
+                    final String newKey = viewHolder.editText1.getText().toString();
+                    final String newValue = viewHolder.editText2.getText().toString();
+                    if (viewHolder.item != null) {
+                        // regular key/value item
+                        String oldKey = viewHolder.item.key;
+                        if(!oldKey.equals(newKey)) {
+                            pcfObject.remove(oldKey);
+                        }
+                        pcfObject.put(newKey, newValue);
+                        viewHolder.item.key = newKey;
+                        viewHolder.item.value = newValue;
+                    } else {
+                        // classname/objectid item
+                        pcfObject.setClassName(newKey);
+                        pcfObject.setObjectId(newValue);
+                    }
+                }
+            }
         }
     };
+
+    private View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            if (v.getTag() instanceof ViewHolder) {
+                final ViewHolder viewHolder = (ViewHolder) v.getTag();
+                if (viewHolder.item != null) {
+                    final String key = viewHolder.editText1.getText().toString();
+                    final String message = String.format("Are you sure you want to delete the item with key '%s'?", key);
+                    final AlertDialog dialog = new AlertDialog.Builder(activity)
+                            .setMessage(message)
+                            .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    pcfObject.remove(viewHolder.item.key);
+                                    items.remove(viewHolder.item);
+                                    notifyDataSetChanged();
+                                }
+                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // no-op
+                                }
+                            }).setCancelable(true)
+                            .create();
+                    dialog.show();
+                }
+            }
+            return false;
+        }
+    };
+
 
     private class ArrayItem {
         public String key;
         public String value;
+        public boolean giveFocus = false;
     }
 
     private class ViewHolder {
@@ -39,10 +104,12 @@ public class DataEditorAdapter extends BaseAdapter {
         public TextView label2;
         public EditText editText1;
         public EditText editText2;
+        public ArrayItem item;
     }
 
-    public DataEditorAdapter(Context context) {
-        this.inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public DataEditorAdapter(Activity activity) {
+        this.activity = activity;
+        this.inflater = (LayoutInflater) this.activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     public void setObject(PCFObject pcfObject) {
@@ -63,12 +130,24 @@ public class DataEditorAdapter extends BaseAdapter {
     public void updateObject() {
         pcfObject.clear();
         // TODO - the object data should come from the cells on the screen rather than be hard-coded.
-        pcfObject.put("cats", "fuzzy");
-        pcfObject.put("dogs", "smelly");
-        pcfObject.put("goats", "noisy");
-//        for(final ArrayItem item : items) {
-//            pcfObject.put(item.key, item.value);
-//        }
+        for(final ArrayItem item : items) {
+            if (isItemValid(item)) {
+                pcfObject.put(item.key, item.value);
+            }
+        }
+    }
+
+    private boolean isItemValid(ArrayItem item) {
+        return item.key != null && !item.key.isEmpty() && item.value != null;
+    }
+
+    public void addItem() {
+        final ArrayItem item = new ArrayItem();
+        item.key = "";
+        item.value = "";
+        item.giveFocus = true;
+        items.add(0, item);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -109,8 +188,11 @@ public class DataEditorAdapter extends BaseAdapter {
         }
 
         convertView.setBackgroundColor(getBackgroundColour(position));
+        viewHolder.editText1.setTag(viewHolder);
+        viewHolder.editText2.setTag(viewHolder);
 
         if (position == 0) {
+            viewHolder.item = null;
             viewHolder.label1.setText("Class Name");
             viewHolder.label2.setText("Object ID");
             if (pcfObject != null) {
@@ -120,25 +202,33 @@ public class DataEditorAdapter extends BaseAdapter {
                 viewHolder.editText1.setText("");
                 viewHolder.editText2.setText("");
             }
+            convertView.setOnLongClickListener(null);
         } else {
-            ArrayItem item = (ArrayItem) getItem(position);
+            final ArrayItem item = (ArrayItem) getItem(position);
+            viewHolder.item = item;
             viewHolder.label1.setText("Key");
             viewHolder.label2.setText("Value");
             viewHolder.editText1.setText(item.key);
             viewHolder.editText2.setText(item.value);
+//            if (item.giveFocus) {
+//                viewHolder.editText1.requestFocusFromTouch();
+//                convertView.setBackgroundColor(0xffaaaaaa);
+//                item.giveFocus = false;
+//            }
+            convertView.setOnLongClickListener(longClickListener);
         }
 
         return convertView;
     }
 
     private ViewHolder setViewHolder(View view) {
-        final ViewHolder tags = new ViewHolder();
-        tags.label1 = (TextView) view.findViewById(R.id.label1);
-        tags.label2 = (TextView) view.findViewById(R.id.label2);
-        tags.editText1 = (EditText) view.findViewById(R.id.value1);
-        tags.editText2 = (EditText) view.findViewById(R.id.value2);
-        view.setTag(tags);
-        return tags;
+        final ViewHolder viewHolder = new ViewHolder();
+        viewHolder.label1 = (TextView) view.findViewById(R.id.label1);
+        viewHolder.label2 = (TextView) view.findViewById(R.id.label2);
+        viewHolder.editText1 = (EditText) view.findViewById(R.id.value1);
+        viewHolder.editText2 = (EditText) view.findViewById(R.id.value2);
+        view.setTag(viewHolder);
+        return viewHolder;
     }
 
     public int getBackgroundColour(int position) {

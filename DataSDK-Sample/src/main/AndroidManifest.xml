@@ -11,11 +11,13 @@
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance" >
+            <!-- TODO - restore this intent filter before checking in
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".activity.PreferencesActivity"
@@ -47,7 +49,12 @@
         <activity
             android:name=".activity.DataEditorActivity"
             android:label="@string/title_activity_data_editor"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName=".activity.MainActivity">
+            <intent-filter> <!-- TODO - remove this intent filter before checking in -->
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />

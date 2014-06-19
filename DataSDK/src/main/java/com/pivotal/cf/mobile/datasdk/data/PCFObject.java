@@ -1,5 +1,8 @@
 package com.pivotal.cf.mobile.datasdk.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
@@ -17,33 +20,17 @@ import java.util.Map;
 import java.util.Set;
 
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
-public class PCFObject implements Map<String, Object> {
+public class PCFObject implements Map<String, Object>, Parcelable {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String UTF8_ENCODING = "utf-8";
-    private AuthorizedResourceClient client;
     private String className;
-    private Map<String, Object> map;
+    private HashMap<String, Object> map;
     private String objectId;
 
-    public PCFObject(AuthorizedResourceClient client, String className) {
-        verifyArguments(client, className);
-        saveArguments(client, className);
+    public PCFObject(String className) {
+        setClassName(className);
         initializeData();
-    }
-
-    private void verifyArguments(AuthorizedResourceClient client, String className) {
-        if (client == null) {
-            throw new IllegalArgumentException("client may not be null");
-        }
-        if (className == null || className.isEmpty()) {
-            throw new IllegalArgumentException("className may not be null or empty");
-        }
-    }
-
-    private void saveArguments(AuthorizedResourceClient client, String className) {
-        this.client = client;
-        this.className = className;
     }
 
     private void initializeData() {
@@ -53,11 +40,21 @@ public class PCFObject implements Map<String, Object> {
     // Properties
 
     public void setObjectId(String objectId) {
+        if (objectId == null || objectId.isEmpty()) {
+            throw new IllegalArgumentException("objectId may not be null or empty");
+        }
         this.objectId = objectId;
     }
 
     public String getObjectId() {
         return objectId;
+    }
+
+    public void setClassName(String className) {
+        if (className == null || className.isEmpty()) {
+            throw new IllegalArgumentException("className may not be null or empty");
+        }
+        this.className = className;
     }
 
     public String getClassName() {
@@ -66,10 +63,8 @@ public class PCFObject implements Map<String, Object> {
 
     // Data synchronization methods
 
-    public void fetch(final DataListener listener) throws AuthorizationException, DataException {
-        if (objectId == null || objectId.isEmpty()) {
-            throw new DataException("objectId may not be null or empty");
-        }
+    public void fetch(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
+        verifyState(client);
 
         client.executeDataServicesRequest("GET", className, objectId, null, "", "", null, new AuthorizedResourceClient.Listener() {
 
@@ -121,6 +116,18 @@ public class PCFObject implements Map<String, Object> {
         });
     }
 
+    private void verifyState(AuthorizedResourceClient client) throws DataException {
+        if (objectId == null || objectId.isEmpty()) {
+            throw new DataException("objectId may not be null or empty");
+        }
+        if (className == null) {
+            throw new DataException("className may not be null");
+        }
+        if (client == null) {
+            throw new IllegalArgumentException("client may not be null");
+        }
+    }
+
     private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
         return httpStatusCode >= 200 && httpStatusCode < 300;
     }
@@ -152,10 +159,8 @@ public class PCFObject implements Map<String, Object> {
     }
 
 
-    public void save(final DataListener listener) throws AuthorizationException, DataException {
-        if (objectId == null || objectId.isEmpty()) {
-            throw new DataException("objectId may not be null or empty");
-        }
+    public void save(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
+        verifyState(client);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final OutputStreamWriter osw = new OutputStreamWriter(out);
@@ -282,5 +287,58 @@ public class PCFObject implements Map<String, Object> {
     @Override
     public Collection<Object> values() {
         return map.values();
+    }
+
+    // Parcelable stuff
+
+    public static final Parcelable.Creator<PCFObject> CREATOR = new Parcelable.Creator<PCFObject>() {
+
+        public PCFObject createFromParcel(Parcel in) {
+            return new PCFObject(in);
+        }
+
+        public PCFObject[] newArray(int size) {
+            return new PCFObject[size];
+        }
+    };
+
+    private PCFObject(Parcel in) {
+        className = in.readString();
+        objectId = in.readString();
+        map = (HashMap<String, Object>)in.readSerializable();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(className);
+        out.writeString(objectId);
+        out.writeSerializable(map);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || !(o instanceof  PCFObject)) return false;
+
+        PCFObject pcfObject = (PCFObject) o;
+
+        if (!className.equals(pcfObject.className)) return false;
+        if (!map.equals(pcfObject.map)) return false;
+        if (!objectId.equals(pcfObject.objectId)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = className.hashCode();
+        result = 31 * result + map.hashCode();
+        result = 31 * result + objectId.hashCode();
+        return result;
     }
 }
