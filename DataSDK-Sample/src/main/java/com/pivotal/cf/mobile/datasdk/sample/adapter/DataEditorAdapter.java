@@ -26,37 +26,47 @@ public class DataEditorAdapter extends BaseAdapter {
     private final Activity activity;
     private List<ArrayItem> items = Collections.emptyList();
     private PCFObject pcfObject;
-    private boolean deleteMode;
 
     private View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View v, boolean hasFocus) {
             ((EditText) v).setCursorVisible(hasFocus);
-            if (hasFocus) {
-//                activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-//                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-//                imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT,0);
-            } else {
-                // Save data when focus is lost
-                if (v.getTag() instanceof ViewHolder) {
-                    final ViewHolder viewHolder = (ViewHolder) v.getTag();
-                    final String newKey = viewHolder.editText1.getText().toString();
-                    final String newValue = viewHolder.editText2.getText().toString();
-                    if (viewHolder.item != null) {
-                        // regular key/value item
-                        String oldKey = viewHolder.item.key;
-                        if(!oldKey.equals(newKey)) {
-                            pcfObject.remove(oldKey);
-                        }
-                        pcfObject.put(newKey, newValue);
-                        viewHolder.item.key = newKey;
-                        viewHolder.item.value = newValue;
-                    } else {
-                        // classname/objectid item
-                        pcfObject.setClassName(newKey);
-                        pcfObject.setObjectId(newValue);
-                    }
+            if (v.getTag() instanceof ViewHolder) {
+                final ViewHolder viewHolder = (ViewHolder) v.getTag();
+                if (!hasFocus) {
+                    saveItemData(viewHolder);
+                } else {
+                    flashCell(viewHolder);
                 }
+            }
+        }
+
+        private void flashCell(final ViewHolder viewHolder) {
+            viewHolder.cell.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    viewHolder.cell.setBackgroundColor(viewHolder.backgroundColour);
+                }
+            }, 100);
+        }
+
+        private void saveItemData(ViewHolder viewHolder) {
+            // Save data when focus is lost
+            final String newKey = viewHolder.editText1.getText().toString();
+            final String newValue = viewHolder.editText2.getText().toString();
+            if (viewHolder.item != null) {
+                // regular key/value item
+                String oldKey = viewHolder.item.key;
+                if (!oldKey.equals(newKey)) {
+                    pcfObject.remove(oldKey);
+                }
+                pcfObject.put(newKey, newValue);
+                viewHolder.item.key = newKey;
+                viewHolder.item.value = newValue;
+            } else {
+                // classname/objectid item
+                pcfObject.setClassName(newKey);
+                pcfObject.setObjectId(newValue);
             }
         }
     };
@@ -105,6 +115,8 @@ public class DataEditorAdapter extends BaseAdapter {
         public EditText editText1;
         public EditText editText2;
         public ArrayItem item;
+        public View cell;
+        public int backgroundColour;
     }
 
     public DataEditorAdapter(Activity activity) {
@@ -125,20 +137,6 @@ public class DataEditorAdapter extends BaseAdapter {
         }
 
         notifyDataSetChanged();
-    }
-
-    public void updateObject() {
-        pcfObject.clear();
-        // TODO - the object data should come from the cells on the screen rather than be hard-coded.
-        for(final ArrayItem item : items) {
-            if (isItemValid(item)) {
-                pcfObject.put(item.key, item.value);
-            }
-        }
-    }
-
-    private boolean isItemValid(ArrayItem item) {
-        return item.key != null && !item.key.isEmpty() && item.value != null;
     }
 
     public void addItem() {
@@ -187,7 +185,9 @@ public class DataEditorAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        convertView.setBackgroundColor(getBackgroundColour(position));
+        viewHolder.cell = convertView;
+        viewHolder.backgroundColour = getBackgroundColour(position);
+        convertView.setBackgroundColor(viewHolder.backgroundColour);
         viewHolder.editText1.setTag(viewHolder);
         viewHolder.editText2.setTag(viewHolder);
 
@@ -210,11 +210,11 @@ public class DataEditorAdapter extends BaseAdapter {
             viewHolder.label2.setText("Value");
             viewHolder.editText1.setText(item.key);
             viewHolder.editText2.setText(item.value);
-//            if (item.giveFocus) {
-//                viewHolder.editText1.requestFocusFromTouch();
-//                convertView.setBackgroundColor(0xffaaaaaa);
-//                item.giveFocus = false;
-//            }
+            if (item.giveFocus) {
+                viewHolder.editText1.requestFocusFromTouch();
+                convertView.setBackgroundColor(0x22bbbbbb);
+                item.giveFocus = false;
+            }
             convertView.setOnLongClickListener(longClickListener);
         }
 
