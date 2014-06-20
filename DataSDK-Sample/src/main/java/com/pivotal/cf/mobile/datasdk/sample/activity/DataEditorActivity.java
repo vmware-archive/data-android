@@ -1,5 +1,6 @@
 package com.pivotal.cf.mobile.datasdk.sample.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -7,6 +8,8 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.pivotal.cf.mobile.common.util.Logger;
+import com.pivotal.cf.mobile.datasdk.data.DataException;
 import com.pivotal.cf.mobile.datasdk.data.PCFObject;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.adapter.DataEditorAdapter;
@@ -24,6 +27,7 @@ public class DataEditorActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Logger.setup(this);
         setContentView(R.layout.activity_data_editor);
         if (savedInstanceState != null) {
             pcfObject = savedInstanceState.getParcelable(MY_DATA_OBJECT);
@@ -67,13 +71,26 @@ public class DataEditorActivity extends ActionBarActivity {
             addItem();
         } else if (id == R.id.action_delete_item) {
             toggleDeleteMode();
+        } else if (id == R.id.action_view_json) {
+            viewJson();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void viewJson() {
+        try {
+            final Intent i = new Intent(this, ViewJsonActivity.class);
+            i.putExtra(ViewJsonActivity.JSON, new String(pcfObject.toJson()));
+            startActivity(i);
+        } catch (DataException e) {
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        Logger.i("onSaveInstanceState");
         outState.putParcelable(MY_DATA_OBJECT, pcfObject);
     }
 

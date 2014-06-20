@@ -59,6 +59,13 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
         </activity>
+        <activity
+            android:name=".activity.ViewJsonActivity"
+            android:label="@string/title_view_json_activity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.pivotal.cf.mobile.datasdk.sample.activity.DataEditorActivity" />
+        </activity>
     </application>
 
 </manifest>

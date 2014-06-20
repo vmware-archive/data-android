@@ -158,40 +158,12 @@ public class PCFObject implements Map<String, Object>, Parcelable {
         reader.endObject();
     }
 
-
     public void save(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
         verifyState(client);
 
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStreamWriter osw = new OutputStreamWriter(out);
-        final JsonWriter writer = new JsonWriter(osw);
-        try {
-            writer.beginObject();
-            for (final Entry<String, Object> entry : map.entrySet()) {
-                writer.name(entry.getKey());
-                if (entry.getValue() instanceof String) {
-                    writer.value((String) entry.getValue());
-                } else if (entry.getValue() instanceof Boolean) {
-                    writer.value((Boolean) entry.getValue());
-                } else if (entry.getValue() instanceof Float) {
-                    final Float f = (Float) entry.getValue();
-                    writer.value((Double) f.doubleValue());
-                } else if (entry.getValue() instanceof Double) {
-                    writer.value((Double) entry.getValue());
-                } else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Short || entry.getValue() instanceof Byte) {
-                    writer.value((Number) entry.getValue());
-                } else if (entry.getValue() instanceof Long) {
-                    writer.value((Long) entry.getValue());
-                }
-            }
-            writer.endObject();
-            writer.close();
-        } catch (Exception e) {
-            Logger.ex(e);
-            throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
-        }
+        final byte[] json = toJson();
 
-        client.executeDataServicesRequest("PUT", className, objectId, null, JSON_CONTENT_TYPE, UTF8_ENCODING, out.toByteArray(), new AuthorizedResourceClient.Listener() {
+        client.executeDataServicesRequest("PUT", className, objectId, null, JSON_CONTENT_TYPE, UTF8_ENCODING, json, new AuthorizedResourceClient.Listener() {
 
             @Override
             public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
@@ -225,6 +197,46 @@ public class PCFObject implements Map<String, Object>, Parcelable {
                 }
             }
         });
+    }
+
+    /**
+     * Generates the JSON-representation of the data in this object.
+     *
+     * @return  the JSON-representation of the data in this object.
+     *
+     * @throws  DataException will be thrown if the object could not be serialized to JSON.
+     */
+    public byte[] toJson() throws DataException {
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final OutputStreamWriter osw = new OutputStreamWriter(out);
+        final JsonWriter writer = new JsonWriter(osw);
+        try {
+            writer.beginObject();
+            for (final Entry<String, Object> entry : map.entrySet()) {
+                writer.name(entry.getKey());
+                if (entry.getValue() instanceof String) {
+                    writer.value((String) entry.getValue());
+                } else if (entry.getValue() instanceof Boolean) {
+                    writer.value((Boolean) entry.getValue());
+                } else if (entry.getValue() instanceof Float) {
+                    final Float f = (Float) entry.getValue();
+                    writer.value((Double) f.doubleValue());
+                } else if (entry.getValue() instanceof Double) {
+                    writer.value((Double) entry.getValue());
+                } else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Short || entry.getValue() instanceof Byte) {
+                    writer.value((Number) entry.getValue());
+                } else if (entry.getValue() instanceof Long) {
+                    writer.value((Long) entry.getValue());
+                }
+            }
+            writer.endObject();
+            writer.close();
+            return out.toByteArray();
+        } catch (Exception e) {
+            Logger.ex(e);
+            throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
+        }
     }
 
     // Map<String, Object> methods

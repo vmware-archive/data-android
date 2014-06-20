@@ -11,6 +11,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.pivotal.cf.mobile.common.util.Logger;
 import com.pivotal.cf.mobile.datasdk.data.PCFObject;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 
@@ -34,6 +35,7 @@ public class DataEditorAdapter extends BaseAdapter {
             if (v.getTag() instanceof ViewHolder) {
                 final ViewHolder viewHolder = (ViewHolder) v.getTag();
                 if (!hasFocus) {
+                    Logger.i("Cell lost focus");
                     saveItemData(viewHolder);
                 } else {
                     flashCell(viewHolder);

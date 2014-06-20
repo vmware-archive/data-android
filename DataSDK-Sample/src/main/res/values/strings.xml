@@ -21,8 +21,10 @@
     <string name="pref_title_data_services_url">Data Services URL</string>
     <string name="action_fetch">Fetch</string>
     <string name="action_save">Save</string>
-    <string name="add_item">Add</string>
+    <string name="add_item">Add Item</string>
     <string name="delete">Delete</string>
-    <string name="delete_item">Delete</string>
+    <string name="delete_item">Delete Item</string>
+    <string name="view_json">View JSON</string>
+    <string name="title_view_json_activity">View JSON</string>
 
 </resources>
