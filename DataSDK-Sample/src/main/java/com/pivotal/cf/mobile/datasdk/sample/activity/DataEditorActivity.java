@@ -10,7 +10,6 @@ import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.pivotal.cf.mobile.common.util.Logger;
-import com.pivotal.cf.mobile.datasdk.data.DataException;
 import com.pivotal.cf.mobile.datasdk.data.PCFObject;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.view.EditorCell;
@@ -88,13 +87,9 @@ public class DataEditorActivity extends ActionBarActivity {
 
     private void viewJson() {
         updateObject();
-        try {
-            final Intent i = new Intent(this, ViewJsonActivity.class);
-            i.putExtra(ViewJsonActivity.JSON, new String(pcfObject.toJson()));
-            startActivity(i);
-        } catch (DataException e) {
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-        }
+        final Intent i = new Intent(this, ViewJsonActivity.class);
+        i.putExtra(ViewJsonActivity.MY_DATA_OBJECT, pcfObject);
+        startActivity(i);
     }
 
     @Override

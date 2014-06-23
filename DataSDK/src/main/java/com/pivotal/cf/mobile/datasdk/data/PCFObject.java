@@ -20,7 +20,12 @@ import java.util.Map;
 import java.util.Set;
 
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
-public class PCFObject implements Map<String, Object>, Parcelable {
+public class PCFObject implements Parcelable {
+
+    // NOTE - it would be nice if we could make this class extend or implement a Map
+    // class or interface but Android does not successfully bundle a custom Parcelable
+    // class that is also a Map since Android considers the class to be a Map instead
+    // of the custom class.
 
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String UTF8_ENCODING = "utf-8";
@@ -213,7 +218,7 @@ public class PCFObject implements Map<String, Object>, Parcelable {
         final JsonWriter writer = new JsonWriter(osw);
         try {
             writer.beginObject();
-            for (final Entry<String, Object> entry : map.entrySet()) {
+            for (final Map.Entry<String, Object> entry : map.entrySet()) {
                 writer.name(entry.getKey());
                 if (entry.getValue() instanceof String) {
                     writer.value((String) entry.getValue());
@@ -241,62 +246,50 @@ public class PCFObject implements Map<String, Object>, Parcelable {
 
     // Map<String, Object> methods
 
-    @Override
     public void clear() {
         map.clear();
     }
 
-    @Override
     public boolean containsKey(Object key) {
         return map.containsKey(key);
     }
 
-    @Override
     public boolean containsValue(Object value) {
         return map.containsValue(value);
     }
 
-    @Override
-    public Set<Entry<String, Object>> entrySet() {
+    public Set<Map.Entry<String, Object>> entrySet() {
         return map.entrySet();
     }
 
-    @Override
     public Object get(Object key) {
         return map.get(key);
     }
 
-    @Override
     public boolean isEmpty() {
         return map.isEmpty();
     }
 
-    @Override
     public Set<String> keySet() {
         return map.keySet();
     }
 
-    @Override
     public Object put(String key, Object value) {
         return map.put(key, value);
     }
 
-    @Override
     public void putAll(Map<? extends String, ?> incomingMap) {
         map.putAll(incomingMap);
     }
 
-    @Override
     public Object remove(Object key) {
         return map.remove(key);
     }
 
-    @Override
     public int size() {
         return map.size();
     }
 
-    @Override
     public Collection<Object> values() {
         return map.values();
     }
@@ -317,6 +310,11 @@ public class PCFObject implements Map<String, Object>, Parcelable {
     private PCFObject(Parcel in) {
         className = in.readString();
         objectId = in.readString();
+
+        // TODO - for performance reasons, it may be preferable to parcel the map as
+        // a set of entries rather than a serialize blob.  If we do that, though,
+        // we may have to make this class more strict and accept specific kinds
+        // of Parcelable objects rather than simply "Object".
         map = (HashMap<String, Object>)in.readSerializable();
     }
 

@@ -56,6 +56,13 @@ public class EditorCell extends LinearLayout {
         this.editText2.setHint(hint2);
     }
 
+    public void setReadOnly(boolean isReadOnly) {
+        this.editText1.setEnabled(!isReadOnly);
+        this.editText2.setEnabled(!isReadOnly);
+        this.editText1.setFocusable(!isReadOnly);
+        this.editText2.setFocusable(!isReadOnly);
+    }
+
     public void setValue1(String value1) {
         this.editText1.setText(value1);
     }
@@ -72,7 +79,7 @@ public class EditorCell extends LinearLayout {
         return this.editText2.getText().toString();
     }
 
-    private int getBackgroundColour(int position) {
+    public static int getBackgroundColour(int position) {
         int rowColour = position == 0 ? baseRowColours[0] : baseRowColours[1];
         if (position % 2 == 0) {
             rowColour -= 0x00111111;
