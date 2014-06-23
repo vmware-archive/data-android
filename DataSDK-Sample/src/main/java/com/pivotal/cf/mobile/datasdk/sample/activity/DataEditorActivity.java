@@ -1,10 +1,13 @@
 package com.pivotal.cf.mobile.datasdk.sample.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
@@ -23,16 +26,39 @@ public class DataEditorActivity extends ActionBarActivity {
     private static final String MY_DATA_OBJECT = "MY_DATA_OBJECT";
     private static final String CLASS_NAME = "objects";
     private static final String OBJECT_ID = "123";
-    public static final String LABEL_KEY = "Key";
-    public static final String LABEL_VALUE = "Value";
-    public static final String LABEL_CLASS_NAME = "Class Name";
-    public static final String LABEL_OBJECT_ID = "Object ID";
+    private static final String LABEL_KEY = "Key";
+    private static final String LABEL_VALUE = "Value";
+    private static final String LABEL_CLASS_NAME = "Class Name";
+    private static final String LABEL_OBJECT_ID = "Object ID";
 
     private PCFObject pcfObject;
     private ScrollView scrollView;
     private LinearLayout container;
     private EditorCell headerCell;
     private List<EditorCell> editorCells;
+
+    private View.OnLongClickListener longClickListener = new View.OnLongClickListener() {
+        @Override
+        public boolean onLongClick(final View v) {
+            if (v instanceof EditorCell) {
+                final EditorCell cell = (EditorCell) v;
+                final AlertDialog dialog = new AlertDialog.Builder(DataEditorActivity.this)
+                        .setTitle("Delete item with key '" + cell.getValue1() + "'?")
+                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                editorCells.remove(v);
+                                container.removeView(v);
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .create();
+                dialog.show();
+                return true;
+            }
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,7 +234,8 @@ public class DataEditorActivity extends ActionBarActivity {
 
     private EditorCell getItemCell(int position, String value1, String value2) {
         final EditorCell cell = getCell(position, LABEL_KEY, LABEL_VALUE, value1, value2);
-        cell.setHints("May not be blank. Must be unique.", "");
+        cell.setHints("May not be blank. Must be unique.", "May be blank.");
+        cell.setOnLongClickListener(longClickListener);
         return cell;
     }
 
