@@ -100,7 +100,6 @@ public class DataEditorActivity extends ActionBarActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Logger.i("onSaveInstanceState");
         updateObject();
         outState.putParcelable(MY_DATA_OBJECT, pcfObject);
     }

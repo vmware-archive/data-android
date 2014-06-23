@@ -48,6 +48,7 @@
         <activity
             android:name=".activity.DataEditorActivity"
             android:label="@string/title_activity_data_editor"
+            android:launchMode="singleTop"
             android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -61,7 +62,8 @@
         </activity>
         <activity
             android:name=".activity.ViewJsonActivity"
-            android:label="@string/title_view_json_activity" >
+            android:label="@string/title_view_json_activity"
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.DataEditorActivity" />
