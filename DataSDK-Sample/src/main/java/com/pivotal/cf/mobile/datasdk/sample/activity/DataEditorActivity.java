@@ -8,11 +8,15 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.pivotal.cf.mobile.common.util.Logger;
+import com.pivotal.cf.mobile.datasdk.DataSDK;
+import com.pivotal.cf.mobile.datasdk.client.AuthorizedResourceClient;
+import com.pivotal.cf.mobile.datasdk.data.DataListener;
 import com.pivotal.cf.mobile.datasdk.data.PCFObject;
 import com.pivotal.cf.mobile.datasdk.sample.R;
 import com.pivotal.cf.mobile.datasdk.sample.view.EditorCell;
@@ -64,6 +68,7 @@ public class DataEditorActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Logger.setup(this);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_data_editor);
         if (savedInstanceState != null) {
             pcfObject = savedInstanceState.getParcelable(MY_DATA_OBJECT);
@@ -75,6 +80,7 @@ public class DataEditorActivity extends ActionBarActivity {
         super.onResume();
         setupViews();
         if (pcfObject == null) {
+            setupDefaultObject();
             fetchObject();
         } else {
             populateContainer();
@@ -84,6 +90,12 @@ public class DataEditorActivity extends ActionBarActivity {
     private void setupViews() {
         scrollView = (ScrollView) findViewById(R.id.scrollview);
         container = (LinearLayout) findViewById(R.id.container);
+    }
+
+    private void setupDefaultObject() {
+        pcfObject = new PCFObject(CLASS_NAME);
+        pcfObject.setObjectId(OBJECT_ID);
+        populateContainer();
     }
 
     @Override
@@ -99,14 +111,17 @@ public class DataEditorActivity extends ActionBarActivity {
             saveObject();
             return true;
         } else if (id == R.id.action_fetch) {
-            // TODO - implement fetch
+            fetchObject();
             return true;
         } else if (id == R.id.action_add_item) {
             addItem();
+            return true;
         } else if (id == R.id.action_delete_item) {
             deleteModeHint();
+            return true;
         } else if (id == R.id.action_view_json) {
             viewJson();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -126,71 +141,69 @@ public class DataEditorActivity extends ActionBarActivity {
     }
 
     private void fetchObject() {
+        updateObject();
+        setProgressBar(true);
+        try {
+            final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
+            pcfObject.fetch(client, new DataListener() {
 
-        pcfObject = new PCFObject(CLASS_NAME);
-        pcfObject.setObjectId(OBJECT_ID);
+                @Override
+                public void onSuccess(final PCFObject object) {
+                    setProgressBar(false);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(DataEditorActivity.this, "Fetched object.", Toast.LENGTH_LONG).show();
+                            populateContainer();
+                        }
+                    });
+                }
 
-        populateContainer();
+                @Override
+                public void onUnauthorized(PCFObject object) {
+                    setProgressBar(false);
+                    showToast("Authorization error fetching object");
+                }
 
-            // TODO - restore before checking in
-//            try {
-//                final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
-//                pcfObject.fetch(client, new DataListener() {
-//
-//                    @Override
-//                    public void onSuccess(final PCFObject object) {
-//
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                Toast.makeText(DataEditorActivity.this, "Fetched object.", Toast.LENGTH_LONG).show();
-//                                adapter.setObject(object);
-//                            }
-//                        });
-//                    }
-//
-//                    @Override
-//                    public void onUnauthorized(PCFObject object) {
-//                        showToast("Authorization error fetching object");
-//                    }
-//
-//                    @Override
-//                    public void onFailure(PCFObject object, String reason) {
-//                        showToast(reason);
-//                    }
-//                });
-//
-//            } catch (AuthorizationException e) {
-//                showToast(e.getLocalizedMessage());
-//            } catch (DataException e) {
-//                showToast(e.getLocalizedMessage());
-//            }
+                @Override
+                public void onFailure(PCFObject object, String reason) {
+                    setProgressBar(false);
+                    showToast(reason);
+                }
+            });
+
+        } catch (Exception e) {
+            showToast(e.getLocalizedMessage());
+        }
     }
 
     private void saveObject() {
-        // TODO - restore before checking in
-//        adapter.updateObject();
-//        try {
-//            final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
-//            pcfObject.save(client, new DataListener() {
-//                @Override
-//                public void onSuccess(PCFObject object) {
-//                    showToast("Object saved successfully");
-//                }
-//
-//                @Override
-//                public void onUnauthorized(PCFObject object) {
-//                    showToast("Authorization error saving object");
-//                }
-//
-//                @Override
-//                public void onFailure(PCFObject object, String reason) {
-//                    showToast(reason);
-//                }
-//            });
-//        } catch (Exception e) {
-//            showToast(e.getLocalizedMessage());
-//        }
+        updateObject();
+        setProgressBar(true);
+        try {
+            final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
+            pcfObject.save(client, new DataListener() {
+                @Override
+                public void onSuccess(PCFObject object) {
+                    setProgressBar(false);
+                    showToast("Object saved successfully");
+                }
+
+                @Override
+                public void onUnauthorized(PCFObject object) {
+                    setProgressBar(false);
+                    showToast("Authorization error saving object");
+                }
+
+                @Override
+                public void onFailure(PCFObject object, String reason) {
+                    setProgressBar(false);
+                    showToast(reason);
+                }
+            });
+        } catch (Exception e) {
+            showToast(e.getLocalizedMessage());
+        }
     }
 
     private void addItem() {
@@ -270,7 +283,6 @@ public class DataEditorActivity extends ActionBarActivity {
 
     private void deleteModeHint() {
         showToast("Long-touch the left-side of the key/value pair that you want to delete.");
-        // TODO - re-implement.  should actually delete.
     }
 
     private void showToast(final String message) {
@@ -281,5 +293,15 @@ public class DataEditorActivity extends ActionBarActivity {
             }
         });
     }
+
+    private void setProgressBar(final boolean b) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setProgressBarIndeterminateVisibility(b);
+            }
+        });
+    }
+
 
 }
