@@ -80,7 +80,7 @@ public class DataEditorActivity extends ActionBarActivity {
         super.onResume();
         setupViews();
         if (pcfObject == null) {
-            setupDefaultObject();
+            clearItems();
             fetchObject();
         } else {
             populateContainer();
@@ -92,7 +92,7 @@ public class DataEditorActivity extends ActionBarActivity {
         container = (LinearLayout) findViewById(R.id.container);
     }
 
-    private void setupDefaultObject() {
+    private void clearItems() {
         pcfObject = new PCFObject(CLASS_NAME);
         pcfObject.setObjectId(OBJECT_ID);
         populateContainer();
@@ -118,6 +118,9 @@ public class DataEditorActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.action_delete_item) {
             deleteModeHint();
+            return true;
+        } else if (id == R.id.action_clear_items) {
+            clearItems();
             return true;
         } else if (id == R.id.action_view_json) {
             viewJson();

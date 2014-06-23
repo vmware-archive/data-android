@@ -26,5 +26,6 @@
     <string name="delete_item">Delete Item</string>
     <string name="view_json">View JSON</string>
     <string name="title_view_json_activity">View JSON</string>
+    <string name="action_clear_items">Clear Items</string>
 
 </resources>

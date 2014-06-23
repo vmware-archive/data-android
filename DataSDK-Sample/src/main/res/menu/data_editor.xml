@@ -23,9 +23,13 @@
         android:title="@string/delete_item"
         app:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/action_clear_items"
+          android:icon="@drawable/ic_menu_revert"
+          android:title="@string/action_clear_items"
+          app:showAsAction="ifRoom"/>
+
     <item android:id="@+id/action_view_json"
           android:icon="@drawable/ic_menu_json"
           android:title="@string/view_json"
           app:showAsAction="ifRoom"/>
-
 </menu>

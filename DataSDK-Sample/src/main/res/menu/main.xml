@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/action_authorize"
-        android:icon="@drawable/ic_menu_add"
+        android:icon="@drawable/ic_menu_account_list"
         android:title="@string/action_authorize"
         app:showAsAction="always|withText"/>
 
