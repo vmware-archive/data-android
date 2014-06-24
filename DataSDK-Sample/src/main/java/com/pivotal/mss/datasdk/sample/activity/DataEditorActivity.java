@@ -17,7 +17,7 @@ import com.pivotal.mss.common.util.Logger;
 import com.pivotal.mss.datasdk.DataSDK;
 import com.pivotal.mss.datasdk.client.AuthorizedResourceClient;
 import com.pivotal.mss.datasdk.data.DataListener;
-import com.pivotal.mss.datasdk.data.PCFObject;
+import com.pivotal.mss.datasdk.data.MSSObject;
 import com.pivotal.mss.datasdk.sample.R;
 import com.pivotal.mss.datasdk.sample.view.EditorCell;
 
@@ -35,7 +35,7 @@ public class DataEditorActivity extends ActionBarActivity {
     private static final String LABEL_CLASS_NAME = "Class Name";
     private static final String LABEL_OBJECT_ID = "Object ID";
 
-    private PCFObject pcfObject;
+    private MSSObject mssObject;
     private ScrollView scrollView;
     private LinearLayout container;
     private EditorCell headerCell;
@@ -70,7 +70,7 @@ public class DataEditorActivity extends ActionBarActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_data_editor);
         if (savedInstanceState != null) {
-            pcfObject = savedInstanceState.getParcelable(MY_DATA_OBJECT);
+            mssObject = savedInstanceState.getParcelable(MY_DATA_OBJECT);
         }
     }
 
@@ -78,7 +78,7 @@ public class DataEditorActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         setupViews();
-        if (pcfObject == null) {
+        if (mssObject == null) {
             clearItems();
             fetchObject();
         } else {
@@ -92,8 +92,8 @@ public class DataEditorActivity extends ActionBarActivity {
     }
 
     private void clearItems() {
-        pcfObject = new PCFObject(CLASS_NAME);
-        pcfObject.setObjectId(OBJECT_ID);
+        mssObject = new MSSObject(CLASS_NAME);
+        mssObject.setObjectId(OBJECT_ID);
         populateContainer();
     }
 
@@ -134,7 +134,7 @@ public class DataEditorActivity extends ActionBarActivity {
     private void viewJson() {
         updateObject();
         final Intent i = new Intent(this, ViewJsonActivity.class);
-        i.putExtra(ViewJsonActivity.MY_DATA_OBJECT, pcfObject);
+        i.putExtra(ViewJsonActivity.MY_DATA_OBJECT, mssObject);
         startActivity(i);
     }
 
@@ -142,7 +142,7 @@ public class DataEditorActivity extends ActionBarActivity {
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         updateObject();
-        outState.putParcelable(MY_DATA_OBJECT, pcfObject);
+        outState.putParcelable(MY_DATA_OBJECT, mssObject);
     }
 
     private void fetchObject() {
@@ -150,10 +150,10 @@ public class DataEditorActivity extends ActionBarActivity {
         setProgressBar(true);
         try {
             final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
-            pcfObject.fetch(client, new DataListener() {
+            mssObject.fetch(client, new DataListener() {
 
                 @Override
-                public void onSuccess(final PCFObject object) {
+                public void onSuccess(final MSSObject object) {
                     setProgressBar(false);
                     runOnUiThread(new Runnable() {
                         @Override
@@ -165,13 +165,13 @@ public class DataEditorActivity extends ActionBarActivity {
                 }
 
                 @Override
-                public void onUnauthorized(PCFObject object) {
+                public void onUnauthorized(MSSObject object) {
                     setProgressBar(false);
                     showToast("Authorization error fetching object");
                 }
 
                 @Override
-                public void onFailure(PCFObject object, String reason) {
+                public void onFailure(MSSObject object, String reason) {
                     setProgressBar(false);
                     showToast(reason);
                 }
@@ -187,21 +187,21 @@ public class DataEditorActivity extends ActionBarActivity {
         setProgressBar(true);
         try {
             final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
-            pcfObject.save(client, new DataListener() {
+            mssObject.save(client, new DataListener() {
                 @Override
-                public void onSuccess(PCFObject object) {
+                public void onSuccess(MSSObject object) {
                     setProgressBar(false);
                     showToast("Object saved successfully");
                 }
 
                 @Override
-                public void onUnauthorized(PCFObject object) {
+                public void onUnauthorized(MSSObject object) {
                     setProgressBar(false);
                     showToast("Authorization error saving object");
                 }
 
                 @Override
-                public void onFailure(PCFObject object, String reason) {
+                public void onFailure(MSSObject object, String reason) {
                     setProgressBar(false);
                     showToast(reason);
                 }
@@ -218,7 +218,7 @@ public class DataEditorActivity extends ActionBarActivity {
 
     private void deleteObjectConfirmation() {
         final AlertDialog dialog = new AlertDialog.Builder(DataEditorActivity.this)
-                .setTitle("Delete object with ID '" + pcfObject.getObjectId() + "'?")
+                .setTitle("Delete object with ID '" + mssObject.getObjectId() + "'?")
                 .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -235,14 +235,14 @@ public class DataEditorActivity extends ActionBarActivity {
         setProgressBar(true);
         try {
             final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
-            pcfObject.delete(client, new DataListener() {
+            mssObject.delete(client, new DataListener() {
                 @Override
-                public void onSuccess(PCFObject object) {
+                public void onSuccess(MSSObject object) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             setProgressBar(false);
-                            pcfObject.clear();
+                            mssObject.clear();
                             populateContainer();
                             showToast("Object deleted successfully");
                         }
@@ -250,13 +250,13 @@ public class DataEditorActivity extends ActionBarActivity {
                 }
 
                 @Override
-                public void onUnauthorized(PCFObject object) {
+                public void onUnauthorized(MSSObject object) {
                     setProgressBar(false);
                     showToast("Authorization error deleting object");
                 }
 
                 @Override
-                public void onFailure(PCFObject object, String reason) {
+                public void onFailure(MSSObject object, String reason) {
                     setProgressBar(false);
                     showToast(reason);
                 }
@@ -267,7 +267,7 @@ public class DataEditorActivity extends ActionBarActivity {
     }
 
     private void addItem() {
-        if (pcfObject != null) {
+        if (mssObject != null) {
             final EditorCell cell = getItemCell(1, "", "");
             editorCells.add(0, cell);
             container.addView(cell, 1);
@@ -291,7 +291,7 @@ public class DataEditorActivity extends ActionBarActivity {
         container.addView(headerCell);
         int position = 1;
         editorCells = new ArrayList<EditorCell>();
-        for (final Map.Entry<String, Object> entry : pcfObject.entrySet()) {
+        for (final Map.Entry<String, Object> entry : mssObject.entrySet()) {
             final EditorCell itemCell = getItemCell(position, entry.getKey(), entry.getValue().toString());
             editorCells.add(itemCell);
             container.addView(itemCell);
@@ -300,7 +300,7 @@ public class DataEditorActivity extends ActionBarActivity {
     }
 
     private EditorCell getHeaderCell() {
-        final EditorCell cell = getCell(0, LABEL_CLASS_NAME, LABEL_OBJECT_ID, pcfObject.getClassName(), pcfObject.getObjectId());
+        final EditorCell cell = getCell(0, LABEL_CLASS_NAME, LABEL_OBJECT_ID, mssObject.getClassName(), mssObject.getObjectId());
         cell.setHints("May not be blank.", "May not be blank.");
         return cell;
     }
@@ -326,17 +326,17 @@ public class DataEditorActivity extends ActionBarActivity {
         final String className = headerCell.getValue1();
         final String objectId = headerCell.getValue2().toString();
         if (className != null && !className.isEmpty()) {
-            pcfObject.setClassName(className);
+            mssObject.setClassName(className);
         }
         if (objectId != null && !objectId.isEmpty()) {
-            pcfObject.setObjectId(objectId);
+            mssObject.setObjectId(objectId);
         }
-        pcfObject.clear();
+        mssObject.clear();
         for(final EditorCell cell : editorCells) {
             final String key = cell.getValue1();
             final Object value = cell.getValue2();
             if (key != null && !key.isEmpty() && value != null) {
-                pcfObject.put(key, value);
+                mssObject.put(key, value);
             }
         }
     }

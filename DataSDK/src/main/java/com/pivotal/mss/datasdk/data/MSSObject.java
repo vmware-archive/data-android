@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
-public class PCFObject implements Parcelable {
+public class MSSObject implements Parcelable {
 
     // NOTE - it would be nice if we could make this class extend or implement a Map
     // class or interface but Android does not successfully bundle a custom Parcelable
@@ -33,7 +33,7 @@ public class PCFObject implements Parcelable {
     private HashMap<String, Object> map;
     private String objectId;
 
-    public PCFObject(String className) {
+    public MSSObject(String className) {
         setClassName(className);
         initializeData();
     }
@@ -96,14 +96,14 @@ public class PCFObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PCFObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PCFObject.this);
+                    listener.onUnauthorized(MSSObject.this);
                 };
             }
 
@@ -115,7 +115,7 @@ public class PCFObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PCFObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -179,14 +179,14 @@ public class PCFObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PCFObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PCFObject.this);
+                    listener.onUnauthorized(MSSObject.this);
                 };
             }
 
@@ -198,7 +198,7 @@ public class PCFObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PCFObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -258,14 +258,14 @@ public class PCFObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PCFObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PCFObject.this);
+                    listener.onUnauthorized(MSSObject.this);
                 };
             }
 
@@ -277,7 +277,7 @@ public class PCFObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PCFObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -335,18 +335,18 @@ public class PCFObject implements Parcelable {
 
     // Parcelable stuff
 
-    public static final Parcelable.Creator<PCFObject> CREATOR = new Parcelable.Creator<PCFObject>() {
+    public static final Parcelable.Creator<MSSObject> CREATOR = new Parcelable.Creator<MSSObject>() {
 
-        public PCFObject createFromParcel(Parcel in) {
-            return new PCFObject(in);
+        public MSSObject createFromParcel(Parcel in) {
+            return new MSSObject(in);
         }
 
-        public PCFObject[] newArray(int size) {
-            return new PCFObject[size];
+        public MSSObject[] newArray(int size) {
+            return new MSSObject[size];
         }
     };
 
-    private PCFObject(Parcel in) {
+    private MSSObject(Parcel in) {
         className = in.readString();
         objectId = in.readString();
 
@@ -374,13 +374,13 @@ public class PCFObject implements Parcelable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof  PCFObject)) return false;
+        if (o == null || !(o instanceof MSSObject)) return false;
 
-        PCFObject pcfObject = (PCFObject) o;
+        MSSObject MSSObject = (MSSObject) o;
 
-        if (!className.equals(pcfObject.className)) return false;
-        if (!map.equals(pcfObject.map)) return false;
-        if (!objectId.equals(pcfObject.objectId)) return false;
+        if (!className.equals(MSSObject.className)) return false;
+        if (!map.equals(MSSObject.map)) return false;
+        if (!objectId.equals(MSSObject.objectId)) return false;
 
         return true;
     }

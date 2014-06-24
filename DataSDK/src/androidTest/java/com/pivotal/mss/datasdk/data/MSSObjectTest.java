@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
-public class PCFObjectTest extends AndroidTestCase {
+public class MSSObjectTest extends AndroidTestCase {
 
     private static final String TEST_CLASS_NAME = "test_class_name";
     private static final String TEST_OBJECT_ID = "test_object_id";
@@ -25,7 +25,7 @@ public class PCFObjectTest extends AndroidTestCase {
     private static final String TEST_SIMPLE_JSON_CONTENT = String.format("{ \"%s\" : \"%s\" }", TEST_KEY, TEST_VALUE);
 
     private FakeAuthorizedResourceClient client;
-    private PCFObject obj;
+    private MSSObject obj;
     private Semaphore semaphore;
 
     private class SimpleSuccessfulDataListener implements DataListener {
@@ -33,20 +33,20 @@ public class PCFObjectTest extends AndroidTestCase {
         // overriding methods should call onSuccess after their own logic
         // so that the semaphore is released at the end.
         @Override
-        public void onSuccess(PCFObject returnedObject) {
+        public void onSuccess(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             semaphore.release();
         }
 
         @Override
-        public void onUnauthorized(PCFObject returnedObject) {
+        public void onUnauthorized(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
             semaphore.release();
         }
 
         @Override
-        public void onFailure(PCFObject returnedObject, String reason) {
+        public void onFailure(MSSObject returnedObject, String reason) {
             assertEquals(0, returnedObject.size());
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
@@ -57,14 +57,14 @@ public class PCFObjectTest extends AndroidTestCase {
     private class SimpleFailedDataListener implements DataListener {
 
         @Override
-        public void onSuccess(PCFObject returnedObject) {
+        public void onSuccess(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
             semaphore.release();
         }
 
         @Override
-        public void onUnauthorized(PCFObject returnedObject) {
+        public void onUnauthorized(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
             semaphore.release();
@@ -73,7 +73,7 @@ public class PCFObjectTest extends AndroidTestCase {
         // overriding methods should call onSuccess after their own logic
         // so that the semaphore is released at the end.
         @Override
-        public void onFailure(PCFObject returnedObject, String reason) {
+        public void onFailure(MSSObject returnedObject, String reason) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             assertEquals(0, returnedObject.size());
             semaphore.release();
@@ -83,14 +83,14 @@ public class PCFObjectTest extends AndroidTestCase {
     private class SimpleUnauthorizedDataListener implements DataListener {
 
         @Override
-        public void onSuccess(PCFObject returnedObject) {
+        public void onSuccess(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
             semaphore.release();
         }
 
         @Override
-        public void onUnauthorized(PCFObject returnedObject) {
+        public void onUnauthorized(MSSObject returnedObject) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             semaphore.release();
         }
@@ -98,7 +98,7 @@ public class PCFObjectTest extends AndroidTestCase {
         // overriding methods should call onSuccess after their own logic
         // so that the semaphore is released at the end.
         @Override
-        public void onFailure(PCFObject returnedObject, String reason) {
+        public void onFailure(MSSObject returnedObject, String reason) {
             assertEquals(obj.getObjectId(), returnedObject.getObjectId());
             fail();
             semaphore.release();
@@ -109,13 +109,13 @@ public class PCFObjectTest extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         client = new FakeAuthorizedResourceClient();
-        obj = new PCFObject(TEST_CLASS_NAME);
+        obj = new MSSObject(TEST_CLASS_NAME);
         semaphore = new Semaphore(0);
     }
 
     public void testRequiresNotNullClassName() {
         try {
-            new PCFObject(null);
+            new MSSObject(null);
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -124,7 +124,7 @@ public class PCFObjectTest extends AndroidTestCase {
 
     public void testRequiresNotEmptyClassName() {
         try {
-            new PCFObject("");
+            new MSSObject("");
             fail();
         } catch (IllegalArgumentException e) {
             // success
@@ -242,7 +242,7 @@ public class PCFObjectTest extends AndroidTestCase {
         obj.fetch(client, new SimpleSuccessfulDataListener() {
 
             @Override
-            public void onSuccess(PCFObject returnedObject) {
+            public void onSuccess(MSSObject returnedObject) {
                 assertEquals(0, returnedObject.size());
                 super.onSuccess(returnedObject);
             }
@@ -449,7 +449,7 @@ public class PCFObjectTest extends AndroidTestCase {
         obj.fetch(client, new SimpleSuccessfulDataListener() {
 
             @Override
-            public void onSuccess(PCFObject returnedObject) {
+            public void onSuccess(MSSObject returnedObject) {
                 assertEquals(expectedData.size(), returnedObject.size());
                 for(final Map.Entry<String, Object> entry : expectedData.entrySet()) {
                     assertEquals(entry.getValue(), returnedObject.get(entry.getKey()));
@@ -490,27 +490,27 @@ public class PCFObjectTest extends AndroidTestCase {
 
 
     public void testEquals() {
-        final PCFObject object1 = new PCFObject(TEST_CLASS_NAME);
+        final MSSObject object1 = new MSSObject(TEST_CLASS_NAME);
         object1.setObjectId(TEST_OBJECT_ID);
         object1.put(TEST_KEY, TEST_VALUE);
 
-        final PCFObject object2 = new PCFObject(TEST_CLASS_NAME);
+        final MSSObject object2 = new MSSObject(TEST_CLASS_NAME);
         object2.setObjectId(TEST_OBJECT_ID);
         object2.put(TEST_KEY, TEST_VALUE);
 
-        final PCFObject object3 = new PCFObject(TEST_CLASS_NAME + "X");
+        final MSSObject object3 = new MSSObject(TEST_CLASS_NAME + "X");
         object3.setObjectId(TEST_OBJECT_ID);
         object3.put(TEST_KEY, TEST_VALUE);
 
-        final PCFObject object4 = new PCFObject(TEST_CLASS_NAME);
+        final MSSObject object4 = new MSSObject(TEST_CLASS_NAME);
         object4.setObjectId(TEST_OBJECT_ID + "X");
         object4.put(TEST_KEY, TEST_VALUE);
 
-        final PCFObject object5 = new PCFObject(TEST_CLASS_NAME);
+        final MSSObject object5 = new MSSObject(TEST_CLASS_NAME);
         object5.setObjectId(TEST_OBJECT_ID);
         object5.put(TEST_KEY, TEST_VALUE + "X");
 
-        final PCFObject object6 = new PCFObject(TEST_CLASS_NAME);
+        final MSSObject object6 = new MSSObject(TEST_CLASS_NAME);
         object6.setObjectId(TEST_OBJECT_ID);
         object6.put(TEST_KEY + "X", TEST_VALUE);
 
@@ -528,15 +528,15 @@ public class PCFObjectTest extends AndroidTestCase {
     }
     
     public void testIsParcelable() {
-        final PCFObject inputPCFObject = new PCFObject(TEST_CLASS_NAME);
-        inputPCFObject.setObjectId(TEST_OBJECT_ID);
-        inputPCFObject.put(TEST_KEY, TEST_VALUE);
-        final PCFObject outputPCFObject = getObjectViaParcel(inputPCFObject);
-        assertNotNull(outputPCFObject);
-        assertEquals(inputPCFObject, outputPCFObject);
+        final MSSObject inputMSSObject = new MSSObject(TEST_CLASS_NAME);
+        inputMSSObject.setObjectId(TEST_OBJECT_ID);
+        inputMSSObject.put(TEST_KEY, TEST_VALUE);
+        final MSSObject outputMSSObject = getObjectViaParcel(inputMSSObject);
+        assertNotNull(outputMSSObject);
+        assertEquals(inputMSSObject, outputMSSObject);
     }
 
-    private PCFObject getObjectViaParcel(PCFObject inputObject) {
+    private MSSObject getObjectViaParcel(MSSObject inputObject) {
         final Parcel inputParcel = Parcel.obtain();
         inputObject.writeToParcel(inputParcel, 0);
         final byte[] bytes = inputParcel.marshall();
@@ -544,7 +544,7 @@ public class PCFObjectTest extends AndroidTestCase {
         final Parcel outputParcel = Parcel.obtain();
         outputParcel.unmarshall(bytes, 0, bytes.length);
         outputParcel.setDataPosition(0);
-        final PCFObject outputEvent = PCFObject.CREATOR.createFromParcel(outputParcel);
+        final MSSObject outputEvent = MSSObject.CREATOR.createFromParcel(outputParcel);
         inputParcel.recycle();
         outputParcel.recycle();
         return outputEvent;

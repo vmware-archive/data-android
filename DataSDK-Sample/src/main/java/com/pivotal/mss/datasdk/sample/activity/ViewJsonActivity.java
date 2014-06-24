@@ -7,34 +7,34 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.pivotal.mss.datasdk.data.DataException;
-import com.pivotal.mss.datasdk.data.PCFObject;
+import com.pivotal.mss.datasdk.data.MSSObject;
 import com.pivotal.mss.datasdk.sample.R;
 import com.pivotal.mss.datasdk.sample.view.EditorCell;
 
 public class ViewJsonActivity extends ActionBarActivity {
 
     public static final String MY_DATA_OBJECT = "MY_DATA_OBJECT";
-    private PCFObject pcfObject;
+    private MSSObject mssObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.view_json_activity);
-        pcfObject = getObject();
+        mssObject = getObject();
     }
 
-    private PCFObject getObject() {
+    private MSSObject getObject() {
         final Intent intent = getIntent();
-        final PCFObject pcfObject = intent.getParcelableExtra(MY_DATA_OBJECT);
-        return pcfObject;
+        final MSSObject MSSObject = intent.getParcelableExtra(MY_DATA_OBJECT);
+        return MSSObject;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setupViews();
-        populateHeaderView(pcfObject);
-        populateJsonView(pcfObject);
+        populateHeaderView(mssObject);
+        populateJsonView(mssObject);
     }
 
     private void setupViews() {
@@ -42,20 +42,20 @@ public class ViewJsonActivity extends ActionBarActivity {
         scrollView.setBackgroundColor(EditorCell.getBackgroundColour(1));
     }
 
-    private void populateHeaderView(PCFObject pcfObject) {
+    private void populateHeaderView(MSSObject MSSObject) {
         final EditorCell headerView = (EditorCell) findViewById(R.id.header);
         headerView.setLabels("Class Name", "Object ID");
-        headerView.setValue1(pcfObject.getClassName());
-        headerView.setValue2(pcfObject.getObjectId());
+        headerView.setValue1(MSSObject.getClassName());
+        headerView.setValue2(MSSObject.getObjectId());
         headerView.setReadOnly(true);
         headerView.setPosition(0);
     }
 
-    private void populateJsonView(PCFObject pcfObject) {
+    private void populateJsonView(MSSObject MSSObject) {
         final TextView textView = (TextView) findViewById(R.id.json_data);
         textView.setBackgroundColor(EditorCell.getBackgroundColour(1));
         try {
-            final byte[] jsonBytes = pcfObject.toJson();
+            final byte[] jsonBytes = MSSObject.toJson();
             final String jsonString = new String(jsonBytes);
             textView.setText(formatString(jsonString));
         } catch (DataException e) {
