@@ -10,7 +10,7 @@
     <string name="pref_default_client_secret">AON8owWAztcnrnWDyOb1j_WOIS0LrnFbVoAzUATAYEjO92LGaq4ZG60-TCAxM6hAStfdrj9rY29_t6dJ_yO2Vno</string>
 
     <!-- The default redirect URL used during authorization.                                                         -->
-    <string name="pref_default_redirect_url">com.pivotal.PCFDataServices://identity/oauth2callback</string>
+    <string name="pref_default_redirect_url">com.pivotal.pcfdataservices://identity/oauth2callback</string>
 
     <!-- The URI used to start the user authorization flow.                                                          -->
     <string name="pref_default_authorization_url">http://ident.one.pepsi.cf-app.com/oauth/authorize</string>

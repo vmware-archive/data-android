@@ -80,6 +80,31 @@ public class PCFObjectTest extends AndroidTestCase {
         }
     }
 
+    private class SimpleUnauthorizedDataListener implements DataListener {
+
+        @Override
+        public void onSuccess(PCFObject returnedObject) {
+            assertEquals(obj.getObjectId(), returnedObject.getObjectId());
+            fail();
+            semaphore.release();
+        }
+
+        @Override
+        public void onUnauthorized(PCFObject returnedObject) {
+            assertEquals(obj.getObjectId(), returnedObject.getObjectId());
+            semaphore.release();
+        }
+
+        // overriding methods should call onSuccess after their own logic
+        // so that the semaphore is released at the end.
+        @Override
+        public void onFailure(PCFObject returnedObject, String reason) {
+            assertEquals(obj.getObjectId(), returnedObject.getObjectId());
+            fail();
+            semaphore.release();
+        }
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -157,6 +182,15 @@ public class PCFObjectTest extends AndroidTestCase {
         verifyEmptyObject();
     }
 
+    public void testFetchRequiresObjectId() throws Exception {
+        try {
+            obj.fetch(client, new SimpleFailedDataListener());
+            fail();
+        } catch(DataException e) {
+            // success
+        }
+    }
+
     public void testFetchRequiresClient() throws Exception {
         try {
             obj.setObjectId(TEST_OBJECT_ID);
@@ -169,29 +203,36 @@ public class PCFObjectTest extends AndroidTestCase {
 
     // TODO - restore this test once the server starts to send meaningful content-types.
 //    public void testRequiresJsonContentType() throws Exception {
-//        testFailedFetch("application/text", TEST_CONTENT_ENCODING, TEST_SIMPLE_JSON_CONTENT);
+//        baseTestFailedFetch("application/text", TEST_CONTENT_ENCODING, TEST_SIMPLE_JSON_CONTENT);
 //    }
 
     public void testFetchesEmptyResponse() throws Exception {
-        testFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "");
+        baseTestFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "");
     }
 
     public void testFetchesMalformedResponse1() throws Exception {
-        testFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "{\"PANTS");
+        baseTestFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "{\"PANTS");
     }
 
     public void testFetchesMalformedResponse2() throws Exception {
-        testFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "\"PANTS");
+        baseTestFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "\"PANTS");
     }
 
     public void testFetchesArray() throws Exception {
-        testFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "[" + TEST_SIMPLE_JSON_CONTENT + "]");
+        baseTestFailedFetch(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "[" + TEST_SIMPLE_JSON_CONTENT + "]");
     }
 
     public void testFetchWithFailedHttpStatus() throws Exception {
         client.setupFailedHttpStatusCode(404);
         obj.setObjectId(TEST_OBJECT_ID);
         obj.fetch(client, new SimpleFailedDataListener());
+        semaphore.acquire();
+    }
+
+    public void testFetchWithUnauthorizedHttpStatus() throws Exception {
+        client.setupUnauthorizedHttpStatusCode();
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.fetch(client, new SimpleUnauthorizedDataListener());
         semaphore.acquire();
     }
 
@@ -247,6 +288,14 @@ public class PCFObjectTest extends AndroidTestCase {
         }});
     }
 
+    public void testSaveRequiresObjectId() throws Exception {
+        try {
+            obj.save(client, new SimpleFailedDataListener());
+            fail();
+        } catch(DataException e) {
+            // success
+        }
+    }
 
     public void testSaveRequiresClient() throws Exception {
         try {
@@ -256,6 +305,20 @@ public class PCFObjectTest extends AndroidTestCase {
         } catch(IllegalArgumentException e) {
             // success
         }
+    }
+
+    public void testSaveWithFailedHttpStatus() throws Exception {
+        client.setupFailedHttpStatusCode(404);
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.save(client, new SimpleFailedDataListener());
+        semaphore.acquire();
+    }
+
+    public void testSaveWithUnauthorizedHttpStatus() throws Exception {
+        client.setupUnauthorizedHttpStatusCode();
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.save(client, new SimpleUnauthorizedDataListener());
+        semaphore.acquire();
     }
 
     public void testSavesEmptyObject() throws Exception {
@@ -299,6 +362,46 @@ public class PCFObjectTest extends AndroidTestCase {
             put("long_field_1", 1337L);
             put("long_field_2", 0L);
         }});
+    }
+
+    public void testDeletesRequiresObjectId() throws Exception {
+        try {
+            obj.delete(client, new SimpleFailedDataListener());
+            fail();
+        } catch(DataException e) {
+            // success
+        }
+    }
+
+    public void testDeletesRequiresClient() throws Exception {
+        try {
+            obj.setObjectId(TEST_OBJECT_ID);
+            obj.delete(null, new SimpleFailedDataListener());
+            fail();
+        } catch(IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    public void testDeletesSuccessfully() throws Exception {
+        client.setupSuccessfulRequestResults(JSON_CONTENT_TYPE, TEST_CONTENT_ENCODING, "");
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.delete(client, new SimpleSuccessfulDataListener());
+        semaphore.acquire();
+    }
+
+    public void testDeleteWithFailedHttpStatus() throws Exception {
+        client.setupFailedHttpStatusCode(404);
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.delete(client, new SimpleFailedDataListener());
+        semaphore.acquire();
+    }
+
+    public void testDeleteWithUnauthorizedHttpStatus() throws Exception {
+        client.setupUnauthorizedHttpStatusCode();
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.delete(client, new SimpleUnauthorizedDataListener());
+        semaphore.acquire();
     }
 
     private void baseTestSavesSuccessfully(Map<String, Object> data) throws AuthorizationException, DataException, InterruptedException, JSONException {
@@ -357,6 +460,13 @@ public class PCFObjectTest extends AndroidTestCase {
         semaphore.acquire();
     }
 
+    private void baseTestFailedFetch(String contentType, String contentEncoding, String contentData) throws Exception {
+        client.setupSuccessfulRequestResults(contentType, contentEncoding, contentData);
+        obj.setObjectId(TEST_OBJECT_ID);
+        obj.fetch(client, new SimpleFailedDataListener());
+        semaphore.acquire();
+    }
+
     private void verifyEmptyObject() {
         assertEquals(0, obj.size());
         assertFalse(obj.containsKey(TEST_KEY));
@@ -378,12 +488,6 @@ public class PCFObjectTest extends AndroidTestCase {
         assertEquals(1, obj.values().size());
     }
 
-    private void testFailedFetch(String contentType, String contentEncoding, String contentData) throws Exception {
-        client.setupSuccessfulRequestResults(contentType, contentEncoding, contentData);
-        obj.setObjectId(TEST_OBJECT_ID);
-        obj.fetch(client, new SimpleFailedDataListener());
-        semaphore.acquire();
-    }
 
     public void testEquals() {
         final PCFObject object1 = new PCFObject(TEST_CLASS_NAME);

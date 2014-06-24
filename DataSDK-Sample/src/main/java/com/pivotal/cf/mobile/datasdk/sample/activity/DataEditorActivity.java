@@ -51,8 +51,7 @@ public class DataEditorActivity extends ActionBarActivity {
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                editorCells.remove(v);
-                                container.removeView(v);
+                                deleteItem(v);
                             }
                         })
                         .setNegativeButton("Cancel", null)
@@ -118,6 +117,9 @@ public class DataEditorActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.action_delete_item) {
             deleteModeHint();
+            return true;
+        } else if (id == R.id.action_delete_object) {
+            deleteObjectConfirmation();
             return true;
         } else if (id == R.id.action_clear_items) {
             clearItems();
@@ -196,6 +198,61 @@ public class DataEditorActivity extends ActionBarActivity {
                 public void onUnauthorized(PCFObject object) {
                     setProgressBar(false);
                     showToast("Authorization error saving object");
+                }
+
+                @Override
+                public void onFailure(PCFObject object, String reason) {
+                    setProgressBar(false);
+                    showToast(reason);
+                }
+            });
+        } catch (Exception e) {
+            showToast(e.getLocalizedMessage());
+        }
+    }
+
+    private void deleteItem(View v) {
+        editorCells.remove(v);
+        container.removeView(v);
+    }
+
+    private void deleteObjectConfirmation() {
+        final AlertDialog dialog = new AlertDialog.Builder(DataEditorActivity.this)
+                .setTitle("Delete object with ID '" + pcfObject.getObjectId() + "'?")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteObject();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+        dialog.show();
+    }
+
+    private void deleteObject() {
+        updateObject();
+        setProgressBar(true);
+        try {
+            final AuthorizedResourceClient client = DataSDK.getInstance().getClient(this);
+            pcfObject.delete(client, new DataListener() {
+                @Override
+                public void onSuccess(PCFObject object) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            setProgressBar(false);
+                            pcfObject.clear();
+                            populateContainer();
+                            showToast("Object deleted successfully");
+                        }
+                    });
+                }
+
+                @Override
+                public void onUnauthorized(PCFObject object) {
+                    setProgressBar(false);
+                    showToast("Authorization error deleting object");
                 }
 
                 @Override

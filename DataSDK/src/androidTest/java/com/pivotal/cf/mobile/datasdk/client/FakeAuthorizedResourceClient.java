@@ -23,6 +23,14 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
         this.returnedContentData = contentData;
     }
 
+    public void setupUnauthorizedHttpStatusCode() {
+        this.httpStatusCode = 401;
+        this.isSuccessful = true;
+        this.returnedContentType = "application/json";
+        this.returnedContentEncoding = "utf-8";
+        this.returnedContentData = "{}";
+    }
+
     public void setupFailedHttpStatusCode(int httpStatusCode) {
         this.httpStatusCode = httpStatusCode;
         this.isSuccessful = true;
@@ -44,7 +52,11 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
         this.requestContentData = contentData;
 
         if (isSuccessful) {
-            listener.onSuccess(httpStatusCode, returnedContentType, returnedContentEncoding, StreamUtil.getInputStream(returnedContentData));
+            if (httpStatusCode != 401) {
+                listener.onSuccess(httpStatusCode, returnedContentType, returnedContentEncoding, StreamUtil.getInputStream(returnedContentData));
+            } else {
+                listener.onUnauthorized();
+            }
         }
     }
 
@@ -60,7 +72,11 @@ public class FakeAuthorizedResourceClient implements AuthorizedResourceClient {
         this.requestContentData = contentData;
 
         if (isSuccessful) {
-            listener.onSuccess(httpStatusCode, returnedContentType, returnedContentEncoding, StreamUtil.getInputStream(returnedContentData));
+            if (httpStatusCode != 401) {
+                listener.onSuccess(httpStatusCode, returnedContentType, returnedContentEncoding, StreamUtil.getInputStream(returnedContentData));
+            } else {
+                listener.onUnauthorized();
+            }
         }
     }
 

@@ -77,7 +77,7 @@ public class PCFObject implements Parcelable {
             public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
 
                 if (!isSuccessfulHttpStatusCode(httpStatusCode)) {
-                    returnError("Received failure status code " + httpStatusCode + ".");
+                    returnError("Received failure status code while attempting GET" + httpStatusCode + ".");
                     return;
                 }
 
@@ -174,7 +174,7 @@ public class PCFObject implements Parcelable {
             public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
 
                 if (!isSuccessfulHttpStatusCode(httpStatusCode)) {
-                    returnError("Received failure status code " + httpStatusCode + ".");
+                    returnError("Received failure status code while attempting PUT" + httpStatusCode + ".");
                     return;
                 }
 
@@ -242,6 +242,45 @@ public class PCFObject implements Parcelable {
             Logger.ex(e);
             throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
         }
+    }
+
+    public void delete(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
+        verifyState(client);
+
+        client.executeDataServicesRequest("DELETE", className, objectId, null, JSON_CONTENT_TYPE, UTF8_ENCODING, null, new AuthorizedResourceClient.Listener() {
+
+            @Override
+            public void onSuccess(int httpStatusCode, String contentType, String contentEncoding, InputStream inputStream) {
+
+                if (!isSuccessfulHttpStatusCode(httpStatusCode)) {
+                    returnError("Received failure status code while attempting DELETE " + httpStatusCode + ".");
+                    return;
+                }
+
+                if (listener != null) {
+                    listener.onSuccess(PCFObject.this);
+                }
+            }
+
+            @Override
+            public void onUnauthorized() {
+                if (listener != null) {
+                    listener.onUnauthorized(PCFObject.this);
+                };
+            }
+
+            @Override
+            public void onFailure(String reason) {
+                Logger.e("Error fetching PCFObject data: \"" + reason + "\".");
+                returnError(reason);
+            }
+
+            private void returnError(String reason) {
+                if (listener != null) {
+                    listener.onFailure(PCFObject.this, reason);
+                }
+            }
+        });
     }
 
     // Map<String, Object> methods
@@ -330,6 +369,8 @@ public class PCFObject implements Parcelable {
         out.writeSerializable(map);
     }
 
+    // Object methods
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -351,4 +392,5 @@ public class PCFObject implements Parcelable {
         result = 31 * result + objectId.hashCode();
         return result;
     }
+
 }

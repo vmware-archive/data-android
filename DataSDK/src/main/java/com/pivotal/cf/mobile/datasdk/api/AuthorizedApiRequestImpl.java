@@ -216,6 +216,8 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                         // an byte array (which might consume too much memory)
                         final HttpContent content = new ByteArrayContent(contentType, contentData);
                         request = requestFactory.buildPutRequest(requestUrl, content);
+                    } else if (method.equals("DELETE")) {
+                        request = requestFactory.buildDeleteRequest(requestUrl);
                     } else {
                         throw new IllegalArgumentException("Unsupported HTTP method '" + method + "'.");
                     }
