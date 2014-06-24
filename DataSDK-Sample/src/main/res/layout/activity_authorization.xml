@@ -7,7 +7,7 @@
     android:paddingTop="10dp"
     android:paddingBottom="10dp"
     android:orientation="vertical"
-    tools:context="com.pivotal.cf.mobile.datasdk.sample.activity.AuthorizationActivity">
+    tools:context="com.pivotal.mss.datasdk.sample.activity.AuthorizationActivity">
 
     <TextView
         android:text="@string/authorization_label"

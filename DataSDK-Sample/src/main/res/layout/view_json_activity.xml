@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.pivotal.cf.mobile.datasdk.sample.view.EditorCell
+        <com.pivotal.mss.datasdk.sample.view.EditorCell
             android:id="@+id/header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

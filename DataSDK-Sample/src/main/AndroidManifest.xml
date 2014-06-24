@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.pivotal.cf.mobile.datasdk.sample" >
+    package="com.pivotal.mss.datasdk.sample" >
 
     <application
         android:allowBackup="true"
@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".activity.MainActivity"
+            android:name="com.pivotal.mss.datasdk.sample.activity.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance" >
             <intent-filter>
@@ -18,17 +18,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.PreferencesActivity"
+            android:name="com.pivotal.mss.datasdk.sample.activity.PreferencesActivity"
             android:label="@string/title_activity_preferences"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName="com.pivotal.mss.datasdk.sample.activity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.AuthorizationActivity"
+            android:name="com.pivotal.mss.datasdk.sample.activity.AuthorizationActivity"
             android:label="@string/title_activity_authorization"
-            android:parentActivityName=".activity.MainActivity" >
+            android:parentActivityName="com.pivotal.mss.datasdk.sample.activity.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -45,17 +45,17 @@
                 android:value="MainActivity" />
         </activity>
         <activity
-            android:name=".activity.DataEditorActivity"
+            android:name="com.pivotal.mss.datasdk.sample.activity.DataEditorActivity"
             android:label="@string/title_activity_data_editor"
             android:launchMode="singleTop"
-            android:parentActivityName=".activity.MainActivity"
+            android:parentActivityName="com.pivotal.mss.datasdk.sample.activity.MainActivity"
             android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.ViewJsonActivity"
+            android:name="com.pivotal.mss.datasdk.sample.activity.ViewJsonActivity"
             android:label="@string/title_view_json_activity"
             android:launchMode="singleTop">
             <meta-data

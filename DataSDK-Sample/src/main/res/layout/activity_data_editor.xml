@@ -6,7 +6,7 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp"
     android:paddingBottom="0dp"
-    tools:context="com.pivotal.cf.mobile.datasdk.sample.activity.DataEditorActivity">
+    tools:context="com.pivotal.mss.datasdk.sample.activity.DataEditorActivity">
 
     <ScrollView
         android:id="@+id/scrollview"
