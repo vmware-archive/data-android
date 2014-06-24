@@ -28,5 +28,6 @@
     <string name="title_view_json_activity">View JSON</string>
     <string name="action_clear_items">Clear Items</string>
     <string name="delete_object">Delete Object</string>
+    <string name="editor_instructions">Note that items with blank or duplicate keys may be deleted upon rotating the device, viewing the underlying JSON, or performing a server operation. Fetching a remote object can merge remote items with existing local ones.</string>
 
 </resources>
