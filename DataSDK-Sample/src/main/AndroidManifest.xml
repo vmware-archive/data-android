@@ -23,7 +23,7 @@
             android:parentActivityName="com.pivotal.mss.datasdk.sample.activity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
+                android:value="com.pivotal.mss.datasdk.sample.activity.MainActivity" />
         </activity>
         <activity
             android:name="com.pivotal.mss.datasdk.sample.activity.AuthorizationActivity"
@@ -52,7 +52,7 @@
             android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.pivotal.cf.mobile.datasdk.sample.activity.MainActivity" />
+                android:value="com.pivotal.mss.datasdk.sample.activity.MainActivity" />
         </activity>
         <activity
             android:name="com.pivotal.mss.datasdk.sample.activity.ViewJsonActivity"
@@ -60,7 +60,7 @@
             android:launchMode="singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.pivotal.cf.mobile.datasdk.sample.activity.DataEditorActivity" />
+                android:value="com.pivotal.mss.datasdk.sample.activity.DataEditorActivity" />
         </activity>
     </application>
 
