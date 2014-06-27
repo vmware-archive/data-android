@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':Data')
+    compile 'io.pivotal.android:SampleAppCore:0.6-RELEASE'
+    compile 'com.android.support:appcompat-v7:19.+'
+}

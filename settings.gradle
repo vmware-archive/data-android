@@ -1,2 +1,1 @@
-include ':DataSDK'
-include ':DataSDK-Sample'
+include 'Data', 'Data-Sample'

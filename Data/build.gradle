@@ -1,0 +1,22 @@
+dependencies {
+    compile 'io.pivotal.android:Common:0.6-RELEASE'
+    compile ('com.google.oauth-client:google-oauth-client:1.18.0-rc') {
+        exclude module: 'xpp3'
+        exclude module: 'org.apache.httpcomponents:httpclient'
+        exclude module: 'junit'
+        exclude module: 'com.google.android:android'
+    }
+    compile 'com.google.http-client:google-http-client-jackson2:1.18.0-rc'
+    compile 'com.google.code.gson:gson:2.2.4'
+    androidTestCompile 'io.pivotal.android:CommonTest:0.6-RELEASE'
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        pom.project pomInfo
+        pom.project {
+            name 'Pivotal Mobile Services Suite Data Client SDK for Android'
+            description 'Lightweight SDK designed to retrieve data from a data store in the Pivotal Mobile Services Suite.'
+        }
+    }
+}

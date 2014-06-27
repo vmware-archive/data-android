@@ -1,5 +1,0 @@
-dependencies {
-    compile project(':DataSDK')
-    compile 'com.pivotal.mss:SampleAppCore:0.6-RELEASE'
-    compile 'com.android.support:appcompat-v7:19.+'
-}
