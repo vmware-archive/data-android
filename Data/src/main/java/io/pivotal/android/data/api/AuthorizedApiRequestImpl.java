@@ -35,9 +35,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.pivotal.android.common.util.Logger;
 import io.pivotal.android.data.client.AuthorizationException;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
+import io.pivotal.android.data.util.Logger;
 
 public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
 
@@ -130,7 +130,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
     public void obtainAuthorization(Activity activity) {
         // Does not use the thread pool since it launches an activity.
         final String url = getAuthorizationRequestUrl();
-        Logger.fd("Loading authorization request URL to identify server in external browser: '%s'.", url);
+        Logger.fd("Loading authorization request URL to identity server in external browser: '%s'.", url);
         final Uri uri = Uri.parse(url);
         final Intent i = new Intent(Intent.ACTION_VIEW, uri);
         i.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -161,7 +161,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     if (tokenResponse != null) {
                         Logger.fd("Received access token from identity server: '%s'.", tokenResponse.getAccessToken());
                         if (tokenResponse.getRefreshToken() != null) {
-                            Logger.fd("Received refresh token from identify server: '%s'.", tokenResponse.getRefreshToken());
+                            Logger.fd("Received refresh token from identity server: '%s'.", tokenResponse.getRefreshToken());
                         }
                         Logger.fd("Access token expires in %d seconds.", tokenResponse.getExpiresInSeconds());
                         Logger.d("Authorization flow complete.");

@@ -2,9 +2,9 @@ package io.pivotal.android.data.data;
 
 public interface DataListener {
 
-    public void onSuccess(PivotalMSSObject object);
+    public void onSuccess(MSSObject object);
 
-    public void onUnauthorized(PivotalMSSObject object);
+    public void onUnauthorized(MSSObject object);
 
-    public void onFailure(PivotalMSSObject object, String reason);
+    public void onFailure(MSSObject object, String reason);
 }

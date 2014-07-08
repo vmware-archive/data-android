@@ -56,7 +56,7 @@ public class AbstractAuthorizationClient {
     }
 
     // TODO - write Javadocs
-    public void setParameters(DataParameters parameters) throws Exception {
+    public void setParameters(DataParameters parameters) throws AuthorizationException {
         verifyDataParameters(parameters);
         if (!isInitialParameters() && areParametersUpdated(parameters)) {
             final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);

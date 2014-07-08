@@ -3,7 +3,6 @@ package io.pivotal.android.data;
 import android.app.Activity;
 import android.content.Context;
 
-import io.pivotal.android.common.util.ThreadUtil;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.ApiProviderImpl;
 import io.pivotal.android.data.client.AuthorizationEngine;
@@ -12,24 +11,23 @@ import io.pivotal.android.data.client.AuthorizedResourceClient;
 import io.pivotal.android.data.client.AuthorizedResourceClientImpl;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
+import io.pivotal.android.data.util.ThreadUtil;
 
-public class DataSDK {
+public class Data {
 
-    private static DataSDK instance;
+    private static Data instance;
 
-    public synchronized static DataSDK getInstance() {
+    public synchronized static Data getInstance() {
         if (instance == null) {
-            instance = new DataSDK();
+            instance = new Data();
         }
         return instance;
     }
 
-    private DataSDK() {
-
-    }
+    private Data() {}
 
     // TODO - add Javadocs.  Must be called on UI thread?
-    public void setParameters(Context context, DataParameters parameters) throws Exception {
+    public void setParameters(Context context, DataParameters parameters) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
@@ -37,7 +35,7 @@ public class DataSDK {
     }
 
     // TODO - add Javadocs. Note: must be called on UI thread.
-    public void obtainAuthorization(Activity activity) throws Exception {
+    public void obtainAuthorization(Activity activity) {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
         final ApiProvider apiProvider = new ApiProviderImpl(activity);
@@ -46,7 +44,7 @@ public class DataSDK {
     }
 
     // TODO - add Javadocs. Note: must be called on UI thread.
-    public void clearAuthorization(Context context) throws Exception {
+    public void clearAuthorization(Context context) {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);

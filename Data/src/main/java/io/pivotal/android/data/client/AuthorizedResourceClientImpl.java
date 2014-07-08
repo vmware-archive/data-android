@@ -7,11 +7,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import io.pivotal.android.common.util.Logger;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.AuthorizedApiRequest;
 import io.pivotal.android.data.data.DataException;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
+import io.pivotal.android.data.util.Logger;
 
 public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient implements AuthorizedResourceClient {
 

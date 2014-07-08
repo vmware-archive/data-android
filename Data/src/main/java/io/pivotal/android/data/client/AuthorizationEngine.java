@@ -4,11 +4,11 @@ import android.app.Activity;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
 
-import io.pivotal.android.common.util.Logger;
 import io.pivotal.android.data.activity.BaseAuthorizationActivity;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.AuthorizedApiRequest;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
+import io.pivotal.android.data.util.Logger;
 
 public class AuthorizationEngine extends AbstractAuthorizationClient {
 
@@ -36,7 +36,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      *
      */
     // TODO - describe thrown exceptions
-    public void obtainAuthorization(Activity activity) throws Exception {
+    public void obtainAuthorization(Activity activity) throws AuthorizationException {
         if (activity == null) {
             throw new IllegalArgumentException("activity may not be null");
         }
@@ -45,8 +45,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     }
 
 
-    private void startAuthorization(Activity activity) throws Exception {
-
+    private void startAuthorization(Activity activity) throws AuthorizationException {
         // Launches external browser to do complete authentication
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
         request.obtainAuthorization(activity);
@@ -69,7 +68,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      * @param authorizationCode the authorization code received from the server.
      */
     // TODO - describe thrown exceptions
-    public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) throws Exception {
+    public void authorizationCodeReceived(final BaseAuthorizationActivity activity, final String authorizationCode) throws AuthorizationException {
 
         Logger.fd("Received authorization code from identity server: '%s'.", authorizationCode);
 
@@ -117,7 +116,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
     }
 
     // TODO - add Javadocs
-    public void clearAuthorization() throws Exception {
+    public void clearAuthorization() throws AuthorizationException {
         checkIfAuthorizationPreferencesAreSaved();
         final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
         request.clearSavedCredentialAsynchronously(null);

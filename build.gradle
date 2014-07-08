@@ -1,29 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
-////////////////////////////////////////////////////////////////
-//// Ensure your ~/.gradle/gradle.properties file or environment defines the following properties:
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Ensure your ~/.gradle/gradle.properties file or environment defines the following properties:
 // MAVEN_USER = your user name on the above Artifactory.
-// MAVEN_PASS = your password on the above Artifactory.  It is encourage to use the encrypted form of your password
-////////////////////////////////////////////////////////////////
-
-//// Set your application versionName and versionCode here. ////
-ext {
-    versionName = "0.1"
-    versionCode = 1
-    isSnapshot = true
-
-    libraryProjects = [
-            project(":Data")
-    ]
-    applicationProjects = [
-            project(":Data-Sample")
-    ]
-}
-////////////////////////////////////////////////////////////////
+// MAVEN_PASS = your password on the above Artifactory.
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 buildscript {
     repositories {
-
         mavenCentral()
     }
     dependencies {
@@ -31,31 +15,57 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        maven {
-            url 'https://maven.xtremelabs.com/artifactory/xl-libs'
-            credentials {
-                username MAVEN_USER
-                password MAVEN_PASS
-            }
+ext {
+    versionName = "0.1"
+    versionCode = 1
+    isSnapshot = true
+}
+
+ext.pomInfo = {
+    packaging 'aar'
+    url 'https://github.com/cfmobile/push-android'
+
+    scm {
+        url 'git@github.com:cfmobile/push-android.git'
+        connection 'scm:git:git@github.com:cfmobile/push-android.git'
+        developerConnection 'scm:git:git@github.com:cfmobile/push-android.git'
+    }
+
+    licenses {
+        license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
         }
     }
 
-    group = "io.pivotal.android"
-    if (isSnapshot) {
-        version =  versionName + "-SNAPSHOT"
-    } else {
-        version =  versionName + "-RELEASE"
+    developers {
+        developer {
+            id 'rszumlakowski'
+            name 'Robert Szumlakowski'
+            email 'robsz@pivotallabs.com'
+        }
     }
 }
 
-// LIBRARIES
-configure (libraryProjects) {
-
-    apply plugin: 'android-library'
+allprojects {
     apply plugin: 'maven'
+
+    group = "io.pivotal.android"
+
+    if (isSnapshot) {
+        version =  versionName + "-SNAPSHOT"
+    } else {
+        version =  versionName
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'android-library'
 
     android {
         compileSdkVersion 19
@@ -66,6 +76,12 @@ configure (libraryProjects) {
             versionName versionName
             minSdkVersion 10
             targetSdkVersion 19
+        }
+    }
+
+    configurations {
+        archives {
+            extendsFrom configurations.default
         }
     }
 
@@ -78,57 +94,6 @@ configure (libraryProjects) {
             snapshotRepository(url: 'https://maven.xtremelabs.com/artifactory/libs-snapshot-local') {
                 authentication(userName: MAVEN_USER, password: MAVEN_PASS)
             }
-        }
-    }
-
-    configurations {
-        archives {
-            extendsFrom configurations.default
-        }
-    }
-
-    ext.pomInfo = {
-        packaging 'aar'
-        url 'https://github.com/cfmobile/push-android'
-
-        scm {
-            url 'git@github.com:cfmobile/push-android.git'
-            connection 'scm:git:git@github.com:cfmobile/push-android.git'
-            developerConnection 'scm:git:git@github.com:cfmobile/push-android.git'
-        }
-
-        licenses {
-            license {
-                name 'The Apache Software License, Version 2.0'
-                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution 'repo'
-            }
-        }
-
-        developers {
-            developer {
-                id 'rszumlakowski'
-                name 'Robert Szumlakowski'
-                email 'robsz@pivotallabs.com'
-            }
-        }
-    }
-}
-
-// APPLICATIONS
-configure (applicationProjects) {
-
-    apply plugin: 'android'
-
-    android {
-        compileSdkVersion 19
-        buildToolsVersion "19.1.0"
-
-        defaultConfig {
-            versionCode versionCode
-            versionName versionName
-            minSdkVersion 10
-            targetSdkVersion 19
         }
     }
 }

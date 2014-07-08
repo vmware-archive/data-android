@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
-import io.pivotal.android.common.util.Logger;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.ApiProviderImpl;
 import io.pivotal.android.data.client.AuthorizationEngine;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
+import io.pivotal.android.data.util.Logger;
 
 public abstract class BaseAuthorizationActivity extends Activity {
 

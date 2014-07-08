@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import io.pivotal.android.common.util.Logger;
+import io.pivotal.android.data.util.Logger;
 
 public class AuthorizationPreferencesProviderImpl implements AuthorizationPreferencesProvider {
 

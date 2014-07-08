@@ -16,12 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import io.pivotal.android.common.util.Logger;
 import io.pivotal.android.data.client.AuthorizationException;
 import io.pivotal.android.data.client.AuthorizedResourceClient;
+import io.pivotal.android.data.util.Logger;
 
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
-public class PivotalMSSObject implements Parcelable {
+public class MSSObject implements Parcelable {
 
     // NOTE - it would be nice if we could make this class extend or implement a Map
     // class or interface but Android does not successfully bundle a custom Parcelable
@@ -34,7 +34,7 @@ public class PivotalMSSObject implements Parcelable {
     private HashMap<String, Object> map;
     private String objectId;
 
-    public PivotalMSSObject(String className) {
+    public MSSObject(String className) {
         setClassName(className);
         initializeData();
     }
@@ -97,26 +97,26 @@ public class PivotalMSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PivotalMSSObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PivotalMSSObject.this);
-                };
+                    listener.onUnauthorized(MSSObject.this);
+                }
             }
 
             @Override
             public void onFailure(String reason) {
-                Logger.e("Error fetching PivotalMSSObject data: \"" + reason + "\".");
+                Logger.e("Error fetching MSSObject data: \"" + reason + "\".");
                 returnError(reason);
             }
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PivotalMSSObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -180,26 +180,26 @@ public class PivotalMSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PivotalMSSObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PivotalMSSObject.this);
-                };
+                    listener.onUnauthorized(MSSObject.this);
+                }
             }
 
             @Override
             public void onFailure(String reason) {
-                Logger.e("Error fetching PivotalMSSObject data: \"" + reason + "\".");
+                Logger.e("Error fetching MSSObject data: \"" + reason + "\".");
                 returnError(reason);
             }
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PivotalMSSObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -259,26 +259,26 @@ public class PivotalMSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(PivotalMSSObject.this);
+                    listener.onSuccess(MSSObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(PivotalMSSObject.this);
-                };
+                    listener.onUnauthorized(MSSObject.this);
+                }
             }
 
             @Override
             public void onFailure(String reason) {
-                Logger.e("Error fetching PivotalMSSObject data: \"" + reason + "\".");
+                Logger.e("Error fetching MSSObject data: \"" + reason + "\".");
                 returnError(reason);
             }
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(PivotalMSSObject.this, reason);
+                    listener.onFailure(MSSObject.this, reason);
                 }
             }
         });
@@ -336,18 +336,18 @@ public class PivotalMSSObject implements Parcelable {
 
     // Parcelable stuff
 
-    public static final Parcelable.Creator<PivotalMSSObject> CREATOR = new Parcelable.Creator<PivotalMSSObject>() {
+    public static final Parcelable.Creator<MSSObject> CREATOR = new Parcelable.Creator<MSSObject>() {
 
-        public PivotalMSSObject createFromParcel(Parcel in) {
-            return new PivotalMSSObject(in);
+        public MSSObject createFromParcel(Parcel in) {
+            return new MSSObject(in);
         }
 
-        public PivotalMSSObject[] newArray(int size) {
-            return new PivotalMSSObject[size];
+        public MSSObject[] newArray(int size) {
+            return new MSSObject[size];
         }
     };
 
-    private PivotalMSSObject(Parcel in) {
+    private MSSObject(Parcel in) {
         className = in.readString();
         objectId = in.readString();
 
@@ -375,13 +375,13 @@ public class PivotalMSSObject implements Parcelable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof PivotalMSSObject)) return false;
+        if (o == null || !(o instanceof MSSObject)) return false;
 
-        PivotalMSSObject PivotalMSSObject = (PivotalMSSObject) o;
+        MSSObject MSSObject = (MSSObject) o;
 
-        if (!className.equals(PivotalMSSObject.className)) return false;
-        if (!map.equals(PivotalMSSObject.map)) return false;
-        if (!objectId.equals(PivotalMSSObject.objectId)) return false;
+        if (!className.equals(MSSObject.className)) return false;
+        if (!map.equals(MSSObject.map)) return false;
+        if (!objectId.equals(MSSObject.objectId)) return false;
 
         return true;
     }
