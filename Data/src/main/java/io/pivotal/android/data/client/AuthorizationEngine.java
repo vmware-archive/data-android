@@ -88,7 +88,7 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
                 @Override
                 public void onSavedCredentialCleared() {
-                    activity.onAuthorizationFailed("no authorization code was returned.");
+                    activity.notifyAuthorizationFailed("no authorization code was returned.");
                 }
             });
 
@@ -99,18 +99,18 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
 
                 @Override
                 public void onSuccess(TokenResponse tokenResponse) {
-                    activity.onAuthorizationComplete();
+                    activity.notifyAuthorizationComplete();
                 }
 
                 @Override
                 public void onAuthorizationDenied() {
                     request.clearSavedCredentialSynchronously();
-                    activity.onAuthorizationDenied();
+                    activity.notifyAuthorizationDenied();
                 }
 
                 @Override
                 public void onFailure(String reason) {
-                    activity.onAuthorizationFailed(reason);
+                    activity.notifyAuthorizationFailed(reason);
                 }
             });
         }

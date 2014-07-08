@@ -17,7 +17,6 @@ public abstract class BaseAuthorizationActivity extends Activity {
     private ApiProvider apiProvider;
     private AuthorizationEngine authorizationEngine;
 
-    // NOTE: These callbacks might be called on background threads.
     public abstract void onAuthorizationComplete();
     public abstract void onAuthorizationDenied();
     public abstract void onAuthorizationFailed(String reason);
@@ -29,13 +28,13 @@ public abstract class BaseAuthorizationActivity extends Activity {
         setupRequirements();
 
         if (intentHasCallbackUrl(getIntent())) {
-            // TODO - check state field in intent.data URI
-            setupAuthorizationEngine();
             try {
+                // TODO - check state field in intent.data URI
+                setupAuthorizationEngine();
                 reenterAuthorizationEngine(getIntent());
             } catch (Exception e) {
                 Logger.ex("Could not provide access code to Authorization Engine", e);
-                onAuthorizationFailed("Could not provide access code to Authorization Engine :" + e.getLocalizedMessage());
+                notifyAuthorizationFailed("Could not provide access code to Authorization Engine :" + e.getLocalizedMessage());
             }
         }
     }
@@ -81,5 +80,32 @@ public abstract class BaseAuthorizationActivity extends Activity {
 
     private String getAuthorizationCode(Uri uri) {
         return uri.getQueryParameter("code");
+    }
+
+    public final void notifyAuthorizationComplete() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAuthorizationComplete();
+            }
+        });
+    }
+
+    public final void notifyAuthorizationDenied() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAuthorizationDenied();
+            }
+        });
+    }
+
+    public final void notifyAuthorizationFailed(final String reason) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                onAuthorizationFailed(reason);
+            }
+        });
     }
 }
