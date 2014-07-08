@@ -33,8 +33,8 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
 
         URL requestUrl;
         try {
-            final URL dataServicesUrl = authorizationPreferencesProvider.getDataServicesUrl();
-            requestUrl = new URL(dataServicesUrl, className + "/" + objectId);
+            final String dataServicesUrl = authorizationPreferencesProvider.getDataServicesUrl();
+            requestUrl = new URL(dataServicesUrl + "/" + className + "/" + objectId);
         } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }

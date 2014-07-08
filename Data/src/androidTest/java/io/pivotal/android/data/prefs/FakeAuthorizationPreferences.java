@@ -1,15 +1,13 @@
 package io.pivotal.android.data.prefs;
 
-import java.net.URL;
-
 public class FakeAuthorizationPreferences implements AuthorizationPreferencesProvider {
 
     private String clientId;
     private String clientSecret;
-    private URL authorizationUrl;
-    private URL tokenUrl;
+    private String authorizationUrl;
+    private String tokenUrl;
     private String redirectUrl;
-    private URL dataServicesUrl;
+    private String dataServicesUrl;
 
     @Override
     public String getClientId() {
@@ -32,22 +30,22 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     }
 
     @Override
-    public URL getAuthorizationUrl() {
+    public String getAuthorizationUrl() {
         return authorizationUrl;
     }
 
     @Override
-    public void setAuthorizationUrl(URL authorizationUrl) {
+    public void setAuthorizationUrl(String authorizationUrl) {
         this.authorizationUrl = authorizationUrl;
     }
 
     @Override
-    public URL getTokenUrl() {
+    public String getTokenUrl() {
         return tokenUrl;
     }
 
     @Override
-    public void setTokenUrl(URL tokenUrl) {
+    public void setTokenUrl(String tokenUrl) {
         this.tokenUrl = tokenUrl;
     }
 
@@ -62,12 +60,12 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     }
 
     @Override
-    public URL getDataServicesUrl() {
+    public String getDataServicesUrl() {
         return dataServicesUrl;
     }
 
     @Override
-    public void setDataServicesUrl(URL dataServicesUrl) {
+    public void setDataServicesUrl(String dataServicesUrl) {
         this.dataServicesUrl = dataServicesUrl;
     }
 }

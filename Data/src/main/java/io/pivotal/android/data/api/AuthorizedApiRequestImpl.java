@@ -101,10 +101,10 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
         try {
             final String clientId = authorizationPreferencesProvider.getClientId();
             final String clientSecret = authorizationPreferencesProvider.getClientSecret();
-            final URL authorizationURL = authorizationPreferencesProvider.getAuthorizationUrl();
-            final URL tokenUrl = authorizationPreferencesProvider.getTokenUrl();
+            final String authorizationUrl = authorizationPreferencesProvider.getAuthorizationUrl();
+            final String tokenUrl = authorizationPreferencesProvider.getTokenUrl();
 
-            if (clientId == null || clientSecret == null || authorizationURL == null || tokenUrl == null) {
+            if (clientId == null || clientSecret == null || authorizationUrl == null || tokenUrl == null) {
                 throw new AuthorizationException("Authorization preferences have not been set up.");
             }
 
@@ -115,7 +115,7 @@ public class AuthorizedApiRequestImpl implements AuthorizedApiRequest {
                     new GenericUrl(tokenUrl),
                     new ClientParametersAuthentication(clientId, clientSecret),
                     clientId,
-                    authorizationURL.toString())
+                    authorizationUrl)
                     .setScopes(SCOPES)
                     .setDataStoreFactory(dataStoreFactory).build();
 

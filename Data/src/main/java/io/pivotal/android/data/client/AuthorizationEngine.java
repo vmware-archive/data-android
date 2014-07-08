@@ -29,9 +29,10 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
      *                      <action android:name="android.intent.action.VIEW" />
      *                      <category android:name="android.intent.category.DEFAULT" />
      *                      <category android:name="android.intent.category.BROWSABLE" />
-     *                      <data android:scheme="YOUR.REDIRECT_URL.SCHEME" />
-     *                      <data android:host="YOUR.REDIRECT.URL.HOST_NAME" />
-     *                      <data android:pathPrefix="YOUR.REDIRECT.URL.PATH />
+     *
+     *                      <data android:scheme="[YOUR.REDIRECT_URL.SCHEME]" />
+     *                      <data android:host="[YOUR.REDIRECT_URL.HOST]" />
+     *                      <data android:pathPrefix="[YOUR.REDIRECT_URL.PATH]" />
      *                   </intent-filter>
      *
      */

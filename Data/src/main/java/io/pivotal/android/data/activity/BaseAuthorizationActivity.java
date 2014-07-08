@@ -25,7 +25,9 @@ public abstract class BaseAuthorizationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
         setupRequirements();
+
         if (intentHasCallbackUrl(getIntent())) {
             // TODO - check state field in intent.data URI
             setupAuthorizationEngine();

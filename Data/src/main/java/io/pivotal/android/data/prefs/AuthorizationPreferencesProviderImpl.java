@@ -4,11 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import io.pivotal.android.data.util.Logger;
-
 public class AuthorizationPreferencesProviderImpl implements AuthorizationPreferencesProvider {
 
     public static final String TAG_NAME = "PivotalCFMSDataSDK";
@@ -69,54 +64,28 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     }
 
     @Override
-    public URL getAuthorizationUrl() {
-        final String preference = getSharedPreferences().getString(PROPERTY_AUTHORIZATION_URL, null);
-        if (preference == null) {
-            return null;
-        }
-        try {
-            return new URL(preference);
-        } catch (MalformedURLException e) {
-            Logger.w("Invalid authorization URL stored in preferences: " + preference);
-            return null;
-        }
+    public String getAuthorizationUrl() {
+        return getSharedPreferences().getString(PROPERTY_AUTHORIZATION_URL, null);
     }
 
     @Override
-    public void setAuthorizationUrl(URL authorizationUrl) {
+    public void setAuthorizationUrl(String authorizationUrl) {
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
-        if (authorizationUrl != null) {
-            editor.putString(PROPERTY_AUTHORIZATION_URL, authorizationUrl.toString());
-        } else {
-            editor.putString(PROPERTY_AUTHORIZATION_URL, null);
-        }
+        editor.putString(PROPERTY_AUTHORIZATION_URL, authorizationUrl);
         editor.commit();
     }
 
     @Override
-    public URL getTokenUrl() {
-        final String preference = getSharedPreferences().getString(PROPERTY_TOKEN_URL, null);
-        if (preference == null) {
-            return null;
-        }
-        try {
-            return new URL(preference);
-        } catch (MalformedURLException e) {
-            Logger.w("Invalid token URL stored in preferences: " + preference);
-            return null;
-        }
+    public String getTokenUrl() {
+        return getSharedPreferences().getString(PROPERTY_TOKEN_URL, null);
     }
 
     @Override
-    public void setTokenUrl(URL tokenUrl) {
+    public void setTokenUrl(String tokenUrl) {
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
-        if (tokenUrl != null) {
-            editor.putString(PROPERTY_TOKEN_URL, tokenUrl.toString());
-        } else {
-            editor.putString(PROPERTY_TOKEN_URL, null);
-        }
+        editor.putString(PROPERTY_TOKEN_URL, tokenUrl);
         editor.commit();
     }
 
@@ -129,39 +98,22 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     public void setRedirectUrl(String redirectUrl) {
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
-        if (redirectUrl != null) {
-            editor.putString(PROPERTY_REDIRECT_URL, redirectUrl.toString());
-        } else {
-            editor.putString(PROPERTY_REDIRECT_URL, null);
-        }
+        editor.putString(PROPERTY_REDIRECT_URL, redirectUrl);
         editor.commit();
     }
 
-
+    @Override
+    public String getDataServicesUrl() {
+        return getSharedPreferences().getString(PROPERTY_DATA_SERVICES_URL, null);
+    }
 
     @Override
-    public URL getDataServicesUrl() {
-        final String preference = getSharedPreferences().getString(PROPERTY_DATA_SERVICES_URL, null);
-        if (preference == null) {
-            return null;
-        }
-        try {
-            return new URL(preference);
-        } catch (MalformedURLException e) {
-            Logger.w("Invalid data services URL stored in preferences: " + preference);
-            return null;
-        }    }
-
-    @Override
-    public void setDataServicesUrl(URL dataServicesUrl) {
+    public void setDataServicesUrl(String dataServicesUrl) {
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
-        if (dataServicesUrl != null) {
-            editor.putString(PROPERTY_DATA_SERVICES_URL, dataServicesUrl.toString());
-        } else {
-            editor.putString(PROPERTY_DATA_SERVICES_URL, null);
-        }
-        editor.commit();    }
+        editor.putString(PROPERTY_DATA_SERVICES_URL, dataServicesUrl);
+        editor.commit();
+    }
 
     public void clear() {
         getSharedPreferences().edit().clear().commit();

@@ -1,7 +1,5 @@
 package io.pivotal.android.data.prefs;
 
-import java.net.URL;
-
 public interface AuthorizationPreferencesProvider {
     
     public String getClientId();
@@ -10,15 +8,15 @@ public interface AuthorizationPreferencesProvider {
     public String getClientSecret();
     public void setClientSecret(String clientSecret);
 
-    public URL getAuthorizationUrl();
-    public void setAuthorizationUrl(URL authorizationUrl);
+    public String getAuthorizationUrl();
+    public void setAuthorizationUrl(String authorizationUrl);
 
-    public URL getTokenUrl();
-    public void setTokenUrl(URL tokenUrl);
+    public String getTokenUrl();
+    public void setTokenUrl(String tokenUrl);
 
     public String getRedirectUrl();
     public void setRedirectUrl(String redirectUrl);
 
-    public URL getDataServicesUrl();
-    public void setDataServicesUrl(URL dataServicesUrl);
+    public String getDataServicesUrl();
+    public void setDataServicesUrl(String dataServicesUrl);
 }

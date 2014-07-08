@@ -2,12 +2,11 @@ package io.pivotal.android.data.prefs;
 
 import android.test.AndroidTestCase;
 
-import java.net.URL;
-
 public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
 
     private static final String CLIENT_SECRET = "TEST_CLIENT_SECRET";
     private static final String CLIENT_ID = "TEST_CLIENT_ID";
+
     private static final String REDIRECT_URL = "https://test.redirect.url";
     private static final String AUTHORIZATION_URL = "https://test.authorization.url";
     private static final String TOKEN_URL = "https://test.token.url";
@@ -47,18 +46,18 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
 
     public void testSetAuthorizationUrl() throws Exception {
         final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setAuthorizationUrl(new URL(AUTHORIZATION_URL));
-        assertEquals(new URL(AUTHORIZATION_URL), prefs1.getAuthorizationUrl());
+        prefs1.setAuthorizationUrl(AUTHORIZATION_URL);
+        assertEquals(AUTHORIZATION_URL, prefs1.getAuthorizationUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(new URL(AUTHORIZATION_URL), prefs2.getAuthorizationUrl());
+        assertEquals(AUTHORIZATION_URL, prefs2.getAuthorizationUrl());
     }
 
     public void testSetTokenUrl() throws Exception {
         final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setTokenUrl(new URL(TOKEN_URL));
-        assertEquals(new URL(TOKEN_URL), prefs1.getTokenUrl());
+        prefs1.setTokenUrl(TOKEN_URL);
+        assertEquals(TOKEN_URL, prefs1.getTokenUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(new URL(TOKEN_URL), prefs2.getTokenUrl());
+        assertEquals(TOKEN_URL, prefs2.getTokenUrl());
     }
 
     public void testSetRedirectUrl() throws Exception {
@@ -71,10 +70,10 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
 
     public void testSetDataServicesUrl() throws Exception {
         final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setDataServicesUrl(new URL(DATA_SERVICES_URL));
-        assertEquals(new URL(DATA_SERVICES_URL), prefs1.getDataServicesUrl());
+        prefs1.setDataServicesUrl(DATA_SERVICES_URL);
+        assertEquals(DATA_SERVICES_URL, prefs1.getDataServicesUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(new URL(DATA_SERVICES_URL), prefs2.getDataServicesUrl());
+        assertEquals(DATA_SERVICES_URL, prefs2.getDataServicesUrl());
     }
 
     private AuthorizationPreferencesProviderImpl getPrefs() {

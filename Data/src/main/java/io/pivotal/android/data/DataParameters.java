@@ -1,17 +1,15 @@
 package io.pivotal.android.data;
 
-import java.net.URL;
-
 public class DataParameters {
 
     private final String clientId;
     private final String clientSecret;
-    private final URL authorizationUrl;
-    private final URL tokenUrl;
+    private final String authorizationUrl;
+    private final String tokenUrl;
     private final String redirectUrl;
-    private final URL dataServicesUrl;
+    private final String dataServicesUrl;
 
-    public DataParameters(String clientId, String clientSecret, URL authorizationUrl, URL tokenUrl, String redirectUrl, URL dataServicesUrl) {
+    public DataParameters(String clientId, String clientSecret, String authorizationUrl, String tokenUrl, String redirectUrl, String dataServicesUrl) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authorizationUrl = authorizationUrl;
@@ -28,11 +26,11 @@ public class DataParameters {
         return clientSecret;
     }
 
-    public URL getAuthorizationUrl() {
+    public String getAuthorizationUrl() {
         return authorizationUrl;
     }
 
-    public URL getTokenUrl() {
+    public String getTokenUrl() {
         return tokenUrl;
     }
 
@@ -40,7 +38,7 @@ public class DataParameters {
         return redirectUrl;
     }
 
-    public URL getDataServicesUrl() {
+    public String getDataServicesUrl() {
         return dataServicesUrl;
     }
 

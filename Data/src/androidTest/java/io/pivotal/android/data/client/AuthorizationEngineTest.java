@@ -19,6 +19,7 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
     private static final String TEST_AUTHORIZATION_CODE = "TEST AUTHORIZATION CODE";
     private static final String TEST_EXPECTED_ACCESS_TOKEN = "TEST EXPECTED ACCESS TOKEN";
     private static final String TEST_SAVED_ACCESS_TOKEN = "TEST SAVED ACCESS TOKEN";
+
     private FakeActivity activity;
     private FakeBaseAuthorizationActivity authorizationActivity;
     private TokenResponse expectedTokenResponse;
@@ -318,7 +319,6 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         shouldBaseAuthorizationActivityListenerBeSuccessful = false;
         apiProvider.setShouldGetAccessTokenBeSuccessful(false);
         getEngine().authorizationCodeReceived(authorizationActivity, TEST_AUTHORIZATION_CODE);
-        semaphore.acquire();
         assertEquals(1, apiProvider.getApiRequests().size());
         assertTrue(apiProvider.getApiRequests().get(0).didCallGetAccessToken());
         assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
