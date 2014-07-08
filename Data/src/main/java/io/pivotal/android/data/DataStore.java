@@ -13,21 +13,21 @@ import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
 import io.pivotal.android.data.util.ThreadUtil;
 
-public class Data {
+public class DataStore {
 
-    private static Data instance;
+    private static DataStore instance;
 
-    public synchronized static Data getInstance() {
+    public synchronized static DataStore getInstance() {
         if (instance == null) {
-            instance = new Data();
+            instance = new DataStore();
         }
         return instance;
     }
 
-    private Data() {}
+    private DataStore() {}
 
     // TODO - add Javadocs.  Must be called on UI thread?
-    public void setParameters(Context context, DataParameters parameters) {
+    public void setParameters(Context context, DataStoreParameters parameters) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);

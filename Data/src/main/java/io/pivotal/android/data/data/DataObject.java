@@ -21,7 +21,7 @@ import io.pivotal.android.data.client.AuthorizedResourceClient;
 import io.pivotal.android.data.util.Logger;
 
 // TODO - should the value type "Object" be limited to items that are JSON-izable?
-public class MSSObject implements Parcelable {
+public class DataObject implements Parcelable {
 
     // NOTE - it would be nice if we could make this class extend or implement a Map
     // class or interface but Android does not successfully bundle a custom Parcelable
@@ -30,11 +30,12 @@ public class MSSObject implements Parcelable {
 
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String UTF8_ENCODING = "utf-8";
+
     private String className;
     private HashMap<String, Object> map;
     private String objectId;
 
-    public MSSObject(String className) {
+    public DataObject(String className) {
         setClassName(className);
         initializeData();
     }
@@ -67,6 +68,22 @@ public class MSSObject implements Parcelable {
         return className;
     }
 
+    private void verifyState(AuthorizedResourceClient client) throws DataException {
+        if (objectId == null || objectId.isEmpty()) {
+            throw new DataException("objectId may not be null or empty");
+        }
+        if (className == null) {
+            throw new DataException("className may not be null");
+        }
+        if (client == null) {
+            throw new IllegalArgumentException("client may not be null");
+        }
+    }
+
+    private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
+        return httpStatusCode >= 200 && httpStatusCode < 300;
+    }
+
     // Data synchronization methods
 
     public void fetch(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
@@ -97,14 +114,14 @@ public class MSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(MSSObject.this);
+                    listener.onSuccess(DataObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(MSSObject.this);
+                    listener.onUnauthorized(DataObject.this);
                 }
             }
 
@@ -116,52 +133,10 @@ public class MSSObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(MSSObject.this, reason);
+                    listener.onFailure(DataObject.this, reason);
                 }
             }
         });
-    }
-
-    private void verifyState(AuthorizedResourceClient client) throws DataException {
-        if (objectId == null || objectId.isEmpty()) {
-            throw new DataException("objectId may not be null or empty");
-        }
-        if (className == null) {
-            throw new DataException("className may not be null");
-        }
-        if (client == null) {
-            throw new IllegalArgumentException("client may not be null");
-        }
-    }
-
-    private boolean isSuccessfulHttpStatusCode(int httpStatusCode) {
-        return httpStatusCode >= 200 && httpStatusCode < 300;
-    }
-
-    private void parseJsonAndSetFields(InputStream in, String contentEncoding) throws Exception {
-
-        if (contentEncoding == null) {
-            contentEncoding = "utf-8";
-        }
-
-        final JsonReader reader = new JsonReader(new InputStreamReader(in, contentEncoding));
-        reader.beginObject();
-        while(reader.hasNext()) {
-            final String key = reader.nextName();
-            final JsonToken token = reader.peek();
-            // TODO - support more complicated object types
-            if (token == JsonToken.STRING) {
-                final String value = reader.nextString();
-                map.put(key, value);
-            } else if (token == JsonToken.BOOLEAN) {
-                map.put(key, reader.nextBoolean());
-            } else if (token == JsonToken.NUMBER) {
-                // Sadly, GSON gives no help determining if a value is an int, double, or long.
-                // We must always assume that it's a double value.
-                map.put(key, reader.nextDouble());
-            }
-        }
-        reader.endObject();
     }
 
     public void save(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
@@ -180,14 +155,14 @@ public class MSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(MSSObject.this);
+                    listener.onSuccess(DataObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(MSSObject.this);
+                    listener.onUnauthorized(DataObject.this);
                 }
             }
 
@@ -199,50 +174,10 @@ public class MSSObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(MSSObject.this, reason);
+                    listener.onFailure(DataObject.this, reason);
                 }
             }
         });
-    }
-
-    /**
-     * Generates the JSON-representation of the data in this object.
-     *
-     * @return  the JSON-representation of the data in this object.
-     *
-     * @throws  DataException will be thrown if the object could not be serialized to JSON.
-     */
-    public byte[] toJson() throws DataException {
-
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final OutputStreamWriter osw = new OutputStreamWriter(out);
-        final JsonWriter writer = new JsonWriter(osw);
-        try {
-            writer.beginObject();
-            for (final Map.Entry<String, Object> entry : map.entrySet()) {
-                writer.name(entry.getKey());
-                if (entry.getValue() instanceof String) {
-                    writer.value((String) entry.getValue());
-                } else if (entry.getValue() instanceof Boolean) {
-                    writer.value((Boolean) entry.getValue());
-                } else if (entry.getValue() instanceof Float) {
-                    final Float f = (Float) entry.getValue();
-                    writer.value((Double) f.doubleValue());
-                } else if (entry.getValue() instanceof Double) {
-                    writer.value((Double) entry.getValue());
-                } else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Short || entry.getValue() instanceof Byte) {
-                    writer.value((Number) entry.getValue());
-                } else if (entry.getValue() instanceof Long) {
-                    writer.value((Long) entry.getValue());
-                }
-            }
-            writer.endObject();
-            writer.close();
-            return out.toByteArray();
-        } catch (Exception e) {
-            Logger.ex(e);
-            throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
-        }
     }
 
     public void delete(AuthorizedResourceClient client, final DataListener listener) throws AuthorizationException, DataException {
@@ -259,14 +194,14 @@ public class MSSObject implements Parcelable {
                 }
 
                 if (listener != null) {
-                    listener.onSuccess(MSSObject.this);
+                    listener.onSuccess(DataObject.this);
                 }
             }
 
             @Override
             public void onUnauthorized() {
                 if (listener != null) {
-                    listener.onUnauthorized(MSSObject.this);
+                    listener.onUnauthorized(DataObject.this);
                 }
             }
 
@@ -278,7 +213,7 @@ public class MSSObject implements Parcelable {
 
             private void returnError(String reason) {
                 if (listener != null) {
-                    listener.onFailure(MSSObject.this, reason);
+                    listener.onFailure(DataObject.this, reason);
                 }
             }
         });
@@ -336,18 +271,18 @@ public class MSSObject implements Parcelable {
 
     // Parcelable stuff
 
-    public static final Parcelable.Creator<MSSObject> CREATOR = new Parcelable.Creator<MSSObject>() {
+    public static final Parcelable.Creator<DataObject> CREATOR = new Parcelable.Creator<DataObject>() {
 
-        public MSSObject createFromParcel(Parcel in) {
-            return new MSSObject(in);
+        public DataObject createFromParcel(Parcel in) {
+            return new DataObject(in);
         }
 
-        public MSSObject[] newArray(int size) {
-            return new MSSObject[size];
+        public DataObject[] newArray(int size) {
+            return new DataObject[size];
         }
     };
 
-    private MSSObject(Parcel in) {
+    private DataObject(Parcel in) {
         className = in.readString();
         objectId = in.readString();
 
@@ -375,13 +310,13 @@ public class MSSObject implements Parcelable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof MSSObject)) return false;
+        if (o == null || !(o instanceof DataObject)) return false;
 
-        MSSObject MSSObject = (MSSObject) o;
+        DataObject DataObject = (DataObject) o;
 
-        if (!className.equals(MSSObject.className)) return false;
-        if (!map.equals(MSSObject.map)) return false;
-        if (!objectId.equals(MSSObject.objectId)) return false;
+        if (!className.equals(DataObject.className)) return false;
+        if (!map.equals(DataObject.map)) return false;
+        if (!objectId.equals(DataObject.objectId)) return false;
 
         return true;
     }
@@ -394,4 +329,69 @@ public class MSSObject implements Parcelable {
         return result;
     }
 
+    /**
+     * Generates the JSON-representation of the data in this object.
+     *
+     * @return  the JSON-representation of the data in this object.
+     *
+     * @throws  DataException will be thrown if the object could not be serialized to JSON.
+     */
+    public byte[] toJson() throws DataException {
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final OutputStreamWriter osw = new OutputStreamWriter(out);
+        final JsonWriter writer = new JsonWriter(osw);
+        try {
+            writer.beginObject();
+            for (final Map.Entry<String, Object> entry : map.entrySet()) {
+                writer.name(entry.getKey());
+                if (entry.getValue() instanceof String) {
+                    writer.value((String) entry.getValue());
+                } else if (entry.getValue() instanceof Boolean) {
+                    writer.value((Boolean) entry.getValue());
+                } else if (entry.getValue() instanceof Float) {
+                    final Float f = (Float) entry.getValue();
+                    writer.value((Double) f.doubleValue());
+                } else if (entry.getValue() instanceof Double) {
+                    writer.value((Double) entry.getValue());
+                } else if (entry.getValue() instanceof Integer || entry.getValue() instanceof Short || entry.getValue() instanceof Byte) {
+                    writer.value((Number) entry.getValue());
+                } else if (entry.getValue() instanceof Long) {
+                    writer.value((Long) entry.getValue());
+                }
+            }
+            writer.endObject();
+            writer.close();
+            return out.toByteArray();
+        } catch (Exception e) {
+            Logger.ex(e);
+            throw new DataException("Could not serialize data to JSON: '" + e.getLocalizedMessage() + "'.");
+        }
+    }
+
+    private void parseJsonAndSetFields(InputStream in, String contentEncoding) throws Exception {
+
+        if (contentEncoding == null) {
+            contentEncoding = "utf-8";
+        }
+
+        final JsonReader reader = new JsonReader(new InputStreamReader(in, contentEncoding));
+        reader.beginObject();
+        while(reader.hasNext()) {
+            final String key = reader.nextName();
+            final JsonToken token = reader.peek();
+            // TODO - support more complicated object types
+            if (token == JsonToken.STRING) {
+                final String value = reader.nextString();
+                map.put(key, value);
+            } else if (token == JsonToken.BOOLEAN) {
+                map.put(key, reader.nextBoolean());
+            } else if (token == JsonToken.NUMBER) {
+                // Sadly, GSON gives no help determining if a value is an int, double, or long.
+                // We must always assume that it's a double value.
+                map.put(key, reader.nextDouble());
+            }
+        }
+        reader.endObject();
+    }
 }

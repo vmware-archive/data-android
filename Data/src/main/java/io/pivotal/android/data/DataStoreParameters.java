@@ -1,6 +1,6 @@
 package io.pivotal.android.data;
 
-public class DataParameters {
+public class DataStoreParameters {
 
     private final String clientId;
     private final String clientSecret;
@@ -9,7 +9,7 @@ public class DataParameters {
     private final String redirectUrl;
     private final String dataServicesUrl;
 
-    public DataParameters(String clientId, String clientSecret, String authorizationUrl, String tokenUrl, String redirectUrl, String dataServicesUrl) {
+    public DataStoreParameters(String clientId, String clientSecret, String authorizationUrl, String tokenUrl, String redirectUrl, String dataServicesUrl) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authorizationUrl = authorizationUrl;
@@ -47,7 +47,7 @@ public class DataParameters {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final DataParameters other = (DataParameters) o;
+        final DataStoreParameters other = (DataStoreParameters) o;
 
         if (clientId != null ? !clientId.equals(other.clientId) : other.clientId != null) {
             return false;

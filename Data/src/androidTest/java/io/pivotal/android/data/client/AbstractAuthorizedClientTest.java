@@ -7,7 +7,7 @@ import com.google.api.client.auth.oauth2.Credential;
 
 import java.util.concurrent.Semaphore;
 
-import io.pivotal.android.data.DataParameters;
+import io.pivotal.android.data.DataStoreParameters;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.FakeApiProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
@@ -31,7 +31,7 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
 
     protected FakeApiProvider apiProvider;
     protected FakeAuthorizationPreferences preferences;
-    protected DataParameters parameters;
+    protected DataStoreParameters parameters;
     protected Semaphore semaphore;
     protected Credential credential;
 
@@ -42,7 +42,7 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected void setUp() throws Exception {
         preferences = new FakeAuthorizationPreferences();
         apiProvider = new FakeApiProvider();
-        parameters = new DataParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
+        parameters = new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);
     }

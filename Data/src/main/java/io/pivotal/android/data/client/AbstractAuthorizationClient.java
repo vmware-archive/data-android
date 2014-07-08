@@ -1,6 +1,6 @@
 package io.pivotal.android.data.client;
 
-import io.pivotal.android.data.DataParameters;
+import io.pivotal.android.data.DataStoreParameters;
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.AuthorizedApiRequest;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
@@ -56,7 +56,7 @@ public class AbstractAuthorizationClient {
     }
 
     // TODO - write Javadocs
-    public void setParameters(DataParameters parameters) throws AuthorizationException {
+    public void setParameters(DataStoreParameters parameters) throws AuthorizationException {
         verifyDataParameters(parameters);
         if (!isInitialParameters() && areParametersUpdated(parameters)) {
             final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
@@ -65,7 +65,7 @@ public class AbstractAuthorizationClient {
         saveDataParameters(parameters);
     }
 
-    private void verifyDataParameters(DataParameters parameters) {
+    private void verifyDataParameters(DataStoreParameters parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("parameters may not be null");
         }
@@ -98,7 +98,7 @@ public class AbstractAuthorizationClient {
                 authorizationPreferencesProvider.getDataServicesUrl() == null;
     }
 
-    private boolean areParametersUpdated(DataParameters parameters) {
+    private boolean areParametersUpdated(DataStoreParameters parameters) {
         if (!authorizationPreferencesProvider.getClientId().equals(parameters.getClientId())) {
             return true;
         }
@@ -117,7 +117,7 @@ public class AbstractAuthorizationClient {
         return false;
     }
 
-    private void saveDataParameters(DataParameters parameters) {
+    private void saveDataParameters(DataStoreParameters parameters) {
         authorizationPreferencesProvider.setClientId(parameters.getClientId());
         authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
