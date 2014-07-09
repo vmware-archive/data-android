@@ -23,12 +23,12 @@ ext {
 
 ext.pomInfo = {
     packaging 'aar'
-    url 'https://github.com/cfmobile/push-android'
+    url 'https://github.com/cfmobile/data-android'
 
     scm {
-        url 'git@github.com:cfmobile/push-android.git'
-        connection 'scm:git:git@github.com:cfmobile/push-android.git'
-        developerConnection 'scm:git:git@github.com:cfmobile/push-android.git'
+        url 'git@github.com:cfmobile/data-android.git'
+        connection 'scm:git:git@github.com:cfmobile/data-android.git'
+        developerConnection 'scm:git:git@github.com:cfmobile/data-android.git'
     }
 
     licenses {
