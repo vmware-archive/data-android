@@ -1,10 +1,13 @@
+/*
+ * Copyright (C) 2014 Pivotal Software, Inc. All rights reserved.
+ */
 package io.pivotal.android.data.client;
-
-import io.pivotal.android.data.data.DataException;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
+
+import io.pivotal.android.data.data.DataException;
 
 public interface AuthorizedResourceClient {
 

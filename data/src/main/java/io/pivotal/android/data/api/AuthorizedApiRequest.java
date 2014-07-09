@@ -1,14 +1,18 @@
+/*
+ * Copyright (C) 2014 Pivotal Software, Inc. All rights reserved.
+ */
 package io.pivotal.android.data.api;
 
 import android.app.Activity;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
-import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
+
+import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 
 public interface AuthorizedApiRequest {
 
