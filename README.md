@@ -1,7 +1,12 @@
 Android Data Client SDK
 =======================
 
-For public documentation please visit the [docs site](https://github.com/cfmobile/docs-datasync-android)
+The Push SDK requires API level 10 or greater.
+
+Data SDK Usage
+--------------
+
+For more information please visit the [docs site](https://github.com/cfmobile/docs-datasync-android)
 
 Building the SDK
 ----------------
