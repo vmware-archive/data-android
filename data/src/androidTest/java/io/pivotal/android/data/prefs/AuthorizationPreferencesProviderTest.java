@@ -25,9 +25,7 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
         final AuthorizationPreferencesProviderImpl prefs = getPrefs();
         prefs.clear();
         assertNull(prefs.getClientId());
-        assertNull(prefs.getClientSecret());
         assertNull(prefs.getAuthorizationUrl());
-        assertNull(prefs.getTokenUrl());
         assertNull(prefs.getRedirectUrl());
     }
 
@@ -39,28 +37,12 @@ public class AuthorizationPreferencesProviderTest extends AndroidTestCase {
         assertEquals(CLIENT_ID, prefs2.getClientId());
     }
 
-    public void testSetClientSecret() {
-        final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setClientSecret(CLIENT_SECRET);
-        assertEquals(CLIENT_SECRET, prefs1.getClientSecret());
-        final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(CLIENT_SECRET, prefs2.getClientSecret());
-    }
-
     public void testSetAuthorizationUrl() throws Exception {
         final AuthorizationPreferencesProvider prefs1 = getPrefs();
         prefs1.setAuthorizationUrl(AUTHORIZATION_URL);
         assertEquals(AUTHORIZATION_URL, prefs1.getAuthorizationUrl());
         final AuthorizationPreferencesProvider prefs2 = getPrefs();
         assertEquals(AUTHORIZATION_URL, prefs2.getAuthorizationUrl());
-    }
-
-    public void testSetTokenUrl() throws Exception {
-        final AuthorizationPreferencesProvider prefs1 = getPrefs();
-        prefs1.setTokenUrl(TOKEN_URL);
-        assertEquals(TOKEN_URL, prefs1.getTokenUrl());
-        final AuthorizationPreferencesProvider prefs2 = getPrefs();
-        assertEquals(TOKEN_URL, prefs2.getTokenUrl());
     }
 
     public void testSetRedirectUrl() throws Exception {

@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Map;
 
-import io.pivotal.android.data.data.DataException;
+import io.pivotal.android.data.DataException;
 
 public interface AuthorizedResourceClient {
 

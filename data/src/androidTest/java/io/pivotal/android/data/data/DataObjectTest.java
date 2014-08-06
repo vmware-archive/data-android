@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import io.pivotal.android.data.DataException;
+import io.pivotal.android.data.DataListener;
+import io.pivotal.android.data.DataObject;
 import io.pivotal.android.data.client.AuthorizationException;
 import io.pivotal.android.data.client.FakeAuthorizedResourceClient;
 

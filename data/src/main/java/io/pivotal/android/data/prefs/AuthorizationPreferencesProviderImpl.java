@@ -12,9 +12,7 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     public static final String TAG_NAME = "PivotalCFMSDataSDK";
 
     private static final String PROPERTY_CLIENT_ID = "client_id";
-    private static final String PROPERTY_CLIENT_SECRET = "client_secret";
     private static final String PROPERTY_AUTHORIZATION_URL = "authorization_url";
-    private static final String PROPERTY_TOKEN_URL = "token_url";
     private static final String PROPERTY_REDIRECT_URL = "redirect_url";
     private static final String PROPERTY_DATA_SERVICES_URL = "data_services_url";
 
@@ -54,19 +52,6 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     }
 
     @Override
-    public String getClientSecret() {
-        return getSharedPreferences().getString(PROPERTY_CLIENT_SECRET, null);
-    }
-
-    @Override
-    public void setClientSecret(String clientSecret) {
-        final SharedPreferences prefs = getSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PROPERTY_CLIENT_SECRET, clientSecret);
-        editor.commit();
-    }
-
-    @Override
     public String getAuthorizationUrl() {
         return getSharedPreferences().getString(PROPERTY_AUTHORIZATION_URL, null);
     }
@@ -76,19 +61,6 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
         final SharedPreferences prefs = getSharedPreferences();
         final SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PROPERTY_AUTHORIZATION_URL, authorizationUrl);
-        editor.commit();
-    }
-
-    @Override
-    public String getTokenUrl() {
-        return getSharedPreferences().getString(PROPERTY_TOKEN_URL, null);
-    }
-
-    @Override
-    public void setTokenUrl(String tokenUrl) {
-        final SharedPreferences prefs = getSharedPreferences();
-        final SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PROPERTY_TOKEN_URL, tokenUrl);
         editor.commit();
     }
 

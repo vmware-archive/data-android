@@ -23,16 +23,6 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     }
 
     @Override
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    @Override
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-
-    @Override
     public String getAuthorizationUrl() {
         return authorizationUrl;
     }
@@ -40,16 +30,6 @@ public class FakeAuthorizationPreferences implements AuthorizationPreferencesPro
     @Override
     public void setAuthorizationUrl(String authorizationUrl) {
         this.authorizationUrl = authorizationUrl;
-    }
-
-    @Override
-    public String getTokenUrl() {
-        return tokenUrl;
-    }
-
-    @Override
-    public void setTokenUrl(String tokenUrl) {
-        this.tokenUrl = tokenUrl;
     }
 
     @Override

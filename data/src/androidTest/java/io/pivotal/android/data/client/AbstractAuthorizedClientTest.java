@@ -27,8 +27,6 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected static final String TEST_REDIRECT_URL_2 = "https://test.redirect.url.2";
     protected static final String TEST_AUTHORIZATION_URL = "https://test.authorization.url";
     protected static final String TEST_AUTHORIZATION_URL_2 = "https://test.authorization.url.2";
-    protected static final String TEST_TOKEN_URL = "https://test.token.url";
-    protected static final String TEST_TOKEN_URL_2 = "https://test.token.url.2";
     protected static final String TEST_DATA_SERVICES_URL = "https://test.data.services.url";
     protected static final String TEST_DATA_SERVICES_URL_2 = "https://test.data.services.url.2";
 
@@ -45,16 +43,14 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected void setUp() throws Exception {
         preferences = new FakeAuthorizationPreferences();
         apiProvider = new FakeApiProvider();
-        parameters = new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_TOKEN_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
+        parameters = new DataStoreParameters(TEST_CLIENT_ID, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);
     }
 
     protected void savePreferences() {
         preferences.setClientId(TEST_CLIENT_ID);
-        preferences.setClientSecret(TEST_CLIENT_SECRET);
         preferences.setAuthorizationUrl(TEST_AUTHORIZATION_URL);
-        preferences.setTokenUrl(TEST_TOKEN_URL);
         preferences.setRedirectUrl(TEST_REDIRECT_URL);
         preferences.setDataServicesUrl(TEST_DATA_SERVICES_URL);
     }

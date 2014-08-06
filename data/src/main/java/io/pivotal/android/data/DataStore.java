@@ -18,19 +18,18 @@ import io.pivotal.android.data.util.ThreadUtil;
 
 public class DataStore {
 
-    private static DataStore instance;
+    private static final class Holder {
+        public static final DataStore INSTANCE = new DataStore();
+    }
 
-    public synchronized static DataStore getInstance() {
-        if (instance == null) {
-            instance = new DataStore();
-        }
-        return instance;
+    public static DataStore getInstance() {
+        return Holder.INSTANCE;
     }
 
     private DataStore() {}
 
     // TODO - add Javadocs.  Must be called on UI thread?
-    public void setParameters(Context context, DataStoreParameters parameters) {
+    public static void initialize(Context context, DataStoreParameters parameters) {
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);

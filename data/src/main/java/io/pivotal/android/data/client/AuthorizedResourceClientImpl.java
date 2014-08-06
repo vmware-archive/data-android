@@ -12,7 +12,7 @@ import java.util.Map;
 
 import io.pivotal.android.data.api.ApiProvider;
 import io.pivotal.android.data.api.AuthorizedApiRequest;
-import io.pivotal.android.data.data.DataException;
+import io.pivotal.android.data.DataException;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.util.Logger;
 
