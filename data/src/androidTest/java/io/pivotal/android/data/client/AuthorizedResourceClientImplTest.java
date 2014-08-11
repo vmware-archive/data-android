@@ -109,27 +109,35 @@ public class AuthorizedResourceClientImplTest extends AbstractAuthorizedClientTe
     }
 
     public void testRequiresNotNullClientId() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(null, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
     }
 
     public void testRequiresNotEmptyClientId() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters("", TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
+    }
+
+    public void testRequiresNotNullClientSecret() throws Exception {
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
+    }
+
+    public void testRequiresNotEmptyClientSecret() throws Exception {
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
     }
 
     public void testRequiresAuthorizationUrl() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL), listener);
     }
 
     public void testRequiresNotNullRedirectUrl() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_AUTHORIZATION_URL, null, TEST_DATA_SERVICES_URL), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_DATA_SERVICES_URL), listener);
     }
 
     public void testRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_AUTHORIZATION_URL, "", TEST_DATA_SERVICES_URL), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, "", TEST_DATA_SERVICES_URL), listener);
     }
 
     public void testRequiresDataServicesUrl() throws Exception {
-        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, null), listener);
+        baseTestRequires(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, null), listener);
     }
 
     public void testRequiresAuthorizationParameters() throws Exception {

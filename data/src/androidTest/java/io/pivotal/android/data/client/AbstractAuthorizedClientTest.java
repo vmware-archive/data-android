@@ -43,13 +43,14 @@ public abstract class AbstractAuthorizedClientTest<T extends AbstractAuthorizati
     protected void setUp() throws Exception {
         preferences = new FakeAuthorizationPreferences();
         apiProvider = new FakeApiProvider();
-        parameters = new DataStoreParameters(TEST_CLIENT_ID, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
+        parameters = new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL);
         credential = new Credential(BearerToken.authorizationHeaderAccessMethod());
         semaphore = new Semaphore(0);
     }
 
     protected void savePreferences() {
         preferences.setClientId(TEST_CLIENT_ID);
+        preferences.setClientSecret(TEST_CLIENT_SECRET);
         preferences.setAuthorizationUrl(TEST_AUTHORIZATION_URL);
         preferences.setRedirectUrl(TEST_REDIRECT_URL);
         preferences.setDataServicesUrl(TEST_DATA_SERVICES_URL);

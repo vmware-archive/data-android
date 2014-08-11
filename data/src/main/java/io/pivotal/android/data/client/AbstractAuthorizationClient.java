@@ -41,6 +41,9 @@ public class AbstractAuthorizationClient {
         if (authorizationPreferencesProvider.getClientId() == null || authorizationPreferencesProvider.getClientId().isEmpty()) {
             throw new AuthorizationException("parameters.clientId may not be null or empty");
         }
+        if (authorizationPreferencesProvider.getClientSecret() == null || authorizationPreferencesProvider.getClientSecret().isEmpty()) {
+            throw new AuthorizationException("parameters.clientSecret may not be null or empty");
+        }
         if (authorizationPreferencesProvider.getAuthorizationUrl() == null) {
             throw new AuthorizationException("parameters.authorizationUrl may not be null");
         }
@@ -68,6 +71,9 @@ public class AbstractAuthorizationClient {
         if (parameters.getClientId() == null || parameters.getClientId().isEmpty()) {
             throw new IllegalArgumentException("parameters.clientId may not be null or empty");
         }
+        if (parameters.getClientSecret() == null || parameters.getClientSecret().isEmpty()) {
+            throw new IllegalArgumentException("parameters.clientSecret may not be null or empty");
+        }
         if (parameters.getAuthorizationUrl() == null) {
             throw new IllegalArgumentException("parameters.authorizationUrl may not be null");
         }
@@ -81,6 +87,7 @@ public class AbstractAuthorizationClient {
 
     private boolean isInitialParameters() {
         return authorizationPreferencesProvider.getClientId() == null ||
+                authorizationPreferencesProvider.getClientSecret() == null ||
                 authorizationPreferencesProvider.getAuthorizationUrl() == null ||
                 authorizationPreferencesProvider.getRedirectUrl() == null ||
                 authorizationPreferencesProvider.getDataServicesUrl() == null;
@@ -88,6 +95,9 @@ public class AbstractAuthorizationClient {
 
     private boolean areParametersUpdated(DataStoreParameters parameters) {
         if (!authorizationPreferencesProvider.getClientId().equals(parameters.getClientId())) {
+            return true;
+        }
+        if (!authorizationPreferencesProvider.getClientSecret().equals(parameters.getClientSecret())) {
             return true;
         }
         if (!authorizationPreferencesProvider.getAuthorizationUrl().equals(parameters.getAuthorizationUrl())) {
@@ -101,6 +111,7 @@ public class AbstractAuthorizationClient {
 
     private void saveDataParameters(DataStoreParameters parameters) {
         authorizationPreferencesProvider.setClientId(parameters.getClientId());
+        authorizationPreferencesProvider.setClientSecret(parameters.getClientSecret());
         authorizationPreferencesProvider.setAuthorizationUrl(parameters.getAuthorizationUrl());
         authorizationPreferencesProvider.setRedirectUrl(parameters.getRedirectUrl());
         authorizationPreferencesProvider.setDataServicesUrl(parameters.getDataServicesUrl());

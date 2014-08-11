@@ -11,14 +11,14 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.11.+'
+        classpath 'com.android.tools.build:gradle:0.12.1'
     }
 }
 
 ext {
-    versionName = "1.0.1"
+    versionName = "1.0.2"
     versionCode = 1
-    isSnapshot = true
+    isSnapshot = false
 }
 
 ext.pomInfo = {
@@ -43,7 +43,7 @@ ext.pomInfo = {
         developer {
             id 'rszumlakowski'
             name 'Robert Szumlakowski'
-            email 'robsz@pivotallabs.com'
+            email 'rszumlakowski@pivotal.io'
         }
     }
 }
@@ -60,6 +60,7 @@ allprojects {
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 }
@@ -88,12 +89,19 @@ subprojects {
     uploadArchives {
         configuration = configurations.archives
         repositories.mavenDeployer {
-            repository(url: 'https://maven.xtremelabs.com/artifactory/libs-release-local') {
-                authentication(userName: MAVEN_USER, password: MAVEN_PASS)
-            }
-            snapshotRepository(url: 'https://maven.xtremelabs.com/artifactory/libs-snapshot-local') {
-                authentication(userName: MAVEN_USER, password: MAVEN_PASS)
-            }
+
+            // Publishes AAR to local Maven cache:
+            repository(url: 'file://' + new File(System.getProperty('user.home'), '.m2').absolutePath)
+
+            // Publishes AAR to remote maven.xtremelabs.com:
+
+//            repository(url: 'https://maven.xtremelabs.com/artifactory/libs-release-local') {
+//                authentication(userName: MAVEN_USER, password: MAVEN_PASS)
+//            }
+//            snapshotRepository(url: 'https://maven.xtremelabs.com/artifactory/libs-snapshot-local') {
+//                authentication(userName: MAVEN_USER, password: MAVEN_PASS)
+//            }
+
         }
     }
 }

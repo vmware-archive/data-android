@@ -8,3 +8,15 @@ dependencies {
         exclude (group: 'xpp3', module: 'xpp3')
     }
 }
+
+uploadArchives {
+    repositories.mavenDeployer {
+
+        pom.project pomInfo
+        pom.project {
+            name 'Pivotal-CF Mobile Services Data Client SDK for Android'
+            description 'Lightweight SDK designed to retrieve data from a data store in the Pivotal-CF Mobile Services.'
+        }
+    }
+}
+

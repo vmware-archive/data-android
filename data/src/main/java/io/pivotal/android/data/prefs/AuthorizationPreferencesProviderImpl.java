@@ -12,6 +12,7 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
     public static final String TAG_NAME = "PivotalCFMSDataSDK";
 
     private static final String PROPERTY_CLIENT_ID = "client_id";
+    private static final String PROPERTY_CLIENT_SECRET = "client_secret";
     private static final String PROPERTY_AUTHORIZATION_URL = "authorization_url";
     private static final String PROPERTY_REDIRECT_URL = "redirect_url";
     private static final String PROPERTY_DATA_SERVICES_URL = "data_services_url";
@@ -48,7 +49,19 @@ public class AuthorizationPreferencesProviderImpl implements AuthorizationPrefer
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PROPERTY_CLIENT_ID, clientId);
         editor.commit();
+    }
 
+    @Override
+    public String getClientSecret() {
+        return getSharedPreferences().getString(PROPERTY_CLIENT_SECRET, null);
+    }
+
+    @Override
+    public void setClientSecret(String clientSecret) {
+        final SharedPreferences prefs = getSharedPreferences();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_CLIENT_SECRET, clientSecret);
+        editor.commit();
     }
 
     @Override
