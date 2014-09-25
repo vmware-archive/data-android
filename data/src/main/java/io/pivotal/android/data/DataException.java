@@ -3,9 +3,16 @@
  */
 package io.pivotal.android.data;
 
-public class DataException extends RuntimeException {
+public class DataException extends Exception {
 
-    public DataException(String detailMessage) {
-        super(detailMessage);
+    private int mStatusCode;
+
+    public DataException(int statusCode, final String message) {
+        super(message);
+        mStatusCode = statusCode;
+    }
+
+    public int getStatusCode() {
+        return mStatusCode;
     }
 }

@@ -3,67 +3,59 @@
  */
 package io.pivotal.android.data;
 
-import android.app.Activity;
-import android.content.Context;
+public interface DataStore {
 
-import io.pivotal.android.data.api.ApiProvider;
-import io.pivotal.android.data.api.ApiProviderImpl;
-import io.pivotal.android.data.client.AuthorizationEngine;
-import io.pivotal.android.data.client.AuthorizationException;
-import io.pivotal.android.data.client.AuthorizedResourceClient;
-import io.pivotal.android.data.client.AuthorizedResourceClientImpl;
-import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
-import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
-import io.pivotal.android.data.util.ThreadUtil;
+    public boolean contains(final String accessToken, final String key);
 
-public class DataStore {
+    public Response get(final String accessToken, final String key);
 
-    private static final class Holder {
-        public static final DataStore INSTANCE = new DataStore();
-    }
+    public Response put(final String accessToken, final String key, final String value);
 
-    public static DataStore getInstance() {
-        return Holder.INSTANCE;
-    }
+    public Response delete(final String accessToken, final String key);
 
-    private DataStore() {}
+    public boolean addObserver(final Observer observer);
 
-    // TODO - add Javadocs.  Must be called on UI thread?
-    public static void initialize(Context context, DataStoreParameters parameters) {
-        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
-        final ApiProvider apiProvider = new ApiProviderImpl(context);
-        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.setParameters(parameters);
-    }
+    public boolean removeObserver(final Observer observer);
 
-    // TODO - add Javadocs. Note: must be called on UI thread.
-    public void obtainAuthorization(Activity activity) {
-        assertCalledOnUIThread();
-        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
-        final ApiProvider apiProvider = new ApiProviderImpl(activity);
-        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.obtainAuthorization(activity);
-    }
+    public static class Response {
+        public final Status status;
+        public final String key, value;
+        public final Error error;
 
-    // TODO - add Javadocs. Note: must be called on UI thread.
-    public void clearAuthorization(Context context) {
-        assertCalledOnUIThread();
-        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
-        final ApiProvider apiProvider = new ApiProviderImpl(context);
-        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.clearAuthorization();
-    }
-
-    // TODO - add Javadocs. Note: does not to be called on UI thread.
-    public AuthorizedResourceClient getClient(Context context) {
-        final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
-        final ApiProvider apiProvider = new ApiProviderImpl(context);
-        return new AuthorizedResourceClientImpl(apiProvider, preferences);
-    }
-
-    private void assertCalledOnUIThread() throws AuthorizationException {
-        if (!ThreadUtil.isUIThread()) {
-            throw new AuthorizationException("Must be called on the main thread");
+        private Response(final Status status, final String key, final String value) {
+            this.status = status;
+            this.key = key;
+            this.value = value;
+            this.error = null;
         }
+
+        private Response(final String key, final Error error) {
+            this.status = Status.FAILURE;
+            this.key = key;
+            this.value = null;
+            this.error = error;
+        }
+
+        public static Response failure(final String key, final Error error) {
+            return new Response(key, error);
+        }
+
+        public static Response success(final String key, final String value) {
+            return new Response(Status.SUCCESS, key, value);
+        }
+
+        public static Response pending(final String key, final String value) {
+            return new Response(Status.PENDING, key, value);
+        }
+
+        public static enum Status {
+            FAILURE, SUCCESS, PENDING
+        }
+    }
+
+    public static interface Observer {
+        public void onChange(String key, String value);
+
+        public void onError(String key, Error error);
     }
 }
