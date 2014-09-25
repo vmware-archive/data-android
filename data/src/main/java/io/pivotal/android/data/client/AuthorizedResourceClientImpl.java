@@ -68,7 +68,8 @@ public class AuthorizedResourceClientImpl extends AbstractAuthorizationClient im
             public void onCredentialLoaded(Credential credential) {
 
                 if (credential == null) {
-                    listener.onFailure("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
+                    Logger.e("Authorization credentials are not available. You must authorize with DataSDK.obtainAuthorization first.");
+                    listener.onUnauthorized();
                     return;
                 }
 

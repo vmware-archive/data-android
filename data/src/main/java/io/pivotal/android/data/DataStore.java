@@ -14,6 +14,7 @@ import io.pivotal.android.data.client.AuthorizedResourceClient;
 import io.pivotal.android.data.client.AuthorizedResourceClientImpl;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
+import io.pivotal.android.data.util.Logger;
 import io.pivotal.android.data.util.ThreadUtil;
 
 public class DataStore {
@@ -30,6 +31,7 @@ public class DataStore {
 
     // TODO - add Javadocs.  Must be called on UI thread?
     public static void initialize(Context context, DataStoreParameters parameters) {
+        Logger.setup(context);
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
@@ -38,6 +40,7 @@ public class DataStore {
 
     // TODO - add Javadocs. Note: must be called on UI thread.
     public void obtainAuthorization(Activity activity) {
+        Logger.setup(activity);
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(activity);
         final ApiProvider apiProvider = new ApiProviderImpl(activity);
@@ -47,6 +50,7 @@ public class DataStore {
 
     // TODO - add Javadocs. Note: must be called on UI thread.
     public void clearAuthorization(Context context) {
+        Logger.setup(context);
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
@@ -56,6 +60,7 @@ public class DataStore {
 
     // TODO - add Javadocs. Note: does not to be called on UI thread.
     public AuthorizedResourceClient getClient(Context context) {
+        Logger.setup(context);
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
         return new AuthorizedResourceClientImpl(apiProvider, preferences);

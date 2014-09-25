@@ -153,6 +153,7 @@ public class AuthorizedResourceClientImplTest extends AbstractAuthorizedClientTe
     public void testRequiresSavedCredential() throws Exception {
         shouldSuccessListenerBeCalled = false;
         shouldRequestBeSuccessful = false;
+        shouldUnauthorizedListenerBeCalled = true;
         savePreferences();
         getClient().executeHttpRequest(HTTP_GET, url, headers, TEST_CONTENT_TYPE, TEST_CONTENT_ENCODING, null, listener);
         semaphore.acquire();
