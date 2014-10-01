@@ -12,6 +12,7 @@ import io.pivotal.android.data.client.AuthorizationEngine;
 import io.pivotal.android.data.client.AuthorizationException;
 import io.pivotal.android.data.client.AuthorizedResourceClient;
 import io.pivotal.android.data.client.AuthorizedResourceClientImpl;
+import io.pivotal.android.data.client.LogoutEngine;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProviderImpl;
 import io.pivotal.android.data.util.Logger;
@@ -54,8 +55,8 @@ public class DataStore {
         assertCalledOnUIThread();
         final AuthorizationPreferencesProvider preferences = new AuthorizationPreferencesProviderImpl(context);
         final ApiProvider apiProvider = new ApiProviderImpl(context);
-        final AuthorizationEngine engine = new AuthorizationEngine(apiProvider, preferences);
-        engine.clearAuthorization();
+        final LogoutEngine engine = new LogoutEngine(apiProvider, preferences);
+        engine.logout();
     }
 
     // TODO - add Javadocs. Note: does not to be called on UI thread.

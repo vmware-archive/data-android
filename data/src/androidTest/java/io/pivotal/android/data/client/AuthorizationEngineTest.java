@@ -5,15 +5,11 @@ package io.pivotal.android.data.client;
 
 import android.app.Activity;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.auth.oauth2.TokenResponse;
-
-import java.util.concurrent.Semaphore;
 
 import io.pivotal.android.data.DataStoreParameters;
 import io.pivotal.android.data.activity.BaseAuthorizationActivity;
 import io.pivotal.android.data.api.ApiProvider;
-import io.pivotal.android.data.api.AuthorizedApiRequest;
 import io.pivotal.android.data.api.FakeAuthorizedApiRequest;
 import io.pivotal.android.data.prefs.AuthorizationPreferencesProvider;
 
@@ -300,60 +296,6 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         assertNull(apiProvider.getApiRequests().get(0).getSavedTokenResponse());
     }
 
-    public void testClearCredentialRequiresParameters() throws Exception {
-        baseTestClearCredentialRequires(null);
-    }
-
-    public void testClearCredentialRequiresNotNullClientId() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(null, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresNotEmptyClientId() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters("", TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresNotNullClientSecret() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, null, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresNotEmptyClientSecret() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, "", TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresAuthorizationUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, null, TEST_REDIRECT_URL, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresNotNullRedirectUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, null, TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresNotEmptyRedirectUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, "", TEST_DATA_SERVICES_URL));
-    }
-
-    public void testClearCredentialRequiresDataServicesUrl() throws Exception {
-        baseTestClearCredentialRequires(new DataStoreParameters(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_AUTHORIZATION_URL, TEST_REDIRECT_URL, null));
-    }
-
-    public void testClearCredential() throws Exception {
-        saveSavedTokenResponse();
-        getEngine().setParameters(parameters);
-        getEngine().clearAuthorization();
-        assertEquals(1, apiProvider.getApiRequests().size());
-        final FakeAuthorizedApiRequest request = apiProvider.getApiRequests().get(0);
-        assertNull(request.getSavedTokenResponse());
-        final Semaphore credentialSemaphore = new Semaphore(0);
-        request.loadCredential(new AuthorizedApiRequest.LoadCredentialListener() {
-            @Override
-            public void onCredentialLoaded(Credential credential) {
-                assertNull(credential);
-                credentialSemaphore.release();
-            }
-        });
-        credentialSemaphore.acquire();
-    }
-
     private AuthorizationEngine getEngine() {
         return new AuthorizationEngine(apiProvider, preferences);
     }
@@ -399,17 +341,4 @@ public class AuthorizationEngineTest extends AbstractAuthorizedClientTest<Author
         }
     }
 
-    private void baseTestClearCredentialRequires(DataStoreParameters parameters) throws Exception {
-        try {
-            if (parameters != null) {
-                getEngine().setParameters(parameters);
-            }
-            getEngine().clearAuthorization();
-            fail();
-        } catch (IllegalArgumentException e) {
-            // success
-        } catch (AuthorizationException e) {
-            // success
-        }
-    }
 }

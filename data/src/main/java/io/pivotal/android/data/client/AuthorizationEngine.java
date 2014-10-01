@@ -21,7 +21,6 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
         super(apiProvider, authorizationPreferencesProvider);
     }
 
-
     /**
      * Starts the authorization process.
      *  @param activity   an already-running activity to use as the base of the authorization process.  May not be null.
@@ -118,12 +117,4 @@ public class AuthorizationEngine extends AbstractAuthorizationClient {
             });
         }
     }
-
-    // TODO - add Javadocs
-    public void clearAuthorization() throws AuthorizationException {
-        checkIfAuthorizationPreferencesAreSaved();
-        final AuthorizedApiRequest request = apiProvider.getAuthorizedApiRequest(authorizationPreferencesProvider);
-        request.clearSavedCredentialAsynchronously(null);
-    }
-
 }
