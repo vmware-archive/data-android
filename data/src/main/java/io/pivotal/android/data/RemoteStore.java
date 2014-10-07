@@ -35,11 +35,11 @@ public class RemoteStore implements DataStore {
     }
 
     /* package */ RemoteClient createRemoteClient(final Context context) {
-        return new RemoteClient(new AuthStore(context));
+        return new RemoteClient.Default(new EtagStore.Default(context));
     }
 
     private String getCollectionUrl(final String key) throws MalformedURLException {
-        return new URL(Pivotal.Property.SERVICE_URL + "/" + mCollection + "/" + key).toString();
+        return new URL(Pivotal.getServiceUrl() + "/" + mCollection + "/" + key).toString();
     }
 
     @Override

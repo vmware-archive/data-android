@@ -11,28 +11,34 @@ import java.util.Properties;
 
 /* package */ class Pivotal {
 
-    public static final class Property {
-        public static final String SERVICE_URL = Pivotal.property("pivotal.data.serviceUrl");
+    private static final class Keys {
+        private static final String SERVICE_URL = "pivotal.data.serviceUrl";
+        private static final String ETAG_SUPPORT = "pivotal.data.etagSupport";
     }
 
+
     private static String[] sLocations = {
-        "assets/pivotal.properties", "res/raw/pivotal.properties"
+            "assets/pivotal.properties", "res/raw/pivotal.properties"
     };
 
     private static Properties sProperties;
 
-    private static Properties getProperties() {
+    /* package */ static Properties getProperties() {
         if (sProperties == null) {
             sProperties = loadProperties();
         }
         return sProperties;
     }
 
+    /* package */ static void setProperties(final Properties properties) {
+        sProperties = properties;
+    }
+
     private static Properties loadProperties() {
         for (final String path : sLocations) {
             try {
                 return loadProperties(path);
-            } catch (IOException e) {
+            } catch (final Exception e) {
                 Logger.ex(e);
             }
         }
@@ -51,11 +57,24 @@ import java.util.Properties;
         return loader.getResourceAsStream(path);
     }
 
-    private static String property(final String key) {
+    public static String get(final String key) {
         final String value = getProperties().getProperty(key);
         if (TextUtils.isEmpty(value)) {
             throw new IllegalStateException("'" + key + "' not found in pivotal.properties");
         }
         return value;
+    }
+
+    public static String getServiceUrl() {
+        return get(Keys.SERVICE_URL);
+    }
+
+    public static boolean areEtagsSupported() {
+        try {
+            final String etagSupport = get(Keys.ETAG_SUPPORT);
+            return etagSupport != null && etagSupport.equals("enabled");
+        } catch (final IllegalStateException e) {
+            return false;
+        }
     }
 }

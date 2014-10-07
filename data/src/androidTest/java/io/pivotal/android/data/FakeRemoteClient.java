@@ -10,7 +10,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FakeRemoteClient extends RemoteClient {
+public class FakeRemoteClient extends RemoteClient.Default {
 
     private final Map<URI, String> mValues = new HashMap<URI, String>();
 
@@ -20,7 +20,7 @@ public class FakeRemoteClient extends RemoteClient {
     }
 
     @Override
-    protected String execute(final String accessToken, final HttpUriRequest request) throws Exception {
+    protected String execute(final HttpUriRequest request) throws Exception {
         if (request instanceof HttpPut) {
             mValues.put(request.getURI(), ((HttpPut) request).getEntity().toString());
             return "";

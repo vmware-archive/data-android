@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 
 /* package */ class StreamUtils {
 
-    public static String getStringAndClose(final InputStream inputStream) throws IOException {
+    public static String consumeAndClose(final InputStream inputStream) throws IOException {
         try {
             final InputStreamReader streamReader = new InputStreamReader(inputStream);
             final BufferedReader bufferedReader = new BufferedReader(streamReader);
