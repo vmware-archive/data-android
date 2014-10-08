@@ -10,6 +10,11 @@ public class FakeDataStore implements DataStore {
 
     private Observer mObserver;
 
+    public FakeDataStore() {
+        mKey = null;
+        mValue = null;
+    }
+
     public FakeDataStore(final String key, final String value) {
         mKey = key;
         mValue = value;
@@ -17,12 +22,12 @@ public class FakeDataStore implements DataStore {
 
     @Override
     public boolean contains(final String token, final String key) {
-        return mKey.equals(key);
+        return mKey != null && mKey.equals(key);
     }
 
     @Override
     public Response get(final String token, final String key) {
-        if (mKey.equals(key)) {
+        if (contains(token, key)) {
             return Response.success(mKey, mValue);
         } else {
             return Response.failure(key, null);
@@ -46,7 +51,7 @@ public class FakeDataStore implements DataStore {
 
     @Override
     public Response delete(final String token, final String key) {
-        if (mKey.equals(key)) {
+        if (contains(token, key)) {
             mKey = null;
             mValue = null;
             return Response.success(key, null);

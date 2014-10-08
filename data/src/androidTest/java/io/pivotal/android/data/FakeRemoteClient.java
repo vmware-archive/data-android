@@ -20,7 +20,7 @@ public class FakeRemoteClient extends RemoteClient.Default {
     }
 
     @Override
-    protected String execute(final HttpUriRequest request) throws Exception {
+    public String execute(final HttpUriRequest request) throws Exception {
         if (request instanceof HttpPut) {
             mValues.put(request.getURI(), ((HttpPut) request).getEntity().toString());
             return "";
