@@ -3,117 +3,332 @@
  */
 package io.pivotal.android.data;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Set;
-
 public class DefaultStoreTest extends AndroidTestCase {
 
-    public static final String TEST_TOKEN = "TOKEN";
-    public static final String TEST_BASE_URL = "http://www.test.com";
-    public static final String TEST_COLLECTION = "objects";
-    public static final String TEST_KEY = "key";
-    public static final String TEST_VALUE = "value";
+    public void testInstantiation() {
+        final LocalStore localStore = new MockLocalStore();
+        final RemoteStore remoteStore = new MockRemoteStore();
+        final DefaultStore dataStore = new DefaultStore(localStore, remoteStore);
 
-    public void testGetWithSyncStore() {
-        final DefaultStore dataStore = new TestDefaultStore();
-        final DataObject object = new DataObject(dataStore, TEST_KEY);
-        object.addObserver(new DataObject.Observer() {
-            @Override
-            public void onChange(final String key, final String value) {
-                fail();
-            }
-
-            @Override
-            public void onError(final String key, final DataError error) {
-                fail();
-            }
-        });
-
-        assertEquals(TEST_VALUE, object.get(TEST_TOKEN));
+        assertNotNull(dataStore);
     }
 
-    public void testPutWithSyncStore() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DefaultStore dataStore = new TestDefaultStore();
-        final DataObject object = new DataObject(dataStore, TEST_KEY);
-        object.addObserver(new DataObject.Observer() {
+    public void testGetInvokesLocalAndRemoteStoresPuttingBackToLocalStoreOnSuccess() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+        final AssertionLatch latch3 = new AssertionLatch(1);
+
+        final LocalStore localStore = new MockLocalStore() {
+
             @Override
-            public void onChange(final String key, final String value) {
-                latch.countDown();
-                assertEquals("value1", value);
+            public Response get(final String token, final String key) {
+                latch1.countDown();
+                return Response.success(null, null);
             }
 
             @Override
-            public void onError(final String key, final DataError error) {
-                fail();
+            public Response put(String token, String key, String value) {
+                latch3.countDown();
+                return Response.success(null, null);
             }
-        });
+        };
 
-        object.put(TEST_TOKEN, "value1");
-        latch.assertComplete();
-    }
+        final RemoteStore remoteStore = new MockRemoteStore() {
 
-    private final class TestDefaultStore extends DefaultStore {
-
-        public TestDefaultStore() {
-            super(new TestLocalStore(), new TestRemoteStore());
-        }
-    }
-
-    private final class TestLocalStore extends LocalStore {
-
-        public TestLocalStore() {
-            super(mContext, TEST_COLLECTION);
-        }
-
-        @Override
-        /* package */ ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-            return new FakeObserverHandler(observers, lock);
-        }
-    }
-
-    private final MockContext mContext = new MockContext() {
-        @Override
-        public SharedPreferences getSharedPreferences(final String name, final int mode) {
-            return new FakePreferences(TEST_KEY, TEST_VALUE);
-        }
-    };
-
-    private final class TestRemoteStore extends RemoteStore {
-
-        public TestRemoteStore() {
-            super(mContext, TEST_COLLECTION);
-        }
-
-        @Override
-        /* package */ ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-            return new FakeObserverHandler(observers, lock);
-        }
-
-        @Override
-        /* package */ RemoteClient createRemoteClient(final Context context) {
-            return new FakeRemoteClient(getUrl(), TEST_VALUE);
-        }
-
-        @Override
-        public void putAsync(final String token, final String key, final String value, final Listener listener) {
-            if (listener != null) {
-                listener.onResponse(Response.success(key, value));
+            @Override
+            public void getAsync(final String accessToken, final String key, final Listener listener) {
+                latch2.countDown();
+                listener.onResponse(Response.success(null, null));
             }
-        }
+        };
 
-        private URI getUrl() {
-            try {
-                return new URI(TEST_BASE_URL + "/" + TEST_COLLECTION + "/" + TEST_KEY);
-            } catch (URISyntaxException e) {
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.get(null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+        latch3.assertComplete();
+    }
+
+    public void testGetInvokesLocalAndRemoteStoresWithoutPuttingBackToLocalStoreOnFailure() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+        final AssertionLatch latch3 = new AssertionLatch(0);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public Response get(final String token, final String key) {
+                latch1.countDown();
+                return Response.success(null, null);
+            }
+
+            @Override
+            public Response put(String token, String key, String value) {
+                latch3.countDown();
+                return Response.success(null, null);
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public void getAsync(final String accessToken, final String key, final Listener listener) {
+                latch2.countDown();
+                listener.onResponse(Response.failure(null, null));
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.get(null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+        latch3.assertComplete();
+    }
+
+    public void testPutInvokesLocalAndRemoteStoreOnSuccess() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public Response put(final String token, final String key, final String value) {
+                latch2.countDown();
                 return null;
             }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public void putAsync(final String accessToken, final String key, final String value, final Listener listener) {
+                latch1.countDown();
+                listener.onResponse(Response.success(null, null));
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.put(null, null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+    }
+
+    public void testPutInvokesRemoteStoreOnlyOnFailure() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(0);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public Response put(final String token, final String key, final String value) {
+                latch2.countDown();
+                return null;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public void putAsync(final String accessToken, final String key, final String value, final Listener listener) {
+                latch1.countDown();
+                listener.onResponse(Response.failure(null, null));
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.put(null, null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+    }
+
+    public void testDeleteInvokesLocalAndRemoteStores() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public Response delete(final String token, final String key) {
+                latch2.countDown();
+                return null;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public void deleteAsync(final String accessToken, final String key, final Listener listener) {
+                latch1.countDown();
+                listener.onResponse(Response.success(null, null));
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.delete(null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+    }
+
+    public void testDeleteInvokesRemoteStoreOnlyOnFailure() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(0);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public Response delete(final String token, final String key) {
+                latch2.countDown();
+                return null;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public void deleteAsync(final String accessToken, final String key, final Listener listener) {
+                latch1.countDown();
+                listener.onResponse(Response.failure(null, null));
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final DataStore.Response response = store.delete(null, null);
+
+        assertEquals(DataStore.Response.Status.PENDING, response.status);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+    }
+
+    public void testContainsInvokesLocalStoreNotRemoteStore() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(0);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public boolean contains(final String token, final String key) {
+                latch1.countDown();
+                return true;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public boolean contains(final String token, final String key) {
+                latch2.countDown();
+                return false;
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final boolean response = store.contains(null, null);
+
+        assertTrue(response);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+
+    }
+
+    public void testAddObserverInvokesLocalAndRemoteStores() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public boolean addObserver(final Observer observer) {
+                latch1.countDown();
+                return true;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public boolean addObserver(final Observer observer) {
+                latch2.countDown();
+                return true;
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final boolean response = store.addObserver(null);
+
+        assertTrue(response);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+
+    }
+
+    public void testRemoveObserverInvokesLocalAndRemoteStores() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+
+        final LocalStore localStore = new MockLocalStore() {
+
+            @Override
+            public boolean removeObserver(final Observer observer) {
+                latch1.countDown();
+                return true;
+            }
+        };
+
+        final RemoteStore remoteStore = new MockRemoteStore() {
+
+            @Override
+            public boolean removeObserver(final Observer observer) {
+                latch2.countDown();
+                return true;
+            }
+        };
+
+        final DefaultStore store = new DefaultStore(localStore, remoteStore);
+        final boolean response = store.removeObserver(null);
+
+        assertTrue(response);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+
+    }
+
+    // ==========================================
+
+
+
+    private static class FakeLocalStore extends LocalStore {
+
+        public FakeLocalStore() {
+            super(new MockContext(), null);
+        }
+    }
+
+    private static class FakeRemoteStore extends LocalStore {
+
+        public FakeRemoteStore() {
+            super(new MockContext(), null);
         }
     }
 }

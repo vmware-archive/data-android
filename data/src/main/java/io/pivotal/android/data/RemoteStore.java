@@ -25,16 +25,16 @@ public class RemoteStore implements DataStore {
     private final RemoteClient mClient;
 
     public RemoteStore(final Context context, final String collection) {
-        mCollection = collection;
         mHandler = createObserverHandler(mObservers, mLock);
         mClient = createRemoteClient(context);
+        mCollection = collection;
     }
 
-    /* package */ ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
+    protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
         return new ObserverHandler(observers, lock);
     }
 
-    /* package */ RemoteClient createRemoteClient(final Context context) {
+    protected RemoteClient createRemoteClient(final Context context) {
         return new RemoteClient.Default(new EtagStore.Default(context));
     }
 

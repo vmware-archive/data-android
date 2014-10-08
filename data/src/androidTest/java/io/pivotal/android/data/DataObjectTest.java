@@ -33,9 +33,8 @@ public class DataObjectTest extends AndroidTestCase {
                 return Response.success(null, null);
             }
         };
-        final DataObject object = new DataObject(dataStore, null);
 
-        object.get(null);
+        new DataObject(dataStore, null).get(null);
 
         latch.assertComplete();
     }
@@ -50,9 +49,8 @@ public class DataObjectTest extends AndroidTestCase {
                 return Response.success(null, null);
             }
         };
-        final DataObject object = new DataObject(dataStore, null);
 
-        object.put(null, null);
+        new DataObject(dataStore, null).put(null, null);
 
         latch.assertComplete();
     }
@@ -67,9 +65,8 @@ public class DataObjectTest extends AndroidTestCase {
                 return Response.success(null, null);
             }
         };
-        final DataObject object = new DataObject(dataStore, null);
 
-        object.delete(null);
+        new DataObject(dataStore, null).delete(null);
 
         latch.assertComplete();
     }

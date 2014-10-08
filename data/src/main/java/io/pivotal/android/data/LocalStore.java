@@ -19,12 +19,17 @@ public class LocalStore implements DataStore {
     private final ObserverHandler mHandler;
 
     public LocalStore(final Context context, final String collection) {
-        mPreferences = context.getSharedPreferences(collection, Context.MODE_PRIVATE);
-        mPreferences.registerOnSharedPreferenceChangeListener(mListener);
+        mPreferences = createSharedPreferences(context, collection);
         mHandler = createObserverHandler(mObservers, mLock);
     }
 
-    /* package */ ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
+    protected SharedPreferences createSharedPreferences(final Context context, final String collection) {
+        final SharedPreferences prefs = context.getSharedPreferences(collection, Context.MODE_PRIVATE);
+        prefs.registerOnSharedPreferenceChangeListener(mListener);
+        return prefs;
+    }
+
+    protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
         return new ObserverHandler(observers, lock);
     }
 

@@ -64,12 +64,12 @@ public class RemoteStoreTest extends AndroidTestCase {
         }
 
         @Override
-        /* package */ ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
+        protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
             return new FakeObserverHandler(observers, lock);
         }
 
         @Override
-        /* package */ RemoteClient createRemoteClient(final Context context) {
+        protected RemoteClient createRemoteClient(final Context context) {
             return new FakeRemoteClient(getUrl(), TEST_VALUE);
         }
 
