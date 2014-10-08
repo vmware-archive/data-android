@@ -20,7 +20,7 @@ public interface DataStore {
     public static class Response {
         public final Status status;
         public final String key, value;
-        public final Error error;
+        public final DataError error;
 
         private Response(final Status status, final String key, final String value) {
             this.status = status;
@@ -29,15 +29,15 @@ public interface DataStore {
             this.error = null;
         }
 
-        private Response(final String key, final Error error) {
-            this.status = Status.FAILURE;
+        private Response(final Status status, final String key, final DataError error) {
+            this.status = status;
             this.key = key;
             this.value = null;
             this.error = error;
         }
 
-        public static Response failure(final String key, final Error error) {
-            return new Response(key, error);
+        public static Response failure(final String key, final DataError error) {
+            return new Response(Status.FAILURE, key, error);
         }
 
         public static Response success(final String key, final String value) {
@@ -56,6 +56,6 @@ public interface DataStore {
     public static interface Observer {
         public void onChange(String key, String value);
 
-        public void onError(String key, Error error);
+        public void onError(String key, DataError error);
     }
 }

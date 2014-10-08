@@ -56,7 +56,7 @@ public class RemoteStore implements DataStore {
             return Response.success(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new Error(e));
+            return Response.failure(key, new DataError(e));
         }
     }
 
@@ -91,7 +91,7 @@ public class RemoteStore implements DataStore {
             return Response.success(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new Error(e));
+            return Response.failure(key, new DataError(e));
         }
     }
 
@@ -126,7 +126,7 @@ public class RemoteStore implements DataStore {
             return Response.success(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new Error(e));
+            return Response.failure(key, new DataError(e));
         }
     }
 

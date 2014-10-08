@@ -3,24 +3,20 @@
  */
 package io.pivotal.android.data;
 
-public class Error {
+public class DataError extends Error {
 
     private int mCode = -1;
-    private String mMessage;
 
-    public Error(final Exception e) {
+    public DataError(final Exception e) {
+        super(e.getLocalizedMessage(), e);
+
         if (e instanceof DataException) {
             mCode = ((DataException) e).getStatusCode();
         }
-        mMessage = e.getLocalizedMessage();
     }
 
     public int getCode() {
         return mCode;
-    }
-
-    public String getMessage() {
-        return mMessage;
     }
 
     public boolean isUnauthorized() {

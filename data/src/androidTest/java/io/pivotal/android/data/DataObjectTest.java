@@ -209,7 +209,7 @@ public class DataObjectTest extends AndroidTestCase {
         }
 
         @Override
-        public void onError(final String key, final Error error) {
+        public void onError(final String key, final DataError error) {
 
         }
     }

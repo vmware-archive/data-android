@@ -12,7 +12,7 @@ public class DataObject {
 
     public static interface Observer {
         public void onChange(String key, String value);
-        public void onError(String key, Error error);
+        public void onError(String key, DataError error);
     }
 
     public static DataObject create(final Context context, final String collection, final String key) {
@@ -87,7 +87,7 @@ public class DataObject {
         }
 
         @Override
-        public void onError(final String key, final Error error) {
+        public void onError(final String key, final DataError error) {
             if (mObserver != null && mKey != null && mKey.equals(key)) {
                 Logger.d("Observer Error: " + key + ", " + error);
                 mObserver.onError(key, error);

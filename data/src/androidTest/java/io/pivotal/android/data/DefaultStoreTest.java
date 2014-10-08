@@ -30,7 +30,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             }
 
             @Override
-            public void onError(final String key, final Error error) {
+            public void onError(final String key, final DataError error) {
                 fail();
             }
         });
@@ -50,7 +50,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             }
 
             @Override
-            public void onError(final String key, final Error error) {
+            public void onError(final String key, final DataError error) {
                 fail();
             }
         });
