@@ -70,7 +70,7 @@ public class LocalStoreTest extends AndroidTestCase {
     private final MockContext mContext = new MockContext() {
         @Override
         public SharedPreferences getSharedPreferences(final String name, final int mode) {
-            return new FakePreferences(TEST_KEY, TEST_VALUE);
+            return new FakeSharedPreferences(TEST_KEY, TEST_VALUE);
         }
     };
 }

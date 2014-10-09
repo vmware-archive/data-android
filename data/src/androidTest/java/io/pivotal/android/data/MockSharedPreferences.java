@@ -5,23 +5,14 @@ package io.pivotal.android.data;
 
 import android.content.SharedPreferences;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class FakePreferences implements SharedPreferences, SharedPreferences.Editor {
-
-    private final Map<String, Object> mMap = new HashMap<String, Object>();
-
-    private OnSharedPreferenceChangeListener mListener;
-
-    public FakePreferences(final String key, final String value) {
-        mMap.put(key, value);
-    }
+public class MockSharedPreferences implements SharedPreferences, SharedPreferences.Editor {
 
     @Override
     public String getString(final String key, final String defValue) {
-        return mMap.containsKey(key) ? (String) mMap.get(key) : defValue;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -61,28 +52,22 @@ public class FakePreferences implements SharedPreferences, SharedPreferences.Edi
 
     @Override
     public Editor edit() {
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void registerOnSharedPreferenceChangeListener(final OnSharedPreferenceChangeListener listener) {
-        mListener = listener;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void unregisterOnSharedPreferenceChangeListener(final OnSharedPreferenceChangeListener listener) {
-        mListener = null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Editor putString(final String key, final String value) {
-        mMap.put(key, value);
-
-        if (mListener != null) {
-            mListener.onSharedPreferenceChanged(this, key);
-        }
-
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -122,7 +107,7 @@ public class FakePreferences implements SharedPreferences, SharedPreferences.Edi
 
     @Override
     public boolean commit() {
-        return true;
+        throw new UnsupportedOperationException();
     }
 
     @Override
