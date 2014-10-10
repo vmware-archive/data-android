@@ -8,22 +8,29 @@ import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 
+import java.util.UUID;
+
 public class EtagStoreTest extends AndroidTestCase {
+
+    private static final String KEY = UUID.randomUUID().toString();
+    private static final String VALUE = UUID.randomUUID().toString();
 
     public void testGetInvokesSharedPreferences() {
         final AssertionLatch latch = new AssertionLatch(1);
-        final SharedPreferences prefs = new MockSharedPreferences() {
+        final Context context = new FakeContext(new MockSharedPreferences() {
 
             @Override
             public String getString(final String key, final String defValue) {
                 latch.countDown();
-                return null;
+                assertEquals(KEY, key);
+                assertNull(defValue);
+                return VALUE;
             }
-        };
-        final Context context = new TestContext(prefs);
+        });
+
         final EtagStore store = new EtagStore.Default(context);
 
-        store.get(null);
+        assertEquals(VALUE, store.get(KEY));
 
         latch.assertComplete();
     }
@@ -33,7 +40,7 @@ public class EtagStoreTest extends AndroidTestCase {
         final AssertionLatch latch2 = new AssertionLatch(1);
         final AssertionLatch latch3 = new AssertionLatch(1);
 
-        final SharedPreferences prefs = new MockSharedPreferences() {
+        final Context context = new FakeContext(new MockSharedPreferences() {
 
             @Override
             public Editor edit() {
@@ -44,6 +51,8 @@ public class EtagStoreTest extends AndroidTestCase {
             @Override
             public Editor putString(final String key, final String value) {
                 latch2.countDown();
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
                 return this;
             }
 
@@ -52,12 +61,11 @@ public class EtagStoreTest extends AndroidTestCase {
                 latch3.countDown();
                 return true;
             }
-        };
+        });
 
-        final Context context = new TestContext(prefs);
         final EtagStore store = new EtagStore.Default(context);
 
-        store.put(null, null);
+        store.put(KEY, VALUE);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -65,11 +73,11 @@ public class EtagStoreTest extends AndroidTestCase {
     }
 
 
-    private static class TestContext extends MockContext {
+    private static class FakeContext extends MockContext {
 
         private final SharedPreferences mSharedPreferences;
 
-        public TestContext(final SharedPreferences prefs) {
+        public FakeContext(final SharedPreferences prefs) {
             mSharedPreferences = prefs;
         }
 

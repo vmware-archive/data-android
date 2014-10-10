@@ -4,9 +4,25 @@
 package io.pivotal.android.data;
 
 import android.test.AndroidTestCase;
-import android.test.mock.MockContext;
+
+import java.util.UUID;
 
 public class DefaultStoreTest extends AndroidTestCase {
+
+    private static final String KEY = UUID.randomUUID().toString();
+    private static final String VALUE = UUID.randomUUID().toString();
+
+    private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
+        @Override
+        public void onChange(String key, String value) {
+
+        }
+
+        @Override
+        public void onError(String key, DataError error) {
+
+        }
+    };
 
     public void testInstantiation() {
         final LocalStore localStore = new MockLocalStore();
@@ -26,13 +42,16 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public Response get(final String token, final String key) {
                 latch1.countDown();
-                return Response.success(null, null);
+                assertEquals(KEY, key);
+                return Response.success(KEY, VALUE);
             }
 
             @Override
             public Response put(String token, String key, String value) {
                 latch3.countDown();
-                return Response.success(null, null);
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
+                return Response.success(KEY, VALUE);
             }
         };
 
@@ -41,14 +60,17 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void getAsync(final String accessToken, final String key, final Listener listener) {
                 latch2.countDown();
-                listener.onResponse(Response.success(null, null));
+                assertEquals(KEY, key);
+                listener.onResponse(Response.success(KEY, VALUE));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.get(null, null);
+        final DataStore.Response response = store.get(null, KEY);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertEquals(VALUE, response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -65,7 +87,8 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public Response get(final String token, final String key) {
                 latch1.countDown();
-                return Response.success(null, null);
+                assertEquals(KEY, key);
+                return Response.success(KEY, VALUE);
             }
 
             @Override
@@ -80,14 +103,17 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void getAsync(final String accessToken, final String key, final Listener listener) {
                 latch2.countDown();
-                listener.onResponse(Response.failure(null, null));
+                assertEquals(KEY, key);
+                listener.onResponse(Response.failure(KEY, null));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.get(null, null);
+        final DataStore.Response response = store.get(null, KEY);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertEquals(VALUE, response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -103,6 +129,8 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public Response put(final String token, final String key, final String value) {
                 latch2.countDown();
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
                 return null;
             }
         };
@@ -112,14 +140,18 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void putAsync(final String accessToken, final String key, final String value, final Listener listener) {
                 latch1.countDown();
-                listener.onResponse(Response.success(null, null));
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
+                listener.onResponse(Response.success(KEY, VALUE));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.put(null, null, null);
+        final DataStore.Response response = store.put(null, KEY, VALUE);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertEquals(VALUE, response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -143,14 +175,18 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void putAsync(final String accessToken, final String key, final String value, final Listener listener) {
                 latch1.countDown();
-                listener.onResponse(Response.failure(null, null));
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
+                listener.onResponse(Response.failure(KEY, null));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.put(null, null, null);
+        final DataStore.Response response = store.put(null, KEY, VALUE);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertEquals(VALUE, response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -165,6 +201,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public Response delete(final String token, final String key) {
                 latch2.countDown();
+                assertEquals(KEY, key);
                 return null;
             }
         };
@@ -174,14 +211,17 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void deleteAsync(final String accessToken, final String key, final Listener listener) {
                 latch1.countDown();
-                listener.onResponse(Response.success(null, null));
+                assertEquals(KEY, key);
+                listener.onResponse(Response.success(KEY, null));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.delete(null, null);
+        final DataStore.Response response = store.delete(null, KEY);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertNull(response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -205,14 +245,17 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public void deleteAsync(final String accessToken, final String key, final Listener listener) {
                 latch1.countDown();
-                listener.onResponse(Response.failure(null, null));
+                assertEquals(KEY, key);
+                listener.onResponse(Response.failure(KEY, null));
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final DataStore.Response response = store.delete(null, null);
+        final DataStore.Response response = store.delete(null, KEY);
 
         assertEquals(DataStore.Response.Status.PENDING, response.status);
+        assertEquals(KEY, response.key);
+        assertNull(response.value);
 
         latch1.assertComplete();
         latch2.assertComplete();
@@ -227,6 +270,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public boolean contains(final String token, final String key) {
                 latch1.countDown();
+                assertEquals(KEY, key);
                 return true;
             }
         };
@@ -241,7 +285,7 @@ public class DefaultStoreTest extends AndroidTestCase {
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final boolean response = store.contains(null, null);
+        final boolean response = store.contains(null, KEY);
 
         assertTrue(response);
 
@@ -259,6 +303,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public boolean addObserver(final Observer observer) {
                 latch1.countDown();
+                assertEquals(OBSERVER, observer);
                 return true;
             }
         };
@@ -268,12 +313,13 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public boolean addObserver(final Observer observer) {
                 latch2.countDown();
+                assertEquals(OBSERVER, observer);
                 return true;
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final boolean response = store.addObserver(null);
+        final boolean response = store.addObserver(OBSERVER);
 
         assertTrue(response);
 
@@ -291,6 +337,7 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public boolean removeObserver(final Observer observer) {
                 latch1.countDown();
+                assertEquals(OBSERVER, observer);
                 return true;
             }
         };
@@ -300,35 +347,18 @@ public class DefaultStoreTest extends AndroidTestCase {
             @Override
             public boolean removeObserver(final Observer observer) {
                 latch2.countDown();
+                assertEquals(OBSERVER, observer);
                 return true;
             }
         };
 
         final DefaultStore store = new DefaultStore(localStore, remoteStore);
-        final boolean response = store.removeObserver(null);
+        final boolean response = store.removeObserver(OBSERVER);
 
         assertTrue(response);
 
         latch1.assertComplete();
         latch2.assertComplete();
 
-    }
-
-    // ==========================================
-
-
-
-    private static class FakeLocalStore extends LocalStore {
-
-        public FakeLocalStore() {
-            super(new MockContext(), null);
-        }
-    }
-
-    private static class FakeRemoteStore extends LocalStore {
-
-        public FakeRemoteStore() {
-            super(new MockContext(), null);
-        }
     }
 }

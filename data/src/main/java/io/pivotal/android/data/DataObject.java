@@ -68,7 +68,7 @@ public class DataObject {
         }
     }
 
-    private static class ObserverProxy implements DataStore.Observer {
+    /* package */ static class ObserverProxy implements DataStore.Observer {
 
         private final Observer mObserver;
         private final String mKey;

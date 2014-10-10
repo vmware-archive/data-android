@@ -16,7 +16,13 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 
+import java.util.UUID;
+
 public class RemoteClientTest extends AndroidTestCase {
+
+    private static final String URL = "http://example.com";
+    private static final String ACCESS_TOKEN = UUID.randomUUID().toString();
+    private static final String RESULT = UUID.randomUUID().toString();
 
     public void testGetAddsHeadersAndExecutes() throws Exception {
         final ClientLatch latch = new ClientLatch(1, 1, 1);
@@ -25,21 +31,24 @@ public class RemoteClientTest extends AndroidTestCase {
             @Override
             protected void addAuthHeader(final HttpUriRequest request, final String accessToken) {
                 latch.addAuthHeader();
+                assertEquals(ACCESS_TOKEN, accessToken);
             }
 
             @Override
             protected void addEtagHeader(final HttpUriRequest request, final String url, final String header) {
                 latch.addEtagHeader();
+                assertEquals(URL, url);
             }
 
             @Override
             public String execute(final HttpUriRequest request) throws Exception {
                 latch.execute();
-                return null;
+                assertEquals(URL, request.getURI().toString());
+                return RESULT;
             }
         };
 
-        client.get(null, "");
+        assertEquals(RESULT, client.get(ACCESS_TOKEN, URL));
 
         latch.assertComplete();
     }
@@ -51,21 +60,24 @@ public class RemoteClientTest extends AndroidTestCase {
             @Override
             protected void addAuthHeader(final HttpUriRequest request, final String accessToken) {
                 latch.addAuthHeader();
+                assertEquals(ACCESS_TOKEN, accessToken);
             }
 
             @Override
             protected void addEtagHeader(final HttpUriRequest request, final String url, final String header) {
                 latch.addEtagHeader();
+                assertEquals(URL, url);
             }
 
             @Override
             public String execute(final HttpUriRequest request) throws Exception {
                 latch.execute();
-                return null;
+                assertEquals(URL, request.getURI().toString());
+                return RESULT;
             }
         };
 
-        client.delete(null, "");
+        assertEquals(RESULT, client.delete(ACCESS_TOKEN, URL));
 
         latch.assertComplete();
     }
@@ -77,54 +89,57 @@ public class RemoteClientTest extends AndroidTestCase {
             @Override
             protected void addAuthHeader(final HttpUriRequest request, final String accessToken) {
                 latch.addAuthHeader();
+                assertEquals(ACCESS_TOKEN, accessToken);
             }
 
             @Override
             protected void addEtagHeader(final HttpUriRequest request, final String url, final String header) {
                 latch.addEtagHeader();
+                assertEquals(URL, url);
             }
 
             @Override
             public String execute(final HttpUriRequest request) throws Exception {
                 latch.execute();
-                return null;
+                assertEquals(URL, request.getURI().toString());
+                return RESULT;
             }
         };
 
-        client.put(null, "", "");
+        assertEquals(RESULT, client.put(ACCESS_TOKEN, URL, ""));
 
         latch.assertComplete();
     }
 
     public void testGetSucceeds() throws Exception {
-        final FakeHttpResponse response = new FakeHttpResponse(200, "test");
+        final FakeHttpResponse response = new FakeHttpResponse(200, RESULT);
         final TestRemoteClient client = new TestRemoteClient(response);
-        final String result = client.execute(new HttpGet());
+        final String result = client.execute(new HttpGet(URL));
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testDeleteSucceeds() throws Exception {
-        final FakeHttpResponse response = new FakeHttpResponse(200, "test");
+        final FakeHttpResponse response = new FakeHttpResponse(200, RESULT);
         final TestRemoteClient client = new TestRemoteClient(response);
-        final String result = client.execute(new HttpDelete());
+        final String result = client.execute(new HttpDelete(URL));
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testPutSucceeds() throws Exception {
-        final FakeHttpResponse response = new FakeHttpResponse(200, "test");
+        final FakeHttpResponse response = new FakeHttpResponse(200, RESULT);
         final TestRemoteClient client = new TestRemoteClient(response);
-        final String result = client.execute(new HttpPut());
+        final String result = client.execute(new HttpPut(URL));
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testGetThrowsNotModifiedException() throws Exception {
         try {
             final FakeHttpResponse response = new FakeHttpResponse(304, null);
             final TestRemoteClient client = new TestRemoteClient(response);
-            client.execute(new HttpGet());
+            client.execute(new HttpGet(URL));
 
             fail();
         } catch (final NotModifiedException e) {
@@ -136,7 +151,7 @@ public class RemoteClientTest extends AndroidTestCase {
         try {
             final FakeHttpResponse response = new FakeHttpResponse(412, null);
             final TestRemoteClient client = new TestRemoteClient(response);
-            client.execute(new HttpPut());
+            client.execute(new HttpPut(URL));
 
             fail();
         } catch (final PreconditionFailedException e) {
@@ -148,7 +163,7 @@ public class RemoteClientTest extends AndroidTestCase {
         try {
             final FakeHttpResponse response = new FakeHttpResponse(412, null);
             final TestRemoteClient client = new TestRemoteClient(response);
-            client.execute(new HttpDelete());
+            client.execute(new HttpDelete(URL));
 
             fail();
         } catch (final PreconditionFailedException e) {
@@ -163,16 +178,16 @@ public class RemoteClientTest extends AndroidTestCase {
 
 
     public void testGetSucceedsWith200() throws Exception {
-        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, "test"));
-        final String result = client.get("ACCESS_TOKEN", "http://example.com");
+        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, RESULT));
+        final String result = client.get(ACCESS_TOKEN, URL);
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testGetFailsWith304() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(304, null));
-            client.get("ACCESS_TOKEN", "http://example.com");
+            client.get(ACCESS_TOKEN, URL);
             fail();
         } catch (final NotModifiedException e) {
             assertEquals(304, e.getStatusCode());
@@ -182,7 +197,7 @@ public class RemoteClientTest extends AndroidTestCase {
     public void testGetFailsWith400() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(400, null));
-            client.get("ACCESS_TOKEN", "http://example.com");
+            client.get(ACCESS_TOKEN, URL);
             fail();
         } catch (final DataException e) {
             assertEquals(400, e.getStatusCode());
@@ -190,16 +205,16 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testDeleteSucceedsWith200() throws Exception {
-        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, "test"));
-        final String result = client.delete("ACCESS_TOKEN", "http://example.com");
+        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, RESULT));
+        final String result = client.delete(ACCESS_TOKEN, URL);
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testDeleteFailsWith412() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(412, null));
-            client.delete("ACCESS_TOKEN", "http://example.com");
+            client.delete(ACCESS_TOKEN, URL);
             fail();
         } catch (final PreconditionFailedException e) {
             assertEquals(412, e.getStatusCode());
@@ -209,31 +224,31 @@ public class RemoteClientTest extends AndroidTestCase {
     public void testDeleteFailsWith400() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(400, null));
-            client.delete("ACCESS_TOKEN", "http://example.com");
+            client.delete(ACCESS_TOKEN, URL);
             fail();
         } catch (final DataException e) {
             assertEquals(400, e.getStatusCode());
         }
     }
 
-    public void testPutSucceedsWith200() throws Exception {
-        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, "test"));
-        final String result = client.put("ACCESS_TOKEN", "http://example.com", "test1");
+    public void testPutSucceedsWith200WithBodyFromServer() throws Exception {
+        final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, RESULT));
+        final String result = client.put(ACCESS_TOKEN, URL, "test1");
 
-        assertEquals("test", result);
+        assertEquals(RESULT, result);
     }
 
     public void testPutSucceedsWith200WithoutBodyFromServer() throws Exception {
         final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(200, ""));
-        final String result = client.put("ACCESS_TOKEN", "http://example.com", "test1");
+        final String result = client.put(ACCESS_TOKEN, URL, RESULT);
 
-        assertEquals("test1", result);
+        assertEquals(RESULT, result);
     }
 
     public void testPutFailsWith412() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(412, null));
-            client.put("ACCESS_TOKEN", "http://example.com", "test");
+            client.put(ACCESS_TOKEN, URL, RESULT);
             fail();
         } catch (final PreconditionFailedException e) {
             assertEquals(412, e.getStatusCode());
@@ -243,7 +258,7 @@ public class RemoteClientTest extends AndroidTestCase {
     public void testPutFailsWith400() throws Exception {
         try {
             final RemoteClient client = new TestRemoteClient(new FakeHttpResponse(400, null));
-            client.put("ACCESS_TOKEN", "http://example.com", "test");
+            client.put(ACCESS_TOKEN, URL, RESULT);
             fail();
         } catch (final DataException e) {
             assertEquals(400, e.getStatusCode());
@@ -321,7 +336,7 @@ public class RemoteClientTest extends AndroidTestCase {
         }
     }
 
-    private class ClientLatch {
+    private static class ClientLatch {
 
         private final AssertionLatch mLatch1, mLatch2, mLatch3;
 

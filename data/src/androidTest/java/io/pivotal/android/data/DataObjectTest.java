@@ -5,22 +5,25 @@ package io.pivotal.android.data;
 
 import android.test.AndroidTestCase;
 
+import java.util.UUID;
+
 public class DataObjectTest extends AndroidTestCase {
 
-    private static final String TOKEN = "TOKEN";
+    private static final String KEY = UUID.randomUUID().toString();
+    private static final String VALUE = UUID.randomUUID().toString();
 
     public void testInstantiation() {
         final DataStore dataStore = new FakeDataStore(null, null);
-        final DataObject object = new DataObject(dataStore, "key");
+        final DataObject object = new DataObject(dataStore, null);
 
         assertNotNull(object);
     }
 
     public void testGetReturnsValueFromDataStore() {
-        final DataStore dataStore = new FakeDataStore("key", "value");
-        final DataObject object = new DataObject(dataStore, "key");
+        final DataStore dataStore = new FakeDataStore(KEY, VALUE);
+        final DataObject object = new DataObject(dataStore, KEY);
 
-        assertEquals("value", object.get(null));
+        assertEquals(VALUE, object.get(null));
     }
 
     public void testGetInvokesDataStore() {
@@ -30,11 +33,14 @@ public class DataObjectTest extends AndroidTestCase {
             @Override
             public Response get(final String token, final String key) {
                 latch.countDown();
-                return Response.success(null, null);
+                assertEquals(KEY, key);
+                return Response.success(KEY, VALUE);
             }
         };
 
-        new DataObject(dataStore, null).get(null);
+        final DataObject dataObject = new DataObject(dataStore, KEY);
+
+        assertEquals(VALUE, dataObject.get(null));
 
         latch.assertComplete();
     }
@@ -46,11 +52,15 @@ public class DataObjectTest extends AndroidTestCase {
             @Override
             public Response put(final String token, final String key, final String value) {
                 latch.countDown();
-                return Response.success(null, null);
+                assertEquals(KEY, key);
+                assertEquals(VALUE, value);
+                return Response.success(KEY, VALUE);
             }
         };
 
-        new DataObject(dataStore, null).put(null, null);
+        final DataObject dataObject = new DataObject(dataStore, KEY);
+
+        dataObject.put(null, VALUE);
 
         latch.assertComplete();
     }
@@ -62,11 +72,14 @@ public class DataObjectTest extends AndroidTestCase {
             @Override
             public Response delete(final String token, final String key) {
                 latch.countDown();
+                assertEquals(KEY, key);
                 return Response.success(null, null);
             }
         };
 
-        new DataObject(dataStore, null).delete(null);
+        final DataObject dataObject = new DataObject(dataStore, KEY);
+
+        dataObject.delete(null);
 
         latch.assertComplete();
     }
@@ -92,8 +105,9 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = new MockDataStore() {
 
             @Override
-            public boolean addObserver(final Observer observer) {
+            public boolean addObserver(final Observer o) {
                 latch.countDown();
+                assertTrue(o instanceof DataObject.ObserverProxy);
                 return true;
             }
         };
@@ -113,8 +127,9 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = new MockDataStore() {
 
             @Override
-            public boolean addObserver(final Observer observer) {
+            public boolean addObserver(final Observer o) {
                 latch.countDown();
+                assertTrue(o instanceof DataObject.ObserverProxy);
                 return true;
             }
         };
@@ -153,13 +168,15 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = new MockDataStore() {
 
             @Override
-            public boolean addObserver(Observer observer) {
+            public boolean addObserver(final Observer o) {
+                assertTrue(o instanceof DataObject.ObserverProxy);
                 return true;
             }
 
             @Override
-            public boolean removeObserver(final Observer observer) {
+            public boolean removeObserver(final Observer o) {
                 latch.countDown();
+                assertTrue(o instanceof DataObject.ObserverProxy);
                 return true;
             }
         };
@@ -180,8 +197,9 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = new MockDataStore() {
 
             @Override
-            public boolean removeObserver(final Observer observer) {
+            public boolean removeObserver(final Observer o) {
                 latch.countDown();
+                assertTrue(o instanceof DataObject.ObserverProxy);
                 return true;
             }
         };
