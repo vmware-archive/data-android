@@ -3,6 +3,7 @@
  */
 package io.pivotal.android.data;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -20,6 +21,7 @@ import android.content.SharedPreferences;
             mPrefs = context.getSharedPreferences("etags", Context.MODE_PRIVATE);
         }
 
+        @SuppressLint("CommitPrefEdits")
         public void put(final String uri, final String etag) {
             mPrefs.edit().putString(uri, etag).commit();
         }

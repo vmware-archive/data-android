@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
 import android.test.mock.MockContext;
 
+import java.util.Set;
 import java.util.UUID;
 
 public class LocalStoreTest extends AndroidTestCase {
@@ -91,9 +92,8 @@ public class LocalStoreTest extends AndroidTestCase {
             }
 
             @Override
-            public boolean commit() {
+            public void apply() {
                 latch3.countDown();
-                return true;
             }
         });
 
@@ -130,9 +130,8 @@ public class LocalStoreTest extends AndroidTestCase {
             }
 
             @Override
-            public boolean commit() {
+            public void apply() {
                 latch3.countDown();
-                return true;
             }
         });
 
@@ -165,6 +164,49 @@ public class LocalStoreTest extends AndroidTestCase {
         assertFalse(store.removeObserver(OBSERVER));
     }
 
+    public void testPreferencesListenerPostsResponseToHandler() {
+        final AssertionLatch latch1 = new AssertionLatch(1);
+        final AssertionLatch latch2 = new AssertionLatch(1);
+        final AssertionLatch latch3 = new AssertionLatch(1);
+
+        final TestSharedPreferences prefs = new TestSharedPreferences() {
+
+            @Override
+            public String getString(final String key, final String defValue) {
+                latch2.countDown();
+                assertEquals(KEY, key);
+                assertNull(defValue);
+                return VALUE;
+            }
+        };
+
+        final ObserverHandler handler = new ObserverHandler(null, null) {
+
+            @Override
+            public void postResponse(final DataStore.Response response) {
+                latch3.countDown();
+                assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+                assertEquals(KEY, response.key);
+                assertEquals(VALUE, response.value);
+            }
+        };
+
+        new LocalStore(new FakeContext(prefs), null) {
+
+            @Override
+            protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
+                latch1.countDown();
+                return handler;
+            }
+        };
+
+        prefs.getListener().onSharedPreferenceChanged(prefs, KEY);
+
+        latch1.assertComplete();
+        latch2.assertComplete();
+        latch3.assertComplete();
+    }
+
     // ============================================
 
 
@@ -184,9 +226,15 @@ public class LocalStoreTest extends AndroidTestCase {
 
     private static class TestSharedPreferences extends MockSharedPreferences {
 
+        private OnSharedPreferenceChangeListener mListener;
+
         @Override
         public void registerOnSharedPreferenceChangeListener(final OnSharedPreferenceChangeListener listener) {
-            // do nothing
+            mListener = listener;
+        }
+
+        public OnSharedPreferenceChangeListener getListener() {
+            return mListener;
         }
     }
 }

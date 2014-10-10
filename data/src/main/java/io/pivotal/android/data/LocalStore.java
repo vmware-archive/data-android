@@ -49,14 +49,14 @@ public class LocalStore implements DataStore {
     @Override
     public Response put(final String accessToken, final String key, final String value) {
         Logger.d("Put: " + key + ", " + value);
-        mPreferences.edit().putString(key, value).commit();
+        mPreferences.edit().putString(key, value).apply();
         return Response.success(key, value);
     }
 
     @Override
     public Response delete(final String accessToken, final String key) {
         Logger.d("Delete: " + key);
-        mPreferences.edit().remove(key).commit();
+        mPreferences.edit().remove(key).apply();
         return Response.success(key, null);
     }
 
