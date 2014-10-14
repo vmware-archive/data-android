@@ -37,12 +37,12 @@ import java.util.Set;
     private void notifyObservers(final Message msg) {
         for (final DataStore.Observer observer : mObservers) {
             final DataStore.Response resp = (DataStore.Response) msg.obj;
-            if (resp.status == DataStore.Response.Status.SUCCESS) {
-                Logger.d("Notify Observer success: " + resp.key + ", " + resp.value);
-                observer.onChange(resp.key, resp.value);
-            } else {
+            if (resp.status == DataStore.Response.Status.FAILURE) {
                 Logger.d("Notify Observer failure: " + resp.key + ", " + resp.error);
                 observer.onError(resp.key, resp.error);
+            } else {
+                Logger.d("Notify Observer success: " + resp.key + ", " + resp.value);
+                observer.onChange(resp.key, resp.value);
             }
         }
     }
