@@ -69,7 +69,7 @@ import java.util.Properties;
         return get(Keys.SERVICE_URL);
     }
 
-    public static boolean areEtagsSupported() {
+    public static boolean areEtagsEnabled() {
         try {
             final String etagSupport = get(Keys.ETAG_SUPPORT);
             return etagSupport != null && etagSupport.equals("enabled");

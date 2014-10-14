@@ -107,7 +107,7 @@ import java.io.InputStream;
         }
 
         protected void addEtagHeader(final HttpUriRequest request, final String url, final String header) {
-            if (Pivotal.areEtagsSupported()) {
+            if (Pivotal.areEtagsEnabled()) {
                 final String etag = mEtagStore.get(url);
                 if (etag != null) {
                     Logger.v("Request Header - " + header + ": " + etag);
@@ -160,7 +160,7 @@ import java.io.InputStream;
         }
 
         protected void checkEtagHeader(final HttpResponse response, final String url) {
-            if (Pivotal.areEtagsSupported()) {
+            if (Pivotal.areEtagsEnabled()) {
                 final Header header = response.getFirstHeader(Headers.ETAG);
                 if (header != null) {
                     final String etag = header.getValue();
