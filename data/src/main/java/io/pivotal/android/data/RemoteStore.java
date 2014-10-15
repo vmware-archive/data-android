@@ -38,7 +38,7 @@ public class RemoteStore implements DataStore {
         return new RemoteClient.Default(new EtagStore.Default(context));
     }
 
-    private String getCollectionUrl(final String key) throws MalformedURLException {
+    protected String getCollectionUrl(final String key) throws MalformedURLException {
         return new URL(Pivotal.getServiceUrl() + "/" + mCollection + "/" + key).toString();
     }
 
