@@ -76,7 +76,12 @@ public class LocalStore implements DataStore {
         }
     }
 
+    protected Set<Observer> getObservers() {
+        return mObservers;
+    }
+
     private final OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
+
         @Override
         public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
             final String value = prefs.getString(key, null);

@@ -9,6 +9,14 @@ import java.util.Properties;
 
 public class PivotalTest extends AndroidTestCase {
 
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+
+        Pivotal.setProperties(null);
+    }
+
     public void testGetSucceeds() {
         final String key = "key";
         final String value = "value";
@@ -37,7 +45,6 @@ public class PivotalTest extends AndroidTestCase {
     }
 
     public void testGetClientId() {
-        Pivotal.setProperties(null);
         assertEquals("http://example.com", Pivotal.getServiceUrl());
     }
 
@@ -58,7 +65,6 @@ public class PivotalTest extends AndroidTestCase {
     }
 
     public void testEtagsValueUnspecified() {
-        Pivotal.setProperties(null);
         assertFalse(Pivotal.areEtagsEnabled());
     }
 }

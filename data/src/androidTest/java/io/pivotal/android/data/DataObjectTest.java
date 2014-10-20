@@ -5,227 +5,138 @@ package io.pivotal.android.data;
 
 import android.test.AndroidTestCase;
 
+import org.mockito.Mockito;
+
 import java.util.UUID;
 
 public class DataObjectTest extends AndroidTestCase {
 
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
+    private static final String TOKEN = UUID.randomUUID().toString();
 
-    public void testInstantiation() {
-        final DataStore dataStore = new FakeDataStore(null, null);
-        final DataObject object = new DataObject(dataStore, null);
+    private static final DataObject.Observer OBSERVER = new DataObject.Observer() {
+        @Override
+        public void onChange(final String key, final String value) {}
 
-        assertNotNull(object);
-    }
+        @Override
+        public void onError(final String key, final DataError error) {}
+    };
 
-    public void testGetReturnsValueFromDataStore() {
-        final DataStore dataStore = new FakeDataStore(KEY, VALUE);
-        final DataObject object = new DataObject(dataStore, KEY);
+    private static final DataObject.Observer OBSERVER2 = new DataObject.Observer() {
+        @Override
+        public void onChange(final String key, final String value) {}
 
-        assertEquals(VALUE, object.get(null));
-    }
+        @Override
+        public void onError(final String key, final DataError error) {}
+    };
 
     public void testGetInvokesDataStore() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore dataStore = new MockDataStore() {
-
-            @Override
-            public Response get(final String token, final String key) {
-                latch.countDown();
-                assertEquals(KEY, key);
-                return Response.success(KEY, VALUE);
-            }
-        };
-
+        final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
+        Mockito.when(dataStore.get(TOKEN, KEY)).thenReturn(DataStore.Response.success(KEY, VALUE));
 
-        assertEquals(VALUE, dataObject.get(null));
+        assertEquals(VALUE, dataObject.get(TOKEN));
 
-        latch.assertComplete();
+        Mockito.verify(dataStore).get(TOKEN, KEY);
     }
 
     public void testPutInvokesDataStore() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore dataStore = new MockDataStore() {
-
-            @Override
-            public Response put(final String token, final String key, final String value) {
-                latch.countDown();
-                assertEquals(KEY, key);
-                assertEquals(VALUE, value);
-                return Response.success(KEY, VALUE);
-            }
-        };
-
+        final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
+        Mockito.when(dataStore.put(TOKEN, KEY, VALUE)).thenReturn(DataStore.Response.success(KEY, VALUE));
 
-        dataObject.put(null, VALUE);
+        dataObject.put(TOKEN, VALUE);
 
-        latch.assertComplete();
+        Mockito.verify(dataStore).put(TOKEN, KEY, VALUE);
     }
 
     public void testDeleteInvokesDataStore() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore dataStore = new MockDataStore() {
-
-            @Override
-            public Response delete(final String token, final String key) {
-                latch.countDown();
-                assertEquals(KEY, key);
-                return Response.success(null, null);
-            }
-        };
-
+        final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
+        Mockito.when(dataStore.delete(TOKEN, KEY)).thenReturn(DataStore.Response.success(KEY, null));
 
-        dataObject.delete(null);
+        dataObject.delete(TOKEN);
 
-        latch.assertComplete();
+        Mockito.verify(dataStore).delete(TOKEN, KEY);
     }
 
     public void testAddObservers() {
-        final TestObserver observer1 = new TestObserver();
-        final TestObserver observer2 = new TestObserver();
-
-        final FakeDataStore dataStore = new FakeDataStore();
+        final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject object = new DataObject(dataStore, null);
 
-        assertTrue(object.addObserver(observer1));
-        assertTrue(object.addObserver(observer2));
+        assertTrue(object.addObserver(OBSERVER));
+        assertTrue(object.addObserver(OBSERVER2));
 
-        assertFalse(object.addObserver(observer1));
-        assertFalse(object.addObserver(observer2));
+        assertFalse(object.addObserver(OBSERVER));
+        assertFalse(object.addObserver(OBSERVER2));
     }
 
     public void testAddObserversInvokesDataStoreIfObserverNotRegistered() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final TestObserver observer = new TestObserver();
+        final DataObject.ObserverProxy proxy = new DataObject.ObserverProxy(OBSERVER, null);
 
-        final DataStore dataStore = new MockDataStore() {
+        final DataStore dataStore = Mockito.mock(DataStore.class);
+        final DataObject dataObject = new DataObject(dataStore, null) {
 
             @Override
-            public boolean addObserver(final Observer o) {
-                latch.countDown();
-                assertTrue(o instanceof DataObject.ObserverProxy);
-                return true;
+            protected ObserverProxy createProxy(final Observer observer) {
+                return proxy;
             }
         };
 
-        final DataObject object = new DataObject(dataStore, null);
+        assertTrue(dataObject.addObserver(OBSERVER));
 
-        // This should countdown the latch a single time
-        object.addObserver(observer);
-
-        latch.assertComplete();
+        Mockito.verify(dataStore).addObserver(proxy);
     }
 
     public void testAddObserversDoesNotInvokesDataStoreIfObserverRegistered() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final TestObserver observer = new TestObserver();
+        final DataObject.ObserverProxy proxy = new DataObject.ObserverProxy(OBSERVER, null);
 
-        final DataStore dataStore = new MockDataStore() {
+        final DataStore dataStore = Mockito.mock(DataStore.class);
+        final DataObject dataObject = new DataObject(dataStore, null);
+        dataObject.getObservers().put(OBSERVER, proxy);
 
-            @Override
-            public boolean addObserver(final Observer o) {
-                latch.countDown();
-                assertTrue(o instanceof DataObject.ObserverProxy);
-                return true;
-            }
-        };
+        assertFalse(dataObject.addObserver(OBSERVER));
 
-        final DataObject object = new DataObject(dataStore, null);
-
-        // This should countdown the latch a single time
-        object.addObserver(observer);
-        object.addObserver(observer);
-
-        latch.assertComplete();
+        Mockito.verify(dataStore, Mockito.never()).addObserver(proxy);
     }
 
-
     public void testRemoveObservers() {
-        final TestObserver observer1 = new TestObserver();
-        final TestObserver observer2 = new TestObserver();
-
-        final FakeDataStore dataStore = new FakeDataStore();
+        final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject object = new DataObject(dataStore, null);
 
-        assertTrue(object.addObserver(observer1));
-        assertTrue(object.addObserver(observer2));
+        assertTrue(object.addObserver(OBSERVER));
+        assertTrue(object.addObserver(OBSERVER2));
 
-        assertTrue(object.removeObserver(observer1));
-        assertTrue(object.removeObserver(observer2));
+        assertTrue(object.removeObserver(OBSERVER));
+        assertTrue(object.removeObserver(OBSERVER2));
 
-        assertFalse(object.removeObserver(observer1));
-        assertFalse(object.removeObserver(observer2));
+        assertFalse(object.removeObserver(OBSERVER));
+        assertFalse(object.removeObserver(OBSERVER2));
     }
 
     public void testRemoveObserversInvokesDataStoreIfObserverRegistered() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final TestObserver observer = new TestObserver();
+        final DataObject.ObserverProxy proxy = new DataObject.ObserverProxy(OBSERVER, null);
 
-        final DataStore dataStore = new MockDataStore() {
+        final DataStore dataStore = Mockito.mock(DataStore.class);
+        final DataObject dataObject = new DataObject(dataStore, null);
+        dataObject.getObservers().put(OBSERVER, proxy);
 
-            @Override
-            public boolean addObserver(final Observer o) {
-                assertTrue(o instanceof DataObject.ObserverProxy);
-                return true;
-            }
+        assertTrue(dataObject.removeObserver(OBSERVER));
 
-            @Override
-            public boolean removeObserver(final Observer o) {
-                latch.countDown();
-                assertTrue(o instanceof DataObject.ObserverProxy);
-                return true;
-            }
-        };
-
-        final DataObject object = new DataObject(dataStore, null);
-
-        // This should countdown the latch a single time
-        object.addObserver(observer);
-        object.removeObserver(observer);
-
-        latch.assertComplete();
+        Mockito.verify(dataStore).removeObserver(proxy);
     }
 
     public void testRemoveObserversDoesNotInvokesDataStoreIfObserverNotRegistered() {
-        final AssertionLatch latch = new AssertionLatch(0);
-        final TestObserver observer = new TestObserver();
+        final DataObject.ObserverProxy proxy = new DataObject.ObserverProxy(OBSERVER, null);
 
-        final DataStore dataStore = new MockDataStore() {
+        final DataStore dataStore = Mockito.mock(DataStore.class);
+        final DataObject dataObject = new DataObject(dataStore, null);
 
-            @Override
-            public boolean removeObserver(final Observer o) {
-                latch.countDown();
-                assertTrue(o instanceof DataObject.ObserverProxy);
-                return true;
-            }
-        };
+        assertFalse(dataObject.removeObserver(OBSERVER));
 
-        final DataObject object = new DataObject(dataStore, null);
-
-        // This should not countdown the latch
-        object.removeObserver(observer);
-
-        latch.assertComplete();
+        Mockito.verify(dataStore, Mockito.never()).removeObserver(proxy);
     }
 
 
-    // ==================================================
-
-
-    private static class TestObserver implements DataObject.Observer {
-
-        @Override
-        public void onChange(final String key, final String value) {
-
-        }
-
-        @Override
-        public void onError(final String key, final DataError error) {
-
-        }
-    }
 }

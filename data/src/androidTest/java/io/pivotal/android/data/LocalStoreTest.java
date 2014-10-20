@@ -6,235 +6,175 @@ package io.pivotal.android.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
-import android.test.mock.MockContext;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import java.util.Set;
 import java.util.UUID;
 
 public class LocalStoreTest extends AndroidTestCase {
 
+    private static final String COLLECTION = UUID.randomUUID().toString();
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
+    private static final String TOKEN = UUID.randomUUID().toString();
 
     private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
         @Override
-        public void onChange(final String key, final String value) {
-
-        }
+        public void onChange(final String key, final String value) {}
 
         @Override
-        public void onError(final String key, final DataError error) {
-
-        }
+        public void onError(final String key, final DataError error) {}
     };
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
+    }
+
     public void testContainsInvokesSharedPreferences() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final Context context = new FakeContext(new TestSharedPreferences() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-            @Override
-            public boolean contains(final String key) {
-                latch.countDown();
-                assertEquals(KEY, key);
-                return true;
-            }
-        });
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(preferences.contains(KEY)).thenReturn(true);
 
-        final LocalStore store = new LocalStore(context, null);
+        final LocalStore store = new LocalStore(context, COLLECTION);
 
-        assertTrue(store.contains(null, KEY));
+        assertTrue(store.contains(TOKEN, KEY));
 
-        latch.assertComplete();
+        Mockito.verify(context).getSharedPreferences(COLLECTION, Context.MODE_PRIVATE);
+        Mockito.verify(preferences).contains(KEY);
     }
 
     public void testGetInvokesSharedPreferences() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final Context context = new FakeContext(new TestSharedPreferences() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-            @Override
-            public String getString(final String key, final String defValue) {
-                latch.countDown();
-                assertEquals(KEY, key);
-                assertNull(defValue);
-                return VALUE;
-            }
-        });
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(preferences.getString(KEY, null)).thenReturn(VALUE);
 
-        final LocalStore store = new LocalStore(context, null);
-        final DataStore.Response response = store.get(null, KEY);
+        final LocalStore store = new LocalStore(context, COLLECTION);
+        final DataStore.Response response = store.get(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        latch.assertComplete();
+        Mockito.verify(context).getSharedPreferences(COLLECTION, Context.MODE_PRIVATE);
+        Mockito.verify(preferences).getString(KEY, null);
     }
 
     public void testPutInvokesSharedPreferences() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
-        final AssertionLatch latch3 = new AssertionLatch(1);
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
 
-        final Context context = new FakeContext(new TestSharedPreferences() {
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(preferences.edit()).thenReturn(editor);
+        Mockito.when(editor.putString(KEY, VALUE)).thenReturn(editor);
 
-            @Override
-            public Editor edit() {
-                latch1.countDown();
-                return this;
-            }
-
-            @Override
-            public Editor putString(final String key, final String value) {
-                latch2.countDown();
-                assertEquals(KEY, key);
-                assertEquals(VALUE, value);
-                return this;
-            }
-
-            @Override
-            public void apply() {
-                latch3.countDown();
-            }
-        });
-
-        final LocalStore store = new LocalStore(context, null);
-        final DataStore.Response response = store.put(null, KEY, VALUE);
+        final LocalStore store = new LocalStore(context, COLLECTION);
+        final DataStore.Response response = store.put(TOKEN, KEY, VALUE);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
-        latch3.assertComplete();
+        Mockito.verify(context).getSharedPreferences(COLLECTION, Context.MODE_PRIVATE);
+        Mockito.verify(preferences).edit();
+        Mockito.verify(editor).putString(KEY, VALUE);
+        Mockito.verify(editor).apply();
     }
 
     public void testDeleteInvokesSharedPreferences() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
-        final AssertionLatch latch3 = new AssertionLatch(1);
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
 
-        final Context context = new FakeContext(new TestSharedPreferences() {
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(preferences.edit()).thenReturn(editor);
+        Mockito.when(editor.remove(KEY)).thenReturn(editor);
 
-            @Override
-            public Editor edit() {
-                latch1.countDown();
-                return this;
-            }
-
-            @Override
-            public Editor remove(final String key) {
-                latch2.countDown();
-                assertEquals(KEY, key);
-                return this;
-            }
-
-            @Override
-            public void apply() {
-                latch3.countDown();
-            }
-        });
-
-        final LocalStore store = new LocalStore(context, null);
-        final DataStore.Response response = store.delete(null, KEY);
+        final LocalStore store = new LocalStore(context, COLLECTION);
+        final DataStore.Response response = store.delete(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
-        latch3.assertComplete();
-    }
-
-    public void testAddObserver() {
-        final Context context = new FakeContext(new TestSharedPreferences());
-        final LocalStore store = new LocalStore(context, null);
-
-        assertTrue(store.addObserver(OBSERVER));
-        assertFalse(store.addObserver(OBSERVER));
-    }
-
-    public void testRemoveObserver() {
-        final Context context = new FakeContext(new TestSharedPreferences());
-        final LocalStore store = new LocalStore(context, null);
-
-        assertFalse(store.removeObserver(OBSERVER));
-        assertTrue(store.addObserver(OBSERVER));
-        assertTrue(store.removeObserver(OBSERVER));
-        assertFalse(store.removeObserver(OBSERVER));
+        Mockito.verify(context).getSharedPreferences(COLLECTION, Context.MODE_PRIVATE);
+        Mockito.verify(preferences).edit();
+        Mockito.verify(editor).remove(KEY);
+        Mockito.verify(editor).apply();
     }
 
     public void testPreferencesListenerPostsResponseToHandler() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
-        final AssertionLatch latch3 = new AssertionLatch(1);
+        final Context context = Mockito.mock(Context.class);
+        final ObserverHandler handler = Mockito.mock(ObserverHandler.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-        final TestSharedPreferences prefs = new TestSharedPreferences() {
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(preferences.getString(KEY, null)).thenReturn(VALUE);
 
-            @Override
-            public String getString(final String key, final String defValue) {
-                latch2.countDown();
-                assertEquals(KEY, key);
-                assertNull(defValue);
-                return VALUE;
-            }
-        };
-
-        final ObserverHandler handler = new ObserverHandler(null, null) {
-
-            @Override
-            public void postResponse(final DataStore.Response response) {
-                latch3.countDown();
-                assertEquals(DataStore.Response.Status.SUCCESS, response.status);
-                assertEquals(KEY, response.key);
-                assertEquals(VALUE, response.value);
-            }
-        };
-
-        new LocalStore(new FakeContext(prefs), null) {
-
+        final LocalStore store = new LocalStore(context, COLLECTION) {
             @Override
             protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-                latch1.countDown();
                 return handler;
             }
         };
 
-        prefs.getListener().onSharedPreferenceChanged(prefs, KEY);
+        final ArgumentCaptor<SharedPreferences.OnSharedPreferenceChangeListener> argument = ArgumentCaptor.forClass(SharedPreferences.OnSharedPreferenceChangeListener.class);
+        Mockito.verify(preferences).registerOnSharedPreferenceChangeListener(argument.capture());
+        argument.getValue().onSharedPreferenceChanged(preferences, KEY);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
-        latch3.assertComplete();
+        Mockito.verify(handler).postResponse(Mockito.any(DataStore.Response.class));
     }
 
-    // ============================================
+    public void testAddObserverIfNotAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
 
-    private static class FakeContext extends MockContext {
+        final LocalStore store = new LocalStore(context, COLLECTION);
 
-        private final SharedPreferences mSharedPreferences;
-
-        public FakeContext(final SharedPreferences prefs) {
-            mSharedPreferences = prefs;
-        }
-
-        @Override
-        public SharedPreferences getSharedPreferences(final String name, final int mode) {
-            return mSharedPreferences;
-        }
+        assertTrue(store.addObserver(OBSERVER));
     }
 
-    private static class TestSharedPreferences extends MockSharedPreferences {
+    public void testAddObserverIfAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-        private OnSharedPreferenceChangeListener mListener;
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
 
-        @Override
-        public void registerOnSharedPreferenceChangeListener(final OnSharedPreferenceChangeListener listener) {
-            mListener = listener;
-        }
+        final LocalStore store = new LocalStore(context, COLLECTION);
+        store.getObservers().add(OBSERVER);
 
-        public OnSharedPreferenceChangeListener getListener() {
-            return mListener;
-        }
+        assertFalse(store.addObserver(OBSERVER));
+    }
+
+    public void testRemoveObserverIfAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+
+        final LocalStore store = new LocalStore(context, COLLECTION);
+        store.getObservers().add(OBSERVER);
+
+        assertTrue(store.removeObserver(OBSERVER));
+    }
+
+    public void testRemoveObserverIfNotAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+
+        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
+
+        final LocalStore store = new LocalStore(context, COLLECTION);
+
+        assertFalse(store.removeObserver(OBSERVER));
     }
 }

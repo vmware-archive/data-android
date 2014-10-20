@@ -4,298 +4,220 @@
 package io.pivotal.android.data;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
-import android.test.mock.MockContext;
 
-import java.util.HashSet;
+import org.mockito.Mockito;
+
+import java.net.MalformedURLException;
 import java.util.Set;
 import java.util.UUID;
 
 public class RemoteStoreTest extends AndroidTestCase {
 
+    private static final String URL = "http://example.com";
+    private static final String COLLECTION = UUID.randomUUID().toString();
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
     private static final String TOKEN = UUID.randomUUID().toString();
 
+    private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
+        @Override
+        public void onChange(final String key, final String value) {}
+
+        @Override
+        public void onError(final String key, final DataError error) {}
+    };
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
+    }
+
     public void testContainsInvokesGetWithSuccess() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final RemoteStore store = new RemoteStore(new TestContext(), null) {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
 
-            @Override
-            public Response get(final String accessToken, final String key) {
-                latch.countDown();
-                return Response.success(KEY, VALUE);
-            }
-        };
+        Mockito.doReturn(DataStore.Response.success(KEY, VALUE)).when(remoteStore).get(TOKEN, KEY);
 
-        assertTrue(store.contains(TOKEN, KEY));
+        assertTrue(remoteStore.contains(TOKEN, KEY));
 
-        latch.assertComplete();
+        Mockito.verify(remoteStore).get(TOKEN, KEY);
     }
 
     public void testContainsInvokesGetWithFailure() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final RemoteStore store = new RemoteStore(new TestContext(), null) {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
 
-            @Override
-            public Response get(final String accessToken, final String key) {
-                latch.countDown();
-                return Response.failure(KEY, null);
-            }
-        };
+        Mockito.doReturn(DataStore.Response.failure(KEY, null)).when(remoteStore).get(TOKEN, KEY);
 
-        assertFalse(store.contains(TOKEN, KEY));
+        assertFalse(remoteStore.contains(TOKEN, KEY));
 
-        latch.assertComplete();
+        Mockito.verify(remoteStore).get(TOKEN, KEY);
     }
 
-    public void testGetInvokesRemoteClientAndObserverHandlerWithSuccessResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testGetInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String get(final String accessToken, final String url) throws Exception {
-                        latch1.countDown();
-                        return VALUE;
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.when(remoteClient.get(TOKEN, URL)).thenReturn(VALUE);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.get(TOKEN, KEY);
+        final DataStore.Response response = remoteStore.get(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).get(TOKEN, URL);
     }
 
-    public void testGetInvokesRemoteClientAndObserverHandlerWithFailureResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testGetInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String get(final String accessToken, final String url) throws Exception {
-                        latch1.countDown();
-                        throw new RuntimeException();
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).get(TOKEN, URL);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.get(TOKEN, KEY);
+        final DataStore.Response response = remoteStore.get(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.FAILURE, response.status);
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).get(TOKEN, URL);
     }
 
-    public void testPutInvokesRemoteClientAndObserverHandlerWithSuccessResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testPutInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String put(final String accessToken, final String url, final String value) throws Exception {
-                        latch1.countDown();
-                        return VALUE;
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.when(remoteClient.put(TOKEN, URL, VALUE)).thenReturn(VALUE);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.put(TOKEN, KEY, VALUE);
+        final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
     }
 
-    public void testPutInvokesRemoteClientAndObserverHandlerWithFailureResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testPutInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String put(final String accessToken, final String url, final String value) throws Exception {
-                        latch1.countDown();
-                        throw new RuntimeException();
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).put(TOKEN, URL, VALUE);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.put(TOKEN, KEY, VALUE);
+        final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
 
         assertEquals(DataStore.Response.Status.FAILURE, response.status);
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
     }
 
-    public void testDeleteInvokesRemoteClientAndObserverHandlerWithSuccessResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testDeleteInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String delete(final String accessToken, final String url) throws Exception {
-                        latch1.countDown();
-                        return VALUE;
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.when(remoteClient.delete(TOKEN, URL)).thenReturn(VALUE);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.delete(TOKEN, KEY);
+        final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.SUCCESS, response.status);
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).delete(TOKEN, URL);
     }
 
-    public void testDeleteInvokesRemoteClientAndObserverHandlerWithFailureResponse() {
-        final AssertionLatch latch1 = new AssertionLatch(1);
-        final AssertionLatch latch2 = new AssertionLatch(1);
+    public void testDeleteInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
 
-        final RemoteStore store = new RemoteStore(null, null) {
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return new MockRemoteClient() {
+        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-                    @Override
-                    public String delete(final String accessToken, final String url) throws Exception {
-                        latch1.countDown();
-                        throw new RuntimeException();
-                    }
-                };
-            }
+        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).delete(TOKEN, URL);
 
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-                return new TestObserverHandler() {
-
-                    @Override
-                    public void postResponse(final DataStore.Response response) {
-                        latch2.countDown();
-                    }
-                };
-            }
-        };
-
-        final DataStore.Response response = store.delete(TOKEN, KEY);
+        final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
 
         assertEquals(DataStore.Response.Status.FAILURE, response.status);
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        latch1.assertComplete();
-        latch2.assertComplete();
+        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(remoteClient).delete(TOKEN, URL);
     }
 
-    private static class TestObserverHandler extends ObserverHandler {
+    public void testAddObserverIfNotAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
 
-        public TestObserverHandler() {
-            super(new HashSet<DataStore.Observer>(), new Object());
-        }
+        assertTrue(remoteStore.addObserver(OBSERVER));
     }
 
-    private static class TestContext extends MockContext {
+    public void testAddObserverIfAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
+        remoteStore.getObservers().add(OBSERVER);
 
-        @Override
-        public SharedPreferences getSharedPreferences(final String name, final int mode) {
-            return null;
-        }
+        assertFalse(remoteStore.addObserver(OBSERVER));
     }
+
+    public void testRemoveObserverIfAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
+        remoteStore.getObservers().add(OBSERVER);
+
+        assertTrue(remoteStore.removeObserver(OBSERVER));
+    }
+
+    public void testRemoveObserverIfNotAlreadyRegistered() {
+        final Context context = Mockito.mock(Context.class);
+        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
+
+        assertFalse(remoteStore.removeObserver(OBSERVER));
+    }
+
+    private RemoteStore getRemoteStore(final RemoteClient remoteClient, final ObserverHandler observerHandler) {
+        return new RemoteStore(null, null) {
+
+            @Override
+            protected RemoteClient createRemoteClient(final Context context) {
+                return remoteClient;
+            }
+
+            @Override
+            protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
+                return observerHandler;
+            }
+
+            @Override
+            protected String getCollectionUrl(final String key) throws MalformedURLException {
+                return URL;
+            }
+        };
+    }
+
 }

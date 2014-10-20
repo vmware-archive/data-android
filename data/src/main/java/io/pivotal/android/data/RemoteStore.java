@@ -43,6 +43,11 @@ public class RemoteStore implements DataStore {
     }
 
     @Override
+    public boolean contains(final String accessToken, final String key) {
+        return get(accessToken, key).status == Response.Status.SUCCESS;
+    }
+
+    @Override
     public Response get(final String accessToken, final String key) {
         final Response response = getResponse(accessToken, key);
         mHandler.postResponse(response);
@@ -148,11 +153,6 @@ public class RemoteStore implements DataStore {
     }
 
     @Override
-    public boolean contains(final String accessToken, final String key) {
-        return get(accessToken, key).status == Response.Status.SUCCESS;
-    }
-
-    @Override
     public boolean addObserver(final Observer observer) {
         synchronized (mLock) {
             return mObservers.add(observer);
@@ -164,5 +164,9 @@ public class RemoteStore implements DataStore {
         synchronized (mLock) {
             return mObservers.remove(observer);
         }
+    }
+
+    protected Set<Observer> getObservers() {
+        return mObservers;
     }
 }

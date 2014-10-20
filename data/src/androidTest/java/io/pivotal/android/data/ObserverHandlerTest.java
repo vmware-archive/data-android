@@ -6,86 +6,53 @@ package io.pivotal.android.data;
 import android.os.Message;
 import android.test.AndroidTestCase;
 
-import java.util.HashSet;
+import org.mockito.Mockito;
+import org.mockito.internal.util.collections.Sets;
+
 import java.util.Set;
+import java.util.UUID;
 
 public class ObserverHandlerTest extends AndroidTestCase {
 
+    private static final DataError ERROR = new DataError(new Exception());
+    private static final String KEY = UUID.randomUUID().toString();
+    private static final String VALUE = UUID.randomUUID().toString();
+
+    private static final Object LOCK = new Object();
+
     public void testPostResponseSuccess() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore.Observer observer = new DataStore.Observer() {
-            @Override
-            public void onChange(final String key, final String value) {
-                latch.countDown();
-            }
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final Set<DataStore.Observer> observers = Sets.newSet(observer);
+        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
+        final DataStore.Response response = DataStore.Response.success(KEY, VALUE);
 
-            @Override
-            public void onError(final String key, final DataError error) {
-                fail();
-            }
-        };
-        final ObserverHandler handler = new TestObserverHandler(observer);
-        handler.postResponse(DataStore.Response.success(null, null));
+        final Message message = handler.obtainMessage(1000, response);
+        handler.handleMessage(message);
 
-        latch.assertComplete();
+        Mockito.verify(observer).onChange(KEY, VALUE);
     }
 
     public void testPostResponsePending() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore.Observer observer = new DataStore.Observer() {
-            @Override
-            public void onChange(final String key, final String value) {
-                latch.countDown();
-            }
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final Set<DataStore.Observer> observers = Sets.newSet(observer);
+        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
+        final DataStore.Response response = DataStore.Response.pending(KEY, VALUE);
 
-            @Override
-            public void onError(final String key, final DataError error) {
-                fail();
-            }
-        };
-        final ObserverHandler handler = new TestObserverHandler(observer);
-        handler.postResponse(DataStore.Response.pending(null, null));
+        final Message message = handler.obtainMessage(1000, response);
+        handler.handleMessage(message);
 
-        latch.assertComplete();
+        Mockito.verify(observer).onChange(KEY, VALUE);
     }
 
     public void testPostResponseFailure() {
-        final AssertionLatch latch = new AssertionLatch(1);
-        final DataStore.Observer observer = new DataStore.Observer() {
-            @Override
-            public void onChange(final String key, final String value) {
-                fail();
-            }
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final Set<DataStore.Observer> observers = Sets.newSet(observer);
+        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
+        final DataStore.Response response = DataStore.Response.failure(KEY, ERROR);
 
-            @Override
-            public void onError(final String key, final DataError error) {
-                latch.countDown();
-            }
-        };
-        final ObserverHandler handler = new TestObserverHandler(observer);
-        handler.postResponse(DataStore.Response.failure(null, null));
+        final Message message = handler.obtainMessage(1000, response);
+        handler.handleMessage(message);
 
-        latch.assertComplete();
-    }
-
-    private static class TestObserverHandler extends ObserverHandler {
-
-        private static final Object LOCK = new Object();
-
-        public TestObserverHandler(final DataStore.Observer observer) {
-            super(createSet(observer), LOCK);
-        }
-
-        private static Set<DataStore.Observer> createSet(final DataStore.Observer observer) {
-            final Set<DataStore.Observer> set = new HashSet<DataStore.Observer>(1);
-            set.add(observer);
-            return set;
-        }
-
-        @Override
-        public boolean sendMessageAtTime(final Message msg, final long uptimeMillis) {
-            handleMessage(msg);
-            return true;
-        }
+        Mockito.verify(observer).onError(KEY, ERROR);
     }
 }

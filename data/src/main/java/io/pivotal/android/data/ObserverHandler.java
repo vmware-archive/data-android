@@ -8,7 +8,7 @@ import android.os.Message;
 
 import java.util.Set;
 
-/* package */ class ObserverHandler extends Handler {
+public class ObserverHandler extends Handler {
 
     private static final int MSG_NOTIFY = 1000;
 

@@ -22,7 +22,7 @@ import org.apache.http.params.HttpParams;
 import java.io.IOException;
 import java.io.InputStream;
 
-/* package */ interface RemoteClient {
+public interface RemoteClient {
 
     public String get(final String accessToken, final String url) throws Exception;
 
@@ -33,12 +33,12 @@ import java.io.InputStream;
 
     public static class Default implements RemoteClient {
 
-        private static final class Timeouts {
+        public static final class Timeouts {
             public static final int CONNECTION = 4000;
             public static final int SOCKET = 10000;
         }
 
-        private static final class Headers {
+        public static final class Headers {
             public static final String AUTHORIZATION = "Authorization";
             public static final String IF_MATCH = "If-Match";
             public static final String IF_NONE_MATCH = "If-None-Match";

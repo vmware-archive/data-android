@@ -48,7 +48,7 @@ public class DataObject {
     public boolean addObserver(final Observer observer) {
         Logger.d("Add observer: " + observer);
         if (!mObservers.containsKey(observer)) {
-            final ObserverProxy proxy = new ObserverProxy(observer, mKey);
+            final ObserverProxy proxy = createProxy(observer);
             mDataStore.addObserver(proxy);
             mObservers.put(observer, proxy);
             return true;
@@ -68,12 +68,20 @@ public class DataObject {
         }
     }
 
+    protected ObserverProxy createProxy(final Observer observer) {
+        return new ObserverProxy(observer, mKey);
+    }
+
+    protected Map<Observer, ObserverProxy> getObservers() {
+        return mObservers;
+    }
+
     /* package */ static class ObserverProxy implements DataStore.Observer {
 
         private final Observer mObserver;
         private final String mKey;
 
-        private ObserverProxy(final Observer observer, final String key) {
+        public ObserverProxy(final Observer observer, final String key) {
             mObserver = observer;
             mKey = key;
         }
