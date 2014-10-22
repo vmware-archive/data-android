@@ -13,6 +13,10 @@ public class DataError extends Error {
         if (e instanceof DataException) {
             mCode = ((DataException) e).getStatusCode();
         }
+
+        if (e instanceof NotConnectedException) {
+            mCode = 100;
+        }
     }
 
     public int getCode() {
@@ -21,5 +25,9 @@ public class DataError extends Error {
 
     public boolean isUnauthorized() {
         return mCode == 401;
+    }
+
+    public boolean isNotConnected() {
+        return mCode == 100;
     }
 }

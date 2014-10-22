@@ -42,7 +42,7 @@ public class LocalStore implements DataStore {
     @Override
     public Response get(final String accessToken, final String key) {
         Logger.d("Get: " + key);
-        final String value = mPreferences.getString(key, null);
+        final String value = mPreferences.getString(key, "");
         return Response.success(key, value);
     }
 
@@ -86,7 +86,7 @@ public class LocalStore implements DataStore {
 
         @Override
         public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
-            final String value = prefs.getString(key, null);
+            final String value = prefs.getString(key, "");
             Logger.d("Shared Preferences Changed: " + key + ", " + value);
             mHandler.postResponse(Response.success(key, value));
         }

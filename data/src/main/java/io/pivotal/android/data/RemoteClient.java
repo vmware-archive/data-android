@@ -47,8 +47,8 @@ public interface RemoteClient {
 
         private final EtagStore mEtagStore;
 
-        public Default(final EtagStore etagStore) {
-            mEtagStore = etagStore;
+        public Default(final EtagStore store) {
+            mEtagStore = store;
         }
 
         @Override

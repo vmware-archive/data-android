@@ -20,6 +20,7 @@ public class DataObject {
         return new DataObject(dataStore, key);
     }
 
+    private final Object mLock = new Object();
     private final Map<Observer, ObserverProxy> mObservers = new HashMap<Observer, ObserverProxy>();
 
     private final DataStore mDataStore;
@@ -47,33 +48,39 @@ public class DataObject {
 
     public boolean addObserver(final Observer observer) {
         Logger.d("Add observer: " + observer);
-        if (!mObservers.containsKey(observer)) {
-            final ObserverProxy proxy = createProxy(observer);
-            mDataStore.addObserver(proxy);
-            mObservers.put(observer, proxy);
-            return true;
-        } else {
-            return false;
+        synchronized (mLock) {
+            if (!mObservers.containsKey(observer)) {
+                final ObserverProxy proxy = createProxy(observer);
+                mDataStore.addObserver(proxy);
+                mObservers.put(observer, proxy);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
     public boolean removeObserver(final Observer observer) {
         Logger.d("Remove observer: " + observer);
-        if (mObservers.containsKey(observer)) {
-            final ObserverProxy proxy = mObservers.remove(observer);
-            mDataStore.removeObserver(proxy);
-            return true;
-        } else {
-            return false;
+        synchronized (mLock) {
+            if (mObservers.containsKey(observer)) {
+                final ObserverProxy proxy = mObservers.remove(observer);
+                mDataStore.removeObserver(proxy);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
-    protected ObserverProxy createProxy(final Observer observer) {
+    /* package */ ObserverProxy createProxy(final Observer observer) {
         return new ObserverProxy(observer, mKey);
     }
 
-    protected Map<Observer, ObserverProxy> getObservers() {
-        return mObservers;
+    /* package */ Map<Observer, ObserverProxy> getObservers() {
+        synchronized (mLock) {
+            return mObservers;
+        }
     }
 
     /* package */ static class ObserverProxy implements DataStore.Observer {

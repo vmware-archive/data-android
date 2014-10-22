@@ -8,22 +8,29 @@ import android.util.Base64;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class DefaultStore implements DataStore {
 
-    private final ObjectMapper mMapper = new ObjectMapper();
+    private final Object mLock = new Object();
+    private final Map<Observer, ObserverProxy> mObservers = new HashMap<Observer, ObserverProxy>();
 
+    private final Context mContext;
+    private final String mCollection;
     private final LocalStore mLocalStore;
     private final RemoteStore mRemoteStore;
+
+    private RequestCache mRequestCache;
 
     public static DefaultStore create(final Context context, final String collection) {
         final LocalStore localStore = new LocalStore(context, collection);
         final RemoteStore remoteStore = new RemoteStore(context, collection);
-        return new DefaultStore(localStore, remoteStore);
+        return new DefaultStore(context, collection, localStore, remoteStore);
     }
 
-    public DefaultStore(final LocalStore localStore, final RemoteStore remoteStore) {
-        mLocalStore = localStore;
-        mRemoteStore = remoteStore;
+    public DefaultStore(final Context context, final String collection, final LocalStore localStore, final RemoteStore remoteStore) {
+        mContext = context; mCollection = collection; mLocalStore = localStore; mRemoteStore = remoteStore;
     }
 
     @Override
@@ -31,14 +38,41 @@ public class DefaultStore implements DataStore {
         return mLocalStore.contains(accessToken, key);
     }
 
-    @Override
+//    @Override
+//    public boolean addObserver(final Observer observer) {
+//        return mRemoteStore.addObserver(observer);
+//    }
+//
+//    @Override
+//    public boolean removeObserver(final Observer observer) {
+//        return mRemoteStore.removeObserver(observer);
+//    }
+
     public boolean addObserver(final Observer observer) {
-        return mRemoteStore.addObserver(observer);
+        Logger.d("Add observer: " + observer);
+        synchronized (mLock) {
+            if (!mObservers.containsKey(observer)) {
+                final ObserverProxy proxy = createProxy(observer);
+                mLocalStore.addObserver(proxy);
+                mObservers.put(observer, proxy);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
-    @Override
     public boolean removeObserver(final Observer observer) {
-        return mRemoteStore.removeObserver(observer);
+        Logger.d("Remove observer: " + observer);
+        synchronized (mLock) {
+            if (mObservers.containsKey(observer)) {
+                final ObserverProxy proxy = mObservers.remove(observer);
+                mLocalStore.removeObserver(proxy);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     @Override
@@ -46,11 +80,12 @@ public class DefaultStore implements DataStore {
         Logger.d("Get: " + key);
         try {
             final Response response = mLocalStore.get(accessToken, key);
-            final KeyValue result = decodeKeyValue(response.value);
+            final KeyValue result = ByteUtils.decodeKeyValue(response.value);
 
-            mRemoteStore.getAsync(accessToken, key, new UpdateListener(accessToken));
+            getRemotelyOrStorePending(accessToken, key);
 
             return Response.pending(result.key, result.value);
+
         } catch (final Exception e) {
             Logger.ex(e);
             return Response.failure(key, new DataError(e));
@@ -62,11 +97,14 @@ public class DefaultStore implements DataStore {
         Logger.d("Put: " + key + ", " + value);
         try {
             final KeyValue result = new KeyValue(key, value, KeyValue.State.PENDING);
+            final String encodedValue = ByteUtils.encodeKeyValue(result);
 
-            mLocalStore.put(accessToken, key, encodeKeyValue(result));
-            mRemoteStore.putAsync(accessToken, key, value, new UpdateListener(accessToken));
+            mLocalStore.put(accessToken, key, encodedValue);
+
+            putRemotelyOrStorePending(accessToken, key, value);
 
             return Response.pending(result.key, result.value);
+
         } catch (final Exception e) {
             return Response.failure(key, new DataError(e));
         }
@@ -77,47 +115,87 @@ public class DefaultStore implements DataStore {
         Logger.d("Delete: " + key);
         try {
             final KeyValue result = new KeyValue(key, null, KeyValue.State.PENDING);
+            final String encodedValue = ByteUtils.encodeKeyValue(result);
 
-            mLocalStore.put(accessToken, key, encodeKeyValue(result));
-            mRemoteStore.deleteAsync(accessToken, key, new DeleteListener(accessToken));
+            mLocalStore.put(accessToken, key, encodedValue);
+
+            deleteRemotelyOrStorePending(accessToken, key);
 
             return Response.pending(result.key, result.value);
+
         } catch (final Exception e) {
             return Response.failure(key, new DataError(e));
         }
     }
 
-    private String encodeKeyValue(final KeyValue result) throws Exception {
-        final byte[] json = mMapper.writeValueAsBytes(result);
-        final byte[] bytes = Base64.encode(json, Base64.DEFAULT);
-        return new String(bytes);
+
+    private RequestCache getRequestCache() {
+        if (mRequestCache == null) {
+            mRequestCache = new RequestCache(mContext);
+        }
+        return mRequestCache;
     }
 
-    private KeyValue decodeKeyValue(final String value) throws Exception {
-        final byte[] bytes = Base64.decode(value, Base64.DEFAULT);
-        return mMapper.readValue(bytes, KeyValue.class);
+
+    private void getRemotelyOrStorePending(final String accessToken, final String key) {
+        if (ConnectivityReceiver.isConnected(mContext)) {
+            mRemoteStore.getAsync(accessToken, key, new UpdateListener(accessToken));
+        } else {
+            getRequestCache().storeGetRequest(accessToken, mCollection, key);
+        }
     }
+
+    private void putRemotelyOrStorePending(final String accessToken, final String key, final String value) {
+        if (ConnectivityReceiver.isConnected(mContext)) {
+            mRemoteStore.putAsync(accessToken, key, value, new UpdateListener(accessToken));
+        } else {
+            getRequestCache().storePutRequest(accessToken, mCollection, key, value);
+        }
+    }
+
+    private void deleteRemotelyOrStorePending(final String accessToken, final String key) {
+        if (ConnectivityReceiver.isConnected(mContext)) {
+            mRemoteStore.deleteAsync(accessToken, key, new DeleteListener(accessToken));
+        } else {
+            getRequestCache().storeDeleteRequest(accessToken, mCollection, key);
+        }
+    }
+
+
+    // =================================
+
 
     private static final class KeyValue {
-
-        public static enum State {
-            DEFAULT, PENDING;
-        }
 
         public String key, value;
         public State state;
 
         public KeyValue() {
-        }
 
-        public KeyValue(final String key, final String value) {
-            this(key, value, State.DEFAULT);
         }
 
         public KeyValue(final String key, final String value, final State state) {
-            this.key = key;
-            this.value = value;
-            this.state = state;
+            this.key = key; this.value = value; this.state = state;
+        }
+
+        public static enum State {
+            DEFAULT, PENDING;
+        }
+    }
+
+    private static final class ByteUtils {
+
+        public static String encodeKeyValue(final KeyValue result) throws Exception {
+            final ObjectMapper mapper = new ObjectMapper();
+            final byte[] json = mapper.writeValueAsBytes(result);
+            final byte[] bytes = Base64.encode(json, Base64.DEFAULT);
+            return new String(bytes);
+        }
+
+        public static KeyValue decodeKeyValue(final String value) throws Exception {
+            final byte[] bytes = Base64.decode(value, Base64.DEFAULT);
+            final ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(bytes, KeyValue.class);
         }
     }
 
@@ -133,8 +211,8 @@ public class DefaultStore implements DataStore {
         public void onResponse(final Response response) {
             if (response.status == Response.Status.SUCCESS) {
                 try {
-                    final KeyValue result = new KeyValue(response.key, response.value);
-                    mLocalStore.put(mAccessToken, response.key, encodeKeyValue(result));
+                    final KeyValue result = new KeyValue(response.key, response.value, KeyValue.State.DEFAULT);
+                    mLocalStore.put(mAccessToken, response.key, ByteUtils.encodeKeyValue(result));
                 } catch (final Exception e) {
                     Logger.ex(e);
                 }
@@ -158,6 +236,46 @@ public class DefaultStore implements DataStore {
                 } catch (final Exception e) {
                     Logger.ex(e);
                 }
+            }
+        }
+    }
+
+    /* package */ ObserverProxy createProxy(final Observer observer) {
+        return new ObserverProxy(observer);
+    }
+
+    /* package */ Map<Observer, ObserverProxy> getObservers() {
+        synchronized (mLock) {
+            return mObservers;
+        }
+    }
+
+    /* package */ static class ObserverProxy implements DataStore.Observer {
+
+        private final Observer mObserver;
+
+        public ObserverProxy(final Observer observer) {
+            mObserver = observer;
+        }
+
+        @Override
+        public void onChange(final String key, final String value) {
+            if (mObserver != null) {
+                Logger.d("Observer Changed: " + key + ", " + value);
+                try {
+                    final KeyValue result = ByteUtils.decodeKeyValue(value);
+                    mObserver.onChange(key, result.value);
+                } catch (final Exception e) {
+                    Logger.ex(e);
+                }
+            }
+        }
+
+        @Override
+        public void onError(final String key, final DataError error) {
+            if (mObserver != null) {
+                Logger.d("Observer Error: " + key + ", " + error);
+                mObserver.onError(key, error);
             }
         }
     }
