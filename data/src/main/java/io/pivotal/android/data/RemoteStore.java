@@ -167,6 +167,8 @@ public class RemoteStore implements DataStore {
     }
 
     protected Set<Observer> getObservers() {
-        return mObservers;
+        synchronized (mLock) {
+            return mObservers;
+        }
     }
 }

@@ -77,7 +77,9 @@ public class LocalStore implements DataStore {
     }
 
     protected Set<Observer> getObservers() {
-        return mObservers;
+        synchronized (mLock) {
+            return mObservers;
+        }
     }
 
     private final OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
