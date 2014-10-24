@@ -14,9 +14,13 @@ public class ConnectivityReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if (isConnected(context)) {
-            final RequestCache cache = new RequestCache(context);
+            final RequestCache cache = getRequestCache(context);
             cache.executePendingRequests(context);
         }
+    }
+
+    protected RequestCache getRequestCache(final Context context) {
+        return new RequestCache.Default(context);
     }
 
     public static boolean isConnected(final Context context) {

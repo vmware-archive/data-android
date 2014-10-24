@@ -50,7 +50,7 @@ public class RemoteStore implements DataStore {
     @Override
     public Response get(final String accessToken, final String key) {
         final Response response = getResponse(accessToken, key);
-        mHandler.postResponse(response);
+        mHandler.notifyResponse(response);
         return response;
     }
 
@@ -85,7 +85,7 @@ public class RemoteStore implements DataStore {
     @Override
     public Response put(final String accessToken, final String key, final String value) {
         final Response response = putResponse(accessToken, key, value);
-        mHandler.postResponse(response);
+        mHandler.notifyResponse(response);
         return response;
     }
 
@@ -120,7 +120,7 @@ public class RemoteStore implements DataStore {
     @Override
     public Response delete(final String accessToken, final String key) {
         final Response response = deleteResponse(accessToken, key);
-        mHandler.postResponse(response);
+        mHandler.notifyResponse(response);
         return response;
     }
 

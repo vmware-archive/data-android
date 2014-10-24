@@ -16,7 +16,7 @@ public class DataObject {
     }
 
     public static DataObject create(final Context context, final String collection, final String key) {
-        final DataStore dataStore = DefaultStore.create(context, collection);
+        final DataStore dataStore = OfflineStore.create(context, collection);
         return new DataObject(dataStore, key);
     }
 

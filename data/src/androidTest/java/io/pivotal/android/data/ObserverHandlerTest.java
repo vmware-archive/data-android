@@ -20,7 +20,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
 
     private static final Object LOCK = new Object();
 
-    public void testPostResponseSuccess() {
+    public void testNotifyResponseSuccess() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final Set<DataStore.Observer> observers = Sets.newSet(observer);
         final ObserverHandler handler = new ObserverHandler(observers, LOCK);
@@ -32,7 +32,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
         Mockito.verify(observer).onChange(KEY, VALUE);
     }
 
-    public void testPostResponsePending() {
+    public void testNotifyResponsePending() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final Set<DataStore.Observer> observers = Sets.newSet(observer);
         final ObserverHandler handler = new ObserverHandler(observers, LOCK);
@@ -44,7 +44,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
         Mockito.verify(observer).onChange(KEY, VALUE);
     }
 
-    public void testPostResponseFailure() {
+    public void testNotifyResponseFailure() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final Set<DataStore.Observer> observers = Sets.newSet(observer);
         final ObserverHandler handler = new ObserverHandler(observers, LOCK);

@@ -5,12 +5,13 @@ package io.pivotal.android.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class LocalStore implements DataStore {
+
+    private static final String EMPTY = "";
 
     private final Object mLock = new Object();
     private final Set<Observer> mObservers = new HashSet<Observer>();
@@ -24,9 +25,7 @@ public class LocalStore implements DataStore {
     }
 
     protected SharedPreferences createSharedPreferences(final Context context, final String collection) {
-        final SharedPreferences prefs = context.getSharedPreferences(collection, Context.MODE_PRIVATE);
-        prefs.registerOnSharedPreferenceChangeListener(mListener);
-        return prefs;
+        return context.getSharedPreferences(collection, Context.MODE_PRIVATE);
     }
 
     protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
@@ -42,13 +41,25 @@ public class LocalStore implements DataStore {
     @Override
     public Response get(final String accessToken, final String key) {
         Logger.d("Get: " + key);
-        final String value = mPreferences.getString(key, "");
+        final Response response = getResponse(key);
+        mHandler.notifyResponse(response);
+        return response;
+    }
+
+    private Response getResponse(final String key) {
+        final String value = mPreferences.getString(key, EMPTY);
         return Response.success(key, value);
     }
 
     @Override
     public Response put(final String accessToken, final String key, final String value) {
         Logger.d("Put: " + key + ", " + value);
+        final Response response = putResponse(key, value);
+        mHandler.notifyResponse(response);
+        return response;
+    }
+
+    private Response putResponse(final String key, final String value) {
         mPreferences.edit().putString(key, value).apply();
         return Response.success(key, value);
     }
@@ -56,8 +67,14 @@ public class LocalStore implements DataStore {
     @Override
     public Response delete(final String accessToken, final String key) {
         Logger.d("Delete: " + key);
+        final Response response = deleteResponse(key);
+        mHandler.notifyResponse(response);
+        return response;
+    }
+
+    private Response deleteResponse(final String key) {
         mPreferences.edit().remove(key).apply();
-        return Response.success(key, null);
+        return Response.success(key, EMPTY);
     }
 
     @Override
@@ -81,14 +98,4 @@ public class LocalStore implements DataStore {
             return mObservers;
         }
     }
-
-    private final OnSharedPreferenceChangeListener mListener = new OnSharedPreferenceChangeListener() {
-
-        @Override
-        public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
-            final String value = prefs.getString(key, "");
-            Logger.d("Shared Preferences Changed: " + key + ", " + value);
-            mHandler.postResponse(Response.success(key, value));
-        }
-    };
 }

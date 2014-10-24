@@ -20,7 +20,7 @@ public class ObserverHandler extends Handler {
         mLock = lock;
     }
 
-    public void postResponse(final DataStore.Response response) {
+    public void notifyResponse(final DataStore.Response response) {
         final Message msg = obtainMessage(MSG_NOTIFY, response);
         sendMessage(msg);
     }

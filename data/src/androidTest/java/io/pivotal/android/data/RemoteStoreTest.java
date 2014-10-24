@@ -62,7 +62,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.when(remoteClient.get(TOKEN, URL)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
@@ -71,7 +71,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).get(TOKEN, URL);
     }
 
@@ -81,7 +81,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.doThrow(new RuntimeException()).when(remoteClient).get(TOKEN, URL);
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
@@ -90,7 +90,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).get(TOKEN, URL);
     }
 
@@ -100,7 +100,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.when(remoteClient.put(TOKEN, URL, VALUE)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
@@ -109,7 +109,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
     }
 
@@ -119,7 +119,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.doThrow(new RuntimeException()).when(remoteClient).put(TOKEN, URL, VALUE);
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
@@ -128,7 +128,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
     }
 
@@ -138,7 +138,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.when(remoteClient.delete(TOKEN, URL)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
@@ -147,7 +147,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).delete(TOKEN, URL);
     }
 
@@ -157,7 +157,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
 
-        Mockito.doNothing().when(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.doThrow(new RuntimeException()).when(remoteClient).delete(TOKEN, URL);
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
@@ -166,7 +166,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
-        Mockito.verify(observerHandler).postResponse(Mockito.any(DataStore.Response.class));
+        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
         Mockito.verify(remoteClient).delete(TOKEN, URL);
     }
 
