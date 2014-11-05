@@ -21,8 +21,10 @@ public class ObserverHandler extends Handler {
     }
 
     public void notifyResponse(final DataStore.Response response) {
+        removeMessages(MSG_NOTIFY);
+
         final Message msg = obtainMessage(MSG_NOTIFY, response);
-        sendMessage(msg);
+        sendMessageDelayed(msg, 100);
     }
 
     @Override

@@ -5,6 +5,7 @@ package io.pivotal.android.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -98,4 +99,14 @@ public class LocalStore implements DataStore {
             return mObservers;
         }
     }
+
+    protected static class ObserverProxy implements OnSharedPreferenceChangeListener {
+
+        @Override
+        public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+
+        }
+    }
+
+    // TODO change observers back to listening to shared prefs?
 }

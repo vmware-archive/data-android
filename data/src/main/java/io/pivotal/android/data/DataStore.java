@@ -9,9 +9,15 @@ public interface DataStore {
 
     public Response get(final String accessToken, final String key);
 
+    // public void get(final String accessToken, final String key, final Listener listener);
+
     public Response put(final String accessToken, final String key, final String value);
 
+    // public void put(final String accessToken, final String key, final String value, final Listener listener);
+
     public Response delete(final String accessToken, final String key);
+
+    // public void delete(final String accessToken, final String key, final Listener listener);
 
     public boolean addObserver(final Observer observer);
 
@@ -57,5 +63,9 @@ public interface DataStore {
         public void onChange(String key, String value);
 
         public void onError(String key, DataError error);
+    }
+
+    public static interface Listener {
+        public void onResponse(Response response);
     }
 }

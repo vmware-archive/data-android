@@ -171,7 +171,7 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
         Mockito.doReturn(null).when(offlineStore).get(TOKEN, KEY);
 
-        requestCache.executePendingRequests(context);
+        requestCache.executePendingRequests(context, null);
 
         Mockito.verify(offlineStore).get(TOKEN, KEY);
         Mockito.verify(editor).putString("requests", "");
@@ -194,7 +194,7 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
         Mockito.doReturn(null).when(offlineStore).put(TOKEN, KEY, VALUE);
 
-        requestCache.executePendingRequests(context);
+        requestCache.executePendingRequests(context, null);
 
         Mockito.verify(offlineStore).put(TOKEN, KEY, VALUE);
         Mockito.verify(editor).putString("requests", "");
@@ -217,7 +217,7 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
         Mockito.doReturn(null).when(offlineStore).delete(TOKEN, KEY);
 
-        requestCache.executePendingRequests(context);
+        requestCache.executePendingRequests(context, null);
 
         Mockito.verify(offlineStore).delete(TOKEN, KEY);
         Mockito.verify(editor).putString("requests", "");

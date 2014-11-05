@@ -17,7 +17,7 @@ import java.util.Properties;
     }
 
 
-    private static String[] sLocations = {
+    private static final String[] LOCATIONS = {
             "assets/pivotal.properties", "res/raw/pivotal.properties"
     };
 
@@ -35,7 +35,7 @@ import java.util.Properties;
     }
 
     private static Properties loadProperties() {
-        for (final String path : sLocations) {
+        for (final String path : LOCATIONS) {
             try {
                 return loadProperties(path);
             } catch (final Exception e) {

@@ -27,6 +27,14 @@ public class DataError extends Error {
         return mCode == 401;
     }
 
+    public boolean isPreconditionFailed() {
+        return mCode == 412;
+    }
+
+    public boolean isNotModified() {
+        return mCode == 304;
+    }
+
     public boolean isNotConnected() {
         return mCode == 100;
     }

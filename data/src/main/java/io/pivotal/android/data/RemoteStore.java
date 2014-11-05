@@ -13,10 +13,6 @@ import java.util.Set;
 
 public class RemoteStore implements DataStore {
 
-    public static interface Listener {
-        public void onResponse(Response response);
-    }
-
     private final Object mLock = new Object();
     private final Set<Observer> mObservers = new HashSet<Observer>();
 
@@ -65,7 +61,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
-    public void getAsync(final String accessToken, final String key, final Listener listener) {
+    public void get(final String accessToken, final String key, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 
             @Override
@@ -100,7 +96,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
-    public void putAsync(final String accessToken, final String key, final String value, final Listener listener) {
+    public void put(final String accessToken, final String key, final String value, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 
             @Override
@@ -135,7 +131,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
-    public void deleteAsync(final String accessToken, final String key, final Listener listener) {
+    public void delete(final String accessToken, final String key, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 
             @Override

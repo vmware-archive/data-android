@@ -19,7 +19,7 @@ public interface RequestCache {
 
     public void addDeleteRequest(final String token, final String collection, final String key);
 
-    public void executePendingRequests(final Context context);
+    public void executePendingRequests(final Context context, final String token);
 
 
     public static class Default implements RequestCache {
@@ -41,14 +41,17 @@ public interface RequestCache {
         }
 
 
+        @Override
         public void addGetRequest(final String token, final String collection, final String key) {
             addPendingRequest(Methods.GET, token, collection, key, null);
         }
 
+        @Override
         public void addPutRequest(final String token, final String collection, final String key, final String value) {
             addPendingRequest(Methods.PUT, token, collection, key, value);
         }
 
+        @Override
         public void addDeleteRequest(final String token, final String collection, final String key) {
             addPendingRequest(Methods.DELETE, token, collection, key, null);
         }
@@ -93,47 +96,48 @@ public interface RequestCache {
         // =============================================
 
 
-        public void executePendingRequests(final Context context) {
+        @Override
+        public void executePendingRequests(final Context context, final String token) {
             final PendingRequest.List requests = getRequests();
 
             clearRequests();
 
             for (final PendingRequest request: requests) {
-                handleRequest(context, request);
+                handleRequest(context, request, token);
             }
         }
 
-        private void handleRequest(final Context context, final PendingRequest request) {
+        private void handleRequest(final Context context, final PendingRequest request, final String token) {
             switch (request.method) {
                 case Methods.GET:
-                    executeGetRequest(context, request);
+                    executeGetRequest(context, request, token);
                     break;
                 case Methods.PUT:
-                    executePutRequest(context, request);
+                    executePutRequest(context, request, token);
                     break;
                 case Methods.DELETE:
-                    executeDeleteRequest(context, request);
+                    executeDeleteRequest(context, request, token);
                     break;
             }
+        }
+
+        private void executeGetRequest(final Context context, final PendingRequest request, final String token) {
+            final OfflineStore store = createOfflineStore(context, request.collection);
+            store.get(token != null ? token : request.token, request.key);
+        }
+
+        private void executePutRequest(final Context context, final PendingRequest request, final String token) {
+            final OfflineStore store = createOfflineStore(context, request.collection);
+            store.put(token != null ? token : request.token, request.key, request.value);
+        }
+
+        private void executeDeleteRequest(final Context context, final PendingRequest request, final String token) {
+            final OfflineStore store = createOfflineStore(context, request.collection);
+            store.delete(token != null ? token : request.token, request.key);
         }
 
         protected OfflineStore createOfflineStore(final Context context, final String collection) {
             return OfflineStore.create(context, collection);
-        }
-
-        private void executeGetRequest(final Context context, final PendingRequest request) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.get(request.token, request.key);
-        }
-
-        private void executePutRequest(final Context context, final PendingRequest request) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.put(request.token, request.key, request.value);
-        }
-
-        private void executeDeleteRequest(final Context context, final PendingRequest request) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.delete(request.token, request.key);
         }
 
         private static final class PendingRequest {
