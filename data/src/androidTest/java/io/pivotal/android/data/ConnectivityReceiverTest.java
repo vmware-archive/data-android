@@ -47,7 +47,7 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
         Mockito.when(manager.getActiveNetworkInfo()).thenReturn(networkInfo);
         Mockito.when(networkInfo.isConnectedOrConnecting()).thenReturn(true);
         Mockito.doReturn(requestCache).when(receiver).getRequestCache(context);
-        Mockito.doNothing().when(requestCache).executePendingRequests(context, null);
+        Mockito.doNothing().when(requestCache).executePending(null);
 
         receiver.onReceive(context, null);
 
@@ -55,6 +55,6 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
         Mockito.verify(manager).getActiveNetworkInfo();
         Mockito.verify(networkInfo).isConnectedOrConnecting();
         Mockito.verify(receiver).getRequestCache(context);
-        Mockito.verify(requestCache).executePendingRequests(context, null);
+        Mockito.verify(requestCache).executePending(null);
     }
 }

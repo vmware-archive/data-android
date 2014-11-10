@@ -21,7 +21,10 @@ public class OfflineStore implements DataStore {
     }
 
     public OfflineStore(final Context context, final String collection, final LocalStore localStore, final RemoteStore remoteStore) {
-        mContext = context; mCollection = collection; mLocalStore = localStore; mRemoteStore = remoteStore;
+        mContext = context;
+        mCollection = collection;
+        mLocalStore = localStore;
+        mRemoteStore = remoteStore;
     }
 
     @Override
@@ -31,19 +34,21 @@ public class OfflineStore implements DataStore {
 
     @Override
     public boolean addObserver(final Observer observer) {
-        return mLocalStore.addObserver(observer);
+        return mLocalStore.addObserver(observer)
+            && mRemoteStore.addObserver(observer);
     }
 
     @Override
     public boolean removeObserver(final Observer observer) {
-        return mLocalStore.removeObserver(observer);
+        return mLocalStore.removeObserver(observer)
+            && mRemoteStore.removeObserver(observer);
     }
 
     protected boolean isConnected() {
         return ConnectivityReceiver.isConnected(mContext);
     }
 
-    protected boolean hasReceiver() {
+    protected boolean isSyncSupported() {
         return ConnectivityReceiver.hasReceiver(mContext);
     }
 
@@ -60,120 +65,192 @@ public class OfflineStore implements DataStore {
     public Response get(final String accessToken, final String key) {
         Logger.d("Get: " + key);
 
-        final Response local = mLocalStore.get(accessToken, key);
-
         if (isConnected()) {
-            mRemoteStore.get(accessToken, key, new UpdateListener(accessToken, null));
 
-        } else if (hasReceiver()) {
-            getRequestCache().addGetRequest(accessToken, mCollection, key);
+            final Response remote = mRemoteStore.get(accessToken, key);
+
+            if (remote.status == Response.Status.SUCCESS) {
+                return mLocalStore.put(accessToken, remote.key, remote.value);
+
+            } else {
+                return remote;
+            }
+
+        } else {
+            final Response local = mLocalStore.get(accessToken, key);
+
+            if (isSyncSupported()) {
+                getRequestCache().queueGet(accessToken, mCollection, key);
+            }
+
+            return local;
         }
-
-        return Response.pending(local.key, local.value);
     }
 
-//    @Override
-//    public void get(final String accessToken, final String key, final Listener listener) {
-//        Logger.d("Get: " + key);
-//    }
+    @Override
+    public void get(final String accessToken, final String key, final Listener listener) {
+        Logger.d("Get: " + key);
+
+        if (isConnected()) {
+
+            mRemoteStore.get(accessToken, key, new Listener() {
+
+                @Override
+                public void onResponse(final Response remote) {
+                    if (remote.status == Response.Status.SUCCESS) {
+                        mLocalStore.put(accessToken, remote.key, remote.value, listener);
+
+                    } else if (listener != null) {
+                        listener.onResponse(remote);
+                    }
+                }
+            });
+
+        } else {
+            final Response local = mLocalStore.get(accessToken, key);
+
+            if (isSyncSupported()) {
+                getRequestCache().queueGet(accessToken, mCollection, key);
+            }
+
+            if (listener != null) {
+                listener.onResponse(local);
+            }
+        }
+    }
 
     @Override
     public Response put(final String accessToken, final String key, final String value) {
         Logger.d("Put: " + key + ", " + value);
 
-        final Response fallback = mLocalStore.get(accessToken, key);
-        final Response local = mLocalStore.put(accessToken, key, value);
-
         if (isConnected()) {
-            mRemoteStore.put(accessToken, key, value, new UpdateListener(accessToken, fallback));
 
-        } else if (hasReceiver()) {
-            getRequestCache().addPutRequest(accessToken, mCollection, key, value);
+            final Response remote = mRemoteStore.put(accessToken, key, value);
+
+            if (remote.status == Response.Status.SUCCESS) {
+                return mLocalStore.put(accessToken, remote.key, remote.value);
+
+            } else {
+                return remote;
+            }
+
+        } else if (isSyncSupported()) {
+
+            final Response fallback = mLocalStore.get(accessToken, key);
+            final Response local = mLocalStore.put(accessToken, key, value);
+
+            getRequestCache().queuePut(accessToken, mCollection, key, value, fallback.value);
+
+            return local;
+
+        } else {
+            return getNoConnectionError(key);
         }
-
-        return Response.pending(local.key, local.value);
     }
 
-//    @Override
-//    public void put(final String accessToken, final String key, final String value, final Listener listener) {
-//        Logger.d("Put: " + key + ", " + value);
-//    }
+    @Override
+    public void put(final String accessToken, final String key, final String value, final Listener listener) {
+        Logger.d("Put: " + key + ", " + value);
+
+        if (isConnected()) {
+
+            mRemoteStore.put(accessToken, key, value, new Listener() {
+                @Override
+                public void onResponse(final Response remote) {
+
+                    if (remote.status == Response.Status.SUCCESS) {
+                        mLocalStore.put(accessToken, remote.key, remote.value, listener);
+
+                    } else if (listener != null) {
+                        listener.onResponse(remote);
+                    }
+
+                }
+            });
+
+        } else if (isSyncSupported()) {
+
+            final Response fallback = mLocalStore.get(accessToken, key);
+            final Response local = mLocalStore.put(accessToken, key, value);
+
+            getRequestCache().queuePut(accessToken, mCollection, key, value, fallback.value);
+
+            if (listener != null) {
+                listener.onResponse(local);
+            }
+
+        } else if (listener != null) {
+            listener.onResponse(getNoConnectionError(key));
+        }
+    }
 
 
     @Override
     public Response delete(final String accessToken, final String key) {
         Logger.d("Delete: " + key);
 
-        final Response fallback = mLocalStore.get(accessToken, key);
-        final Response local = mLocalStore.delete(accessToken, key);
+        if (isConnected()) {
+
+            final Response remote = mRemoteStore.delete(accessToken, key);
+
+            if (remote.status == Response.Status.SUCCESS) {
+                return mLocalStore.delete(accessToken, remote.key);
+
+            } else {
+                return remote;
+            }
+
+        } else   if (isSyncSupported()) {
+
+            final Response fallback = mLocalStore.get(accessToken, key);
+            final Response local = mLocalStore.delete(accessToken, key);
+
+            getRequestCache().queueDelete(accessToken, mCollection, key, fallback.value);
+
+            return local;
+
+        } else {
+            return getNoConnectionError(key);
+        }
+    }
+
+    @Override
+    public void delete(final String accessToken, final String key, final Listener listener) {
+        Logger.d("Delete: " + key);
 
         if (isConnected()) {
-            mRemoteStore.delete(accessToken, key, new DeleteListener(accessToken, fallback));
 
-        } else if (hasReceiver()) {
-            getRequestCache().addDeleteRequest(accessToken, mCollection, key);
-        }
+            mRemoteStore.delete(accessToken, key, new Listener() {
+                @Override
+                public void onResponse(final Response remote) {
 
-        return Response.pending(local.key, local.value);
-    }
+                    if (remote.status == Response.Status.SUCCESS) {
+                        mLocalStore.delete(accessToken, remote.key, listener);
 
-//    @Override
-//    public void delete(final String accessToken, final String key, final Listener listener) {
-//        Logger.d("Delete: " + key);
-//    }
+                    } else if (listener != null) {
+                        listener.onResponse(remote);
+                    }
+                }
+            });
 
+        } else if (isSyncSupported()) {
 
-    // =================================
+            final Response fallback = mLocalStore.get(accessToken, key);
+            final Response local = mLocalStore.delete(accessToken, key);
 
+            getRequestCache().queueDelete(accessToken, mCollection, key, fallback.value);
 
-    protected final class UpdateListener extends FallbackListener {
-
-        public UpdateListener(final String accessToken, final Response fallback) {
-            super(accessToken, fallback);
-        }
-
-        @Override
-        protected void onSuccess(final String accessToken, final Response response) {
-            mLocalStore.put(accessToken, response.key, response.value);
-        }
-    }
-
-    protected final class DeleteListener extends FallbackListener {
-
-        public DeleteListener(final String accessToken, final Response fallback) {
-            super(accessToken, fallback);
-        }
-
-        @Override
-        protected void onSuccess(final String accessToken, final Response response) {
-            mLocalStore.delete(accessToken, response.key);
-        }
-    }
-
-    private abstract class FallbackListener implements RemoteStore.Listener {
-
-        private final String mAccessToken;
-        private final Response mFallback;
-
-        public FallbackListener(final String accessToken, final Response fallback) {
-            mAccessToken = accessToken;
-            mFallback = fallback;
-        }
-
-        @Override
-        public void onResponse(final Response response) {
-            if (response.status == Response.Status.SUCCESS) {
-                onSuccess(mAccessToken, response);
-
-            } else if (mFallback != null && isNotHttpNotModified(response)) {
-                mLocalStore.put(mAccessToken, mFallback.key, mFallback.value);
+            if (listener != null) {
+                listener.onResponse(local);
             }
-        }
 
-        private boolean isNotHttpNotModified(final Response response) {
-            return response.error != null && !response.error.isNotModified();
+        } else if (listener != null) {
+            listener.onResponse(getNoConnectionError(key));
         }
+    }
 
-        protected abstract void onSuccess(final String accessToken, final Response response);
+    private Response getNoConnectionError(final String key) {
+        final RuntimeException exception = new RuntimeException("No connection.");
+        return Response.failure(key, new DataError(exception));
     }
 }

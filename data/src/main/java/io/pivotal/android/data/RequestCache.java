@@ -3,7 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -13,20 +12,25 @@ import java.util.ArrayList;
 
 public interface RequestCache {
 
-    public void addGetRequest(final String token, final String collection, final String key);
+    public void queueGet(final String token, final String collection, final String key);
 
-    public void addPutRequest(final String token, final String collection, final String key, final String value);
+    public void queuePut(final String token, final String collection, final String key, final String value, final String fallback);
 
-    public void addDeleteRequest(final String token, final String collection, final String key);
+    public void queueDelete(final String token, final String collection, final String key, final String fallback);
 
-    public void executePendingRequests(final Context context, final String token);
+    public void executePending(final String token);
 
 
     public static class Default implements RequestCache {
 
-        private static final String REQUEST_CACHE = "request_cache";
-        private static final String REQUESTS = "requests";
+        private static final Object LOCK = new Object();
         private static final String EMPTY = "";
+
+        private static final String REQUEST_CACHE = "request_cache";
+
+        private static final class Keys {
+            public static final String REQUESTS = "requests";
+        }
 
         private static final class Methods {
             public static final int GET = 0;
@@ -34,41 +38,53 @@ public interface RequestCache {
             public static final int DELETE = 2;
         }
 
+        private final Context mContext;
         private final SharedPreferences mPrefs;
 
         public Default(final Context context) {
             mPrefs = context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE);
+            mContext = context;
         }
 
-
-        @Override
-        public void addGetRequest(final String token, final String collection, final String key) {
-            addPendingRequest(Methods.GET, token, collection, key, null);
+        protected OfflineStore getOfflineStore(final Context context, final String collection) {
+            return OfflineStore.create(context, collection);
         }
 
-        @Override
-        public void addPutRequest(final String token, final String collection, final String key, final String value) {
-            addPendingRequest(Methods.PUT, token, collection, key, value);
+        private LocalStore getLocalStore(final Context context, final String collection) {
+            return new LocalStore(context, collection);
         }
 
         @Override
-        public void addDeleteRequest(final String token, final String collection, final String key) {
-            addPendingRequest(Methods.DELETE, token, collection, key, null);
+        public void queueGet(final String token, final String collection, final String key) {
+            queuePending(new PendingRequest(Methods.GET, token, collection, key, null, null));
         }
 
-        protected void addPendingRequest(final int method, final String token, final String collection, final String key, final String value) {
-            final PendingRequest.List requests = getRequests();
-            requests.add(new PendingRequest(method, token, collection, key, value));
-            putRequests(requests);
+        @Override
+        public void queuePut(final String token, final String collection, final String key, final String value, final String fallback) {
+            queuePending(new PendingRequest(Methods.PUT, token, collection, key, value, fallback));
         }
 
+        @Override
+        public void queueDelete(final String token, final String collection, final String key, final String fallback) {
+            queuePending(new PendingRequest(Methods.DELETE, token, collection, key, null, fallback));
+        }
+
+        protected void queuePending(final PendingRequest request) {
+            final PendingRequest.List requests;
+
+            synchronized (LOCK) {
+                requests = getRequests();
+                requests.add(request);
+                putRequests(requests);
+            }
+        }
 
         // =============================================
 
 
         private PendingRequest.List getRequests() {
             try {
-                final byte[] bytes = mPrefs.getString(REQUESTS, EMPTY).getBytes();
+                final byte[] bytes = mPrefs.getString(Keys.REQUESTS, EMPTY).getBytes();
                 final ObjectMapper mapper = new ObjectMapper();
                 return mapper.readValue(bytes, PendingRequest.List.class);
             } catch (final Exception e) {
@@ -76,79 +92,95 @@ public interface RequestCache {
             }
         }
 
-        @SuppressLint("CommitPrefEdits")
         private void putRequests(final PendingRequest.List requests) {
             try {
                 final ObjectMapper mapper = new ObjectMapper();
                 final String data = mapper.writeValueAsString(requests);
-                mPrefs.edit().putString(REQUESTS, data).commit();
+                final SharedPreferences.Editor editor = mPrefs.edit();
+                editor.putString(Keys.REQUESTS, data);
+                editor.apply();
             } catch (final Exception e) {
                 // do nothing
             }
         }
 
-        @SuppressLint("CommitPrefEdits")
         private void clearRequests() {
-            mPrefs.edit().putString(REQUESTS, EMPTY).commit();
+            final SharedPreferences.Editor editor = mPrefs.edit();
+            editor.putString(Keys.REQUESTS, EMPTY);
+            editor.apply();
         }
 
 
         // =============================================
 
 
+
         @Override
-        public void executePendingRequests(final Context context, final String token) {
-            final PendingRequest.List requests = getRequests();
+        public void executePending(final String token) {
+            final PendingRequest.List requests;
 
-            clearRequests();
+            synchronized (LOCK) {
+                requests = getRequests();
+                clearRequests();
+            }
 
+            execute(requests, token);
+        }
+
+        private void execute(final PendingRequest.List requests, final String token) {
             for (final PendingRequest request: requests) {
-                handleRequest(context, request, token);
+                execute(request, token);
             }
         }
 
-        private void handleRequest(final Context context, final PendingRequest request, final String token) {
+        private void execute(final PendingRequest request, final String token) {
+
+            final OfflineStore store = getOfflineStore(mContext, request.collection);
+            final String accessToken = token != null ? token : request.token;
+
             switch (request.method) {
                 case Methods.GET:
-                    executeGetRequest(context, request, token);
+                    store.get(accessToken, request.key, null);
                     break;
                 case Methods.PUT:
-                    executePutRequest(context, request, token);
+                    store.put(accessToken, request.key, request.value, new RevertListener(request));
                     break;
                 case Methods.DELETE:
-                    executeDeleteRequest(context, request, token);
+                    store.delete(accessToken, request.key, new RevertListener(request));
                     break;
             }
         }
 
-        private void executeGetRequest(final Context context, final PendingRequest request, final String token) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.get(token != null ? token : request.token, request.key);
+        private final class RevertListener implements DataStore.Listener {
+
+            private final PendingRequest mRequest;
+
+            public RevertListener(final PendingRequest request) {
+                mRequest = request;
+            }
+
+            private boolean shouldRevert(final DataStore.Response response) {
+                return response.error != null && !response.error.isNotModified();
+            }
+
+            @Override
+            public void onResponse(final DataStore.Response response) {
+                if (shouldRevert(response)) {
+                    final LocalStore localStore = getLocalStore(mContext, mRequest.collection);
+                    localStore.put(null, mRequest.key, mRequest.fallback);
+                }
+            }
         }
 
-        private void executePutRequest(final Context context, final PendingRequest request, final String token) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.put(token != null ? token : request.token, request.key, request.value);
-        }
-
-        private void executeDeleteRequest(final Context context, final PendingRequest request, final String token) {
-            final OfflineStore store = createOfflineStore(context, request.collection);
-            store.delete(token != null ? token : request.token, request.key);
-        }
-
-        protected OfflineStore createOfflineStore(final Context context, final String collection) {
-            return OfflineStore.create(context, collection);
-        }
-
-        private static final class PendingRequest {
+        public static final class PendingRequest {
 
             public int method;
-            public String token, collection, key, value;
+            public String token, collection, key, value, fallback;
 
             public PendingRequest() {}
 
-            public PendingRequest(final int method, final String token, final String collection, final String key, final String value) {
-                this.method = method; this.token = token; this.collection = collection; this.key = key; this.value = value;
+            public PendingRequest(final int method, final String token, final String collection, final String key, final String value, final String fallback) {
+                this.method = method; this.token = token; this.collection = collection; this.key = key; this.value = value; this.fallback = fallback;
             }
 
             public static final class List extends ArrayList<PendingRequest> {

@@ -27,7 +27,7 @@ public class DataError extends Error {
         return mCode == 401;
     }
 
-    public boolean isPreconditionFailed() {
+    public boolean hasPreconditionFailed() {
         return mCode == 412;
     }
 

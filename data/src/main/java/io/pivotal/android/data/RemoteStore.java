@@ -40,7 +40,8 @@ public class RemoteStore implements DataStore {
 
     @Override
     public boolean contains(final String accessToken, final String key) {
-        return get(accessToken, key).status == Response.Status.SUCCESS;
+        final Response response = get(accessToken, key);
+        return response.status == Response.Status.SUCCESS;
     }
 
     @Override
@@ -61,6 +62,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
+    @Override
     public void get(final String accessToken, final String key, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 
@@ -96,6 +98,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
+    @Override
     public void put(final String accessToken, final String key, final String value, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 
@@ -131,6 +134,7 @@ public class RemoteStore implements DataStore {
         }
     }
 
+    @Override
     public void delete(final String accessToken, final String key, final Listener listener) {
         new AsyncTask<Void, Void, Response>() {
 

@@ -6,6 +6,7 @@ package io.pivotal.android.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.AsyncTask;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,20 +18,22 @@ public class LocalStore implements DataStore {
     private final Object mLock = new Object();
     private final Set<Observer> mObservers = new HashSet<Observer>();
 
-    private final SharedPreferences mPreferences;
+    private final String mCollection;
     private final ObserverHandler mHandler;
+    private final SharedPreferences mPreferences;
 
     public LocalStore(final Context context, final String collection) {
-        mPreferences = createSharedPreferences(context, collection);
         mHandler = createObserverHandler(mObservers, mLock);
-    }
-
-    protected SharedPreferences createSharedPreferences(final Context context, final String collection) {
-        return context.getSharedPreferences(collection, Context.MODE_PRIVATE);
+        mPreferences = createSharedPreferences(context, collection);
+        mCollection = collection;
     }
 
     protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
         return new ObserverHandler(observers, lock);
+    }
+
+    protected SharedPreferences createSharedPreferences(final Context context, final String collection) {
+        return context.getSharedPreferences(collection, Context.MODE_PRIVATE);
     }
 
     @Override
@@ -53,6 +56,24 @@ public class LocalStore implements DataStore {
     }
 
     @Override
+    public void get(final String accessToken, final String key, final Listener listener) {
+        new AsyncTask<Void, Void, Response>() {
+
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return LocalStore.this.get(accessToken, key);
+            }
+
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
     public Response put(final String accessToken, final String key, final String value) {
         Logger.d("Put: " + key + ", " + value);
         final Response response = putResponse(key, value);
@@ -66,6 +87,24 @@ public class LocalStore implements DataStore {
     }
 
     @Override
+    public void put(final String accessToken, final String key, final String value, final Listener listener) {
+        new AsyncTask<Void, Void, Response>() {
+
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return LocalStore.this.put(accessToken, key, value);
+            }
+
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
     public Response delete(final String accessToken, final String key) {
         Logger.d("Delete: " + key);
         final Response response = deleteResponse(key);
@@ -76,6 +115,24 @@ public class LocalStore implements DataStore {
     private Response deleteResponse(final String key) {
         mPreferences.edit().remove(key).apply();
         return Response.success(key, EMPTY);
+    }
+
+    @Override
+    public void delete(final String accessToken, final String key, final Listener listener) {
+        new AsyncTask<Void, Void, Response>() {
+
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return LocalStore.this.delete(accessToken, key);
+            }
+
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
     }
 
     @Override

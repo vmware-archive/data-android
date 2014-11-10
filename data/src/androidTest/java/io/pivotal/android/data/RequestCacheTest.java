@@ -19,10 +19,13 @@ public class RequestCacheTest extends AndroidTestCase {
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
     private static final String TOKEN = UUID.randomUUID().toString();
+    private static final String FALLBACK = UUID.randomUUID().toString();
+
     private static final String COLLECTION = UUID.randomUUID().toString();
 
     private static final String SINGLE_LIST = "[{"
             + "\"collection\":\"" + COLLECTION + "\""
+            + ",\"fallback\":\"" + FALLBACK + "\""
             + ",\"key\":\"" + KEY + "\""
             + ",\"token\":\"" + TOKEN + "\""
             + ",\"value\":\"" + VALUE + "\""
@@ -31,6 +34,7 @@ public class RequestCacheTest extends AndroidTestCase {
 
     private static final String STATIC_LIST = "[{"
             + "\"collection\":\"" + "collection" + "\""
+            + ",\"fallback\":\"" + "fallback" + "\""
             + ",\"key\":\"" + "key" + "\""
             + ",\"token\":\"" + "token" + "\""
             + ",\"value\":\"" + "value" + "\""
@@ -39,12 +43,14 @@ public class RequestCacheTest extends AndroidTestCase {
 
     private static final String MERGED_LIST = "[{"
             + "\"collection\":\"" + "collection" + "\""
+            + ",\"fallback\":\"" + "fallback" + "\""
             + ",\"key\":\"" + "key" + "\""
             + ",\"token\":\"" + "token" + "\""
             + ",\"value\":\"" + "value" + "\""
             + ",\"method\":" + 1
         + "},{"
             + "\"collection\":\"" + COLLECTION + "\""
+            + ",\"fallback\":\"" + FALLBACK + "\""
             + ",\"key\":\"" + KEY + "\""
             + ",\"token\":\"" + TOKEN + "\""
             + ",\"value\":\"" + VALUE + "\""
@@ -53,6 +59,7 @@ public class RequestCacheTest extends AndroidTestCase {
 
     private static final String GET_LIST = "[{"
             + "\"collection\":\"" + COLLECTION + "\""
+            + ",\"fallback\":\"" + FALLBACK + "\""
             + ",\"key\":\"" + KEY + "\""
             + ",\"token\":\"" + TOKEN + "\""
             + ",\"value\":\"" + VALUE + "\""
@@ -61,6 +68,7 @@ public class RequestCacheTest extends AndroidTestCase {
 
     private static final String PUT_LIST = "[{"
             + "\"collection\":\"" + COLLECTION + "\""
+            + ",\"fallback\":\"" + FALLBACK + "\""
             + ",\"key\":\"" + KEY + "\""
             + ",\"token\":\"" + TOKEN + "\""
             + ",\"value\":\"" + VALUE + "\""
@@ -69,6 +77,7 @@ public class RequestCacheTest extends AndroidTestCase {
 
     private static final String DELETE_LIST = "[{"
             + "\"collection\":\"" + COLLECTION + "\""
+            + ",\"fallback\":\"" + FALLBACK + "\""
             + ",\"key\":\"" + KEY + "\""
             + ",\"token\":\"" + TOKEN + "\""
             + ",\"value\":\"" + VALUE + "\""
@@ -85,33 +94,33 @@ public class RequestCacheTest extends AndroidTestCase {
         final Context context = Mockito.mock(Context.class);
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
 
-        Mockito.doNothing().when(requestCache).addPendingRequest(0, TOKEN, COLLECTION, KEY, null);
+        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
 
-        requestCache.addGetRequest(TOKEN, COLLECTION, KEY);
+        requestCache.queueGet(TOKEN, COLLECTION, KEY);
 
-        Mockito.verify(requestCache).addPendingRequest(0, TOKEN, COLLECTION, KEY, null);
+        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
     }
 
     public void testAddPutRequestInvokesAddPendingRequest() {
         final Context context = Mockito.mock(Context.class);
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
 
-        Mockito.doNothing().when(requestCache).addPendingRequest(1, TOKEN, COLLECTION, KEY, VALUE);
+        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
 
-        requestCache.addPutRequest(TOKEN, COLLECTION, KEY, VALUE);
+        requestCache.queuePut(TOKEN, COLLECTION, KEY, VALUE, FALLBACK);
 
-        Mockito.verify(requestCache).addPendingRequest(1, TOKEN, COLLECTION, KEY, VALUE);
+        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
     }
 
     public void testAddDeleteRequestInvokesAddPendingRequest() {
         final Context context = Mockito.mock(Context.class);
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
 
-        Mockito.doNothing().when(requestCache).addPendingRequest(2, TOKEN, COLLECTION, KEY, null);
+        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
 
-        requestCache.addDeleteRequest(TOKEN, COLLECTION, KEY);
+        requestCache.queueDelete(TOKEN, COLLECTION, KEY, FALLBACK);
 
-        Mockito.verify(requestCache).addPendingRequest(2, TOKEN, COLLECTION, KEY, null);
+        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
     }
 
     @SuppressLint("CommitPrefEdits")
@@ -124,14 +133,14 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.when(preferences.getString("requests", "")).thenReturn("");
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString("requests", SINGLE_LIST)).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
+        Mockito.doNothing().when(editor).apply();
 
         final RequestCache.Default requestCache = new RequestCache.Default(context);
-        requestCache.addPendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE);
+        requestCache.queuePending(new RequestCache.Default.PendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE, FALLBACK));
 
         Mockito.verify(preferences).edit();
         Mockito.verify(editor).putString("requests", SINGLE_LIST);
-        Mockito.verify(editor).commit();
+        Mockito.verify(editor).apply();
     }
 
     @SuppressLint("CommitPrefEdits")
@@ -144,14 +153,14 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.when(preferences.getString("requests", "")).thenReturn(STATIC_LIST);
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString("requests", MERGED_LIST)).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
+        Mockito.doNothing().when(editor).apply();
 
         final RequestCache.Default requestCache = new RequestCache.Default(context);
-        requestCache.addPendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE);
+        requestCache.queuePending(new RequestCache.Default.PendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE, FALLBACK));
 
         Mockito.verify(preferences).edit();
         Mockito.verify(editor).putString("requests", MERGED_LIST);
-        Mockito.verify(editor).commit();
+        Mockito.verify(editor).apply();
     }
 
     public void testExecutePendingRequestsExecutesGetRequestAndClearsRequests() {
@@ -163,17 +172,17 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.when(preferences.getString("requests", "")).thenReturn(GET_LIST);
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString("requests", "")).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
+        Mockito.doNothing().when(editor).apply();
 
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
 
-        Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
-        Mockito.doReturn(null).when(offlineStore).get(TOKEN, KEY);
+        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
+        Mockito.doNothing().when(offlineStore).get(TOKEN, KEY, null);
 
-        requestCache.executePendingRequests(context, null);
+        requestCache.executePending(null);
 
-        Mockito.verify(offlineStore).get(TOKEN, KEY);
+        Mockito.verify(offlineStore).get(TOKEN, KEY, null);
         Mockito.verify(editor).putString("requests", "");
     }
 
@@ -186,17 +195,17 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.when(preferences.getString("requests", "")).thenReturn(PUT_LIST);
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString("requests", "")).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
+        Mockito.doNothing().when(editor).apply();
 
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
 
-        Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
-        Mockito.doReturn(null).when(offlineStore).put(TOKEN, KEY, VALUE);
+        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
+        Mockito.doNothing().when(offlineStore).put(Mockito.eq(TOKEN), Mockito.eq(KEY), Mockito.eq(VALUE), Mockito.any(DataStore.Listener.class));
 
-        requestCache.executePendingRequests(context, null);
+        requestCache.executePending(null);
 
-        Mockito.verify(offlineStore).put(TOKEN, KEY, VALUE);
+        Mockito.verify(offlineStore).put(Mockito.eq(TOKEN), Mockito.eq(KEY), Mockito.eq(VALUE), Mockito.any(DataStore.Listener.class));
         Mockito.verify(editor).putString("requests", "");
     }
 
@@ -209,17 +218,17 @@ public class RequestCacheTest extends AndroidTestCase {
         Mockito.when(preferences.getString("requests", "")).thenReturn(DELETE_LIST);
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString("requests", "")).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
+        Mockito.doNothing().when(editor).apply();
 
         final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
 
-        Mockito.doReturn(offlineStore).when(requestCache).createOfflineStore(context, COLLECTION);
-        Mockito.doReturn(null).when(offlineStore).delete(TOKEN, KEY);
+        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
+        Mockito.doNothing().when(offlineStore).delete(Mockito.eq(TOKEN), Mockito.eq(KEY), Mockito.any(DataStore.Listener.class));
 
-        requestCache.executePendingRequests(context, null);
+        requestCache.executePending(null);
 
-        Mockito.verify(offlineStore).delete(TOKEN, KEY);
+        Mockito.verify(offlineStore).delete(Mockito.eq(TOKEN), Mockito.eq(KEY), Mockito.any(DataStore.Listener.class));
         Mockito.verify(editor).putString("requests", "");
     }
 }

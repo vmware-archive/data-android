@@ -5,23 +5,16 @@ package io.pivotal.android.data;
 
 import android.content.Context;
 
-import java.util.HashMap;
-import java.util.Map;
+import io.pivotal.android.data.DataStore.Observer;
+import io.pivotal.android.data.DataStore.Response;
+import io.pivotal.android.data.DataStore.Listener;
 
 public class DataObject {
-
-    public static interface Observer {
-        public void onChange(String key, String value);
-        public void onError(String key, DataError error);
-    }
 
     public static DataObject create(final Context context, final String collection, final String key) {
         final DataStore dataStore = OfflineStore.create(context, collection);
         return new DataObject(dataStore, key);
     }
-
-    private final Object mLock = new Object();
-    private final Map<Observer, ObserverProxy> mObservers = new HashMap<Observer, ObserverProxy>();
 
     private final DataStore mDataStore;
     private final String mKey;
@@ -31,82 +24,43 @@ public class DataObject {
         mKey = key;
     }
 
-    public String get(final String accessToken) {
-        Logger.d("Get value for key: " + mKey);
-        return mDataStore.get(accessToken, mKey).value;
+    public Response get(final String accessToken) {
+        Logger.d("Get: " + mKey);
+        return mDataStore.get(accessToken, mKey);
     }
 
-    public void put(final String accessToken, final String value) {
-        Logger.d("Put value: " + value + " for key: " + mKey);
-        mDataStore.put(accessToken, mKey, value);
+    public void get(final String accessToken, final Listener listener) {
+        Logger.d("Get: " + mKey);
+        mDataStore.get(accessToken, mKey, listener);
     }
 
-    public void delete(final String accessToken) {
-        Logger.d("Delete value for key: " + mKey);
-        mDataStore.delete(accessToken, mKey);
+    public Response put(final String accessToken, final String value) {
+        Logger.d("Put: " + mKey + ", " + value);
+        return mDataStore.put(accessToken, mKey, value);
+    }
+
+    public void put(final String accessToken, final String value, final Listener listener) {
+        Logger.d("Put: " + mKey + ", " + value);
+        mDataStore.put(accessToken, mKey, value, listener);
+    }
+
+    public Response delete(final String accessToken) {
+        Logger.d("Delete: " + mKey);
+        return mDataStore.delete(accessToken, mKey);
+    }
+
+    public void delete(final String accessToken, final Listener listener) {
+        Logger.d("Delete: " + mKey);
+        mDataStore.delete(accessToken, mKey, listener);
     }
 
     public boolean addObserver(final Observer observer) {
         Logger.d("Add observer: " + observer);
-        synchronized (mLock) {
-            if (!mObservers.containsKey(observer)) {
-                final ObserverProxy proxy = createProxy(observer);
-                mDataStore.addObserver(proxy);
-                mObservers.put(observer, proxy);
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return mDataStore.addObserver(observer);
     }
 
     public boolean removeObserver(final Observer observer) {
         Logger.d("Remove observer: " + observer);
-        synchronized (mLock) {
-            if (mObservers.containsKey(observer)) {
-                final ObserverProxy proxy = mObservers.remove(observer);
-                mDataStore.removeObserver(proxy);
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    /* package */ ObserverProxy createProxy(final Observer observer) {
-        return new ObserverProxy(observer, mKey);
-    }
-
-    /* package */ Map<Observer, ObserverProxy> getObservers() {
-        synchronized (mLock) {
-            return mObservers;
-        }
-    }
-
-    /* package */ static class ObserverProxy implements DataStore.Observer {
-
-        private final Observer mObserver;
-        private final String mKey;
-
-        public ObserverProxy(final Observer observer, final String key) {
-            mObserver = observer;
-            mKey = key;
-        }
-
-        @Override
-        public void onChange(final String key, final String value) {
-            if (mObserver != null && mKey != null && mKey.equals(key)) {
-                Logger.d("Observer Changed: " + key + ", " + value);
-                mObserver.onChange(key, value);
-            }
-        }
-
-        @Override
-        public void onError(final String key, final DataError error) {
-            if (mObserver != null && mKey != null && mKey.equals(key)) {
-                Logger.d("Observer Error: " + key + ", " + error);
-                mObserver.onError(key, error);
-            }
-        }
+        return mDataStore.removeObserver(observer);
     }
 }

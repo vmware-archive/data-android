@@ -26,7 +26,7 @@ public class ConnectivityReceiver extends BroadcastReceiver {
 
     public void executePendingRequests(final Context context, final String token) {
         final RequestCache cache = getRequestCache(context);
-        cache.executePendingRequests(context, token);
+        cache.executePending(token);
     }
 
     protected RequestCache getRequestCache(final Context context) {
