@@ -23,14 +23,6 @@ public class DataObjectTest extends AndroidTestCase {
         public void onError(final String key, final DataError error) {}
     };
 
-    private static final DataStore.Observer OBSERVER2 = new DataStore.Observer() {
-        @Override
-        public void onChange(final String key, final String value) {}
-
-        @Override
-        public void onError(final String key, final DataError error) {}
-    };
-
     public void testGetInvokesDataStore() {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);

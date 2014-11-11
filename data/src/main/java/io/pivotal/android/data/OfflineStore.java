@@ -66,7 +66,6 @@ public class OfflineStore implements DataStore {
         Logger.d("Get: " + key);
 
         if (isConnected()) {
-
             final Response remote = mRemoteStore.get(accessToken, key);
 
             if (remote.status == Response.Status.SUCCESS) {
@@ -92,19 +91,7 @@ public class OfflineStore implements DataStore {
         Logger.d("Get: " + key);
 
         if (isConnected()) {
-
-            mRemoteStore.get(accessToken, key, new Listener() {
-
-                @Override
-                public void onResponse(final Response remote) {
-                    if (remote.status == Response.Status.SUCCESS) {
-                        mLocalStore.put(accessToken, remote.key, remote.value, listener);
-
-                    } else if (listener != null) {
-                        listener.onResponse(remote);
-                    }
-                }
-            });
+            mRemoteStore.get(accessToken, key, newLocalPutListener(accessToken, listener));
 
         } else {
             final Response local = mLocalStore.get(accessToken, key);
@@ -124,7 +111,6 @@ public class OfflineStore implements DataStore {
         Logger.d("Put: " + key + ", " + value);
 
         if (isConnected()) {
-
             final Response remote = mRemoteStore.put(accessToken, key, value);
 
             if (remote.status == Response.Status.SUCCESS) {
@@ -135,7 +121,6 @@ public class OfflineStore implements DataStore {
             }
 
         } else if (isSyncSupported()) {
-
             final Response fallback = mLocalStore.get(accessToken, key);
             final Response local = mLocalStore.put(accessToken, key, value);
 
@@ -144,7 +129,7 @@ public class OfflineStore implements DataStore {
             return local;
 
         } else {
-            return getNoConnectionError(key);
+            return newNoConnectionFailureResponse(key);
         }
     }
 
@@ -153,23 +138,9 @@ public class OfflineStore implements DataStore {
         Logger.d("Put: " + key + ", " + value);
 
         if (isConnected()) {
-
-            mRemoteStore.put(accessToken, key, value, new Listener() {
-                @Override
-                public void onResponse(final Response remote) {
-
-                    if (remote.status == Response.Status.SUCCESS) {
-                        mLocalStore.put(accessToken, remote.key, remote.value, listener);
-
-                    } else if (listener != null) {
-                        listener.onResponse(remote);
-                    }
-
-                }
-            });
+            mRemoteStore.put(accessToken, key, value, newLocalPutListener(accessToken, listener));
 
         } else if (isSyncSupported()) {
-
             final Response fallback = mLocalStore.get(accessToken, key);
             final Response local = mLocalStore.put(accessToken, key, value);
 
@@ -180,7 +151,7 @@ public class OfflineStore implements DataStore {
             }
 
         } else if (listener != null) {
-            listener.onResponse(getNoConnectionError(key));
+            listener.onResponse(newNoConnectionFailureResponse(key));
         }
     }
 
@@ -190,7 +161,6 @@ public class OfflineStore implements DataStore {
         Logger.d("Delete: " + key);
 
         if (isConnected()) {
-
             final Response remote = mRemoteStore.delete(accessToken, key);
 
             if (remote.status == Response.Status.SUCCESS) {
@@ -200,8 +170,7 @@ public class OfflineStore implements DataStore {
                 return remote;
             }
 
-        } else   if (isSyncSupported()) {
-
+        } else if (isSyncSupported()) {
             final Response fallback = mLocalStore.get(accessToken, key);
             final Response local = mLocalStore.delete(accessToken, key);
 
@@ -210,7 +179,7 @@ public class OfflineStore implements DataStore {
             return local;
 
         } else {
-            return getNoConnectionError(key);
+            return newNoConnectionFailureResponse(key);
         }
     }
 
@@ -219,22 +188,9 @@ public class OfflineStore implements DataStore {
         Logger.d("Delete: " + key);
 
         if (isConnected()) {
-
-            mRemoteStore.delete(accessToken, key, new Listener() {
-                @Override
-                public void onResponse(final Response remote) {
-
-                    if (remote.status == Response.Status.SUCCESS) {
-                        mLocalStore.delete(accessToken, remote.key, listener);
-
-                    } else if (listener != null) {
-                        listener.onResponse(remote);
-                    }
-                }
-            });
+            mRemoteStore.delete(accessToken, key, newLocalDeleteListener(accessToken, listener));
 
         } else if (isSyncSupported()) {
-
             final Response fallback = mLocalStore.get(accessToken, key);
             final Response local = mLocalStore.delete(accessToken, key);
 
@@ -245,12 +201,68 @@ public class OfflineStore implements DataStore {
             }
 
         } else if (listener != null) {
-            listener.onResponse(getNoConnectionError(key));
+            listener.onResponse(newNoConnectionFailureResponse(key));
         }
     }
 
-    private Response getNoConnectionError(final String key) {
+    protected Response newNoConnectionFailureResponse(final String key) {
         final RuntimeException exception = new RuntimeException("No connection.");
         return Response.failure(key, new DataError(exception));
+    }
+
+    protected Listener newLocalPutListener(final String accessToken, final Listener listener) {
+        return new LocalPutListener(accessToken, listener);
+    }
+
+    protected Listener newLocalDeleteListener(final String accessToken, final Listener listener) {
+        return new LocalDeleteListener(accessToken, listener);
+    }
+
+    // ======================================
+
+
+
+    protected class LocalPutListener implements Listener {
+
+        private final String mAccessToken;
+        private final Listener mListener;
+
+        public LocalPutListener(final String accessToken, final Listener listener) {
+            mAccessToken = accessToken;
+            mListener = listener;
+        }
+
+        @Override
+        public void onResponse(final Response remote) {
+
+            if (remote.status == Response.Status.SUCCESS) {
+                mLocalStore.put(mAccessToken, remote.key, remote.value, mListener);
+
+            } else if (mListener != null) {
+                mListener.onResponse(remote);
+            }
+        }
+    }
+
+    protected class LocalDeleteListener implements Listener {
+
+        private final String mAccessToken;
+        private final Listener mListener;
+
+        public LocalDeleteListener(final String accessToken, final Listener listener) {
+            mAccessToken = accessToken;
+            mListener = listener;
+        }
+
+        @Override
+        public void onResponse(final Response remote) {
+
+            if (remote.status == Response.Status.SUCCESS) {
+                mLocalStore.delete(mAccessToken, remote.key, mListener);
+
+            } else if (mListener != null) {
+                mListener.onResponse(remote);
+            }
+        }
     }
 }

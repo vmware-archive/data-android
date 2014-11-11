@@ -136,12 +136,10 @@ public class LocalStoreTest extends AndroidTestCase {
     }
 
     public void testRemoveObserverIfNotAlreadyRegistered() {
-        final Context context = Mockito.mock(Context.class);
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-        Mockito.when(context.getSharedPreferences(COLLECTION, Context.MODE_PRIVATE)).thenReturn(preferences);
-
-        final LocalStore store = new LocalStore(context, COLLECTION);
+        final LocalStore store = getLocalStore(observerHandler, preferences);
 
         assertFalse(store.removeObserver(OBSERVER));
     }

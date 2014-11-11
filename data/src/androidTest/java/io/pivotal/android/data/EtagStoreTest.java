@@ -27,9 +27,10 @@ public class EtagStoreTest extends AndroidTestCase {
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
         Mockito.when(context.getSharedPreferences("etags", Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(KEY, null)).thenReturn(VALUE);
 
         final EtagStore store = new EtagStore.Default(context);
+
+        Mockito.when(preferences.getString(KEY, null)).thenReturn(VALUE);
 
         assertEquals(VALUE, store.get(KEY));
 
@@ -43,11 +44,12 @@ public class EtagStoreTest extends AndroidTestCase {
         final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
 
         Mockito.when(context.getSharedPreferences("etags", Context.MODE_PRIVATE)).thenReturn(preferences);
+
+        final EtagStore store = new EtagStore.Default(context);
+
         Mockito.when(preferences.edit()).thenReturn(editor);
         Mockito.when(editor.putString(KEY, VALUE)).thenReturn(editor);
         Mockito.when(editor.commit()).thenReturn(true);
-
-        final EtagStore store = new EtagStore.Default(context);
 
         store.put(KEY, VALUE);
 
