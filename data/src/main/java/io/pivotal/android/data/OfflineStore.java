@@ -4,6 +4,7 @@
 package io.pivotal.android.data;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 public class OfflineStore implements DataStore {
 
@@ -88,22 +89,20 @@ public class OfflineStore implements DataStore {
 
     @Override
     public void get(final String accessToken, final String key, final Listener listener) {
-        Logger.d("Get: " + key);
+        new AsyncTask<Void, Void, Response>() {
 
-        if (isConnected()) {
-            mRemoteStore.get(accessToken, key, newLocalPutListener(accessToken, listener));
-
-        } else {
-            final Response local = mLocalStore.get(accessToken, key);
-
-            if (isSyncSupported()) {
-                getRequestCache().queueGet(accessToken, mCollection, key);
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return OfflineStore.this.get(accessToken, key);
             }
 
-            if (listener != null) {
-                listener.onResponse(local);
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
             }
-        }
+        }.execute();
     }
 
     @Override
@@ -135,24 +134,20 @@ public class OfflineStore implements DataStore {
 
     @Override
     public void put(final String accessToken, final String key, final String value, final Listener listener) {
-        Logger.d("Put: " + key + ", " + value);
+        new AsyncTask<Void, Void, Response>() {
 
-        if (isConnected()) {
-            mRemoteStore.put(accessToken, key, value, newLocalPutListener(accessToken, listener));
-
-        } else if (isSyncSupported()) {
-            final Response fallback = mLocalStore.get(accessToken, key);
-            final Response local = mLocalStore.put(accessToken, key, value);
-
-            getRequestCache().queuePut(accessToken, mCollection, key, value, fallback.value);
-
-            if (listener != null) {
-                listener.onResponse(local);
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return OfflineStore.this.put(accessToken, key, value);
             }
 
-        } else if (listener != null) {
-            listener.onResponse(newNoConnectionFailureResponse(key));
-        }
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
     }
 
 
@@ -185,84 +180,24 @@ public class OfflineStore implements DataStore {
 
     @Override
     public void delete(final String accessToken, final String key, final Listener listener) {
-        Logger.d("Delete: " + key);
+        new AsyncTask<Void, Void, Response>() {
 
-        if (isConnected()) {
-            mRemoteStore.delete(accessToken, key, newLocalDeleteListener(accessToken, listener));
-
-        } else if (isSyncSupported()) {
-            final Response fallback = mLocalStore.get(accessToken, key);
-            final Response local = mLocalStore.delete(accessToken, key);
-
-            getRequestCache().queueDelete(accessToken, mCollection, key, fallback.value);
-
-            if (listener != null) {
-                listener.onResponse(local);
+            @Override
+            protected Response doInBackground(final Void... params) {
+                return OfflineStore.this.delete(accessToken, key);
             }
 
-        } else if (listener != null) {
-            listener.onResponse(newNoConnectionFailureResponse(key));
-        }
+            @Override
+            protected void onPostExecute(final Response resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
     }
 
     protected Response newNoConnectionFailureResponse(final String key) {
         final RuntimeException exception = new RuntimeException("No connection.");
         return Response.failure(key, new DataError(exception));
-    }
-
-    protected Listener newLocalPutListener(final String accessToken, final Listener listener) {
-        return new LocalPutListener(accessToken, listener);
-    }
-
-    protected Listener newLocalDeleteListener(final String accessToken, final Listener listener) {
-        return new LocalDeleteListener(accessToken, listener);
-    }
-
-    // ======================================
-
-
-
-    protected class LocalPutListener implements Listener {
-
-        private final String mAccessToken;
-        private final Listener mListener;
-
-        public LocalPutListener(final String accessToken, final Listener listener) {
-            mAccessToken = accessToken;
-            mListener = listener;
-        }
-
-        @Override
-        public void onResponse(final Response remote) {
-
-            if (remote.status == Response.Status.SUCCESS) {
-                mLocalStore.put(mAccessToken, remote.key, remote.value, mListener);
-
-            } else if (mListener != null) {
-                mListener.onResponse(remote);
-            }
-        }
-    }
-
-    protected class LocalDeleteListener implements Listener {
-
-        private final String mAccessToken;
-        private final Listener mListener;
-
-        public LocalDeleteListener(final String accessToken, final Listener listener) {
-            mAccessToken = accessToken;
-            mListener = listener;
-        }
-
-        @Override
-        public void onResponse(final Response remote) {
-
-            if (remote.status == Response.Status.SUCCESS) {
-                mLocalStore.delete(mAccessToken, remote.key, mListener);
-
-            } else if (mListener != null) {
-                mListener.onResponse(remote);
-            }
-        }
     }
 }
