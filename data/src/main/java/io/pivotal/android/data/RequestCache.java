@@ -5,6 +5,7 @@ package io.pivotal.android.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -19,6 +20,8 @@ public interface RequestCache {
     public void queueDelete(final String token, final String collection, final String key, final String fallback);
 
     public void executePending(final String token);
+
+    public void executePendingAsync(final String token);
 
 
     public static class Default implements RequestCache {
@@ -50,7 +53,7 @@ public interface RequestCache {
             return OfflineStore.create(context, collection);
         }
 
-        private LocalStore getLocalStore(final Context context, final String collection) {
+        protected LocalStore getLocalStore(final Context context, final String collection) {
             return new LocalStore(context, collection);
         }
 
@@ -127,6 +130,18 @@ public interface RequestCache {
             execute(requests, token);
         }
 
+        public void executePendingAsync(final String token) {
+            new AsyncTask<Void, Void, Void>() {
+
+                @Override
+                protected Void doInBackground(final Void... params) {
+                    executePending(token);
+                    return null;
+                }
+
+            }.execute();
+        }
+
         private void execute(final PendingRequest.List requests, final String token) {
             for (final PendingRequest request: requests) {
                 execute(request, token);
@@ -139,35 +154,27 @@ public interface RequestCache {
             final String accessToken = token != null ? token : request.token;
 
             switch (request.method) {
-                case Methods.GET:
-                    store.get(accessToken, request.key, null);
+                case Methods.GET: {
+                    store.get(accessToken, request.key);
                     break;
-                case Methods.PUT:
-                    store.put(accessToken, request.key, request.value, new RevertListener(request));
+                }
+
+                case Methods.PUT: {
+                    final DataStore.Response response = store.put(accessToken, request.key, request.value);
+                    if (response.error != null) {
+                        final LocalStore localStore = getLocalStore(mContext, request.collection);
+                        localStore.put(accessToken, request.key, request.fallback);
+                    }
                     break;
-                case Methods.DELETE:
-                    store.delete(accessToken, request.key, new RevertListener(request));
+                }
+
+                case Methods.DELETE: {
+                    final DataStore.Response response = store.delete(accessToken, request.key);
+                    if (response.error != null) {
+                        final LocalStore localStore = getLocalStore(mContext, request.collection);
+                        localStore.put(accessToken, request.key, request.fallback);
+                    }
                     break;
-            }
-        }
-
-        private final class RevertListener implements DataStore.Listener {
-
-            private final PendingRequest mRequest;
-
-            public RevertListener(final PendingRequest request) {
-                mRequest = request;
-            }
-
-            private boolean shouldRevert(final DataStore.Response response) {
-                return response.error != null && !response.error.isNotModified();
-            }
-
-            @Override
-            public void onResponse(final DataStore.Response response) {
-                if (shouldRevert(response)) {
-                    final LocalStore localStore = getLocalStore(mContext, mRequest.collection);
-                    localStore.put(null, mRequest.key, mRequest.fallback);
                 }
             }
         }

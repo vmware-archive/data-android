@@ -200,7 +200,7 @@ public class OfflineStoreTest extends AndroidTestCase {
         Mockito.verify(requestCache).queuePut(TOKEN, COLLECTION, KEY, VALUE, fallbackResponse.value);
     }
 
-    public void testPutInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
+    public void testPutFailsWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, null));
         final DataStore.Response noConnectionResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
 
@@ -271,7 +271,7 @@ public class OfflineStoreTest extends AndroidTestCase {
         Mockito.verify(requestCache).queueDelete(TOKEN, COLLECTION, KEY, fallbackResponse.value);
     }
 
-    public void testDeleteInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
+    public void testDeleteFailsWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, null));
         final DataStore.Response noConnectionResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
 
