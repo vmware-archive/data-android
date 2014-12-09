@@ -52,7 +52,7 @@ public class LocalStore implements DataStore {
 
     private Response getResponse(final String key) {
         final String value = mPreferences.getString(key, EMPTY);
-        return Response.success(key, value);
+        return new Response(key, value);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class LocalStore implements DataStore {
 
     private Response putResponse(final String key, final String value) {
         mPreferences.edit().putString(key, value).apply();
-        return Response.success(key, value);
+        return new Response(key, value);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class LocalStore implements DataStore {
 
     private Response deleteResponse(final String key) {
         mPreferences.edit().remove(key).apply();
-        return Response.success(key, EMPTY);
+        return new Response(key, EMPTY);
     }
 
     @Override

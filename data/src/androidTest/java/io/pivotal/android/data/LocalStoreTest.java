@@ -55,7 +55,7 @@ public class LocalStoreTest extends AndroidTestCase {
         final LocalStore store = getLocalStore(observerHandler, preferences);
         final DataStore.Response response = store.get(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
@@ -75,7 +75,7 @@ public class LocalStoreTest extends AndroidTestCase {
         final LocalStore store = getLocalStore(observerHandler, preferences);
         final DataStore.Response response = store.put(TOKEN, KEY, VALUE);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
@@ -97,7 +97,7 @@ public class LocalStoreTest extends AndroidTestCase {
         final LocalStore store = getLocalStore(observerHandler, preferences);
         final DataStore.Response response = store.delete(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
 
         Mockito.verify(preferences).edit();

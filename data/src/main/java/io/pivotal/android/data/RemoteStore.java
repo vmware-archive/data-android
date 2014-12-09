@@ -41,7 +41,7 @@ public class RemoteStore implements DataStore {
     @Override
     public boolean contains(final String accessToken, final String key) {
         final Response response = get(accessToken, key);
-        return response.status == Response.Status.SUCCESS;
+        return response.isSuccess();
     }
 
     @Override
@@ -55,10 +55,10 @@ public class RemoteStore implements DataStore {
         try {
             final String url = getCollectionUrl(key);
             final String result = mClient.get(accessToken, url);
-            return Response.success(key, result);
+            return new Response(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new DataError(e));
+            return new Response(key, new DataError(e));
         }
     }
 
@@ -91,10 +91,10 @@ public class RemoteStore implements DataStore {
         try {
             final String url = getCollectionUrl(key);
             final String result = mClient.put(accessToken, url, value);
-            return Response.success(key, result);
+            return new Response(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new DataError(e));
+            return new Response(key, new DataError(e));
         }
     }
 
@@ -127,10 +127,10 @@ public class RemoteStore implements DataStore {
         try {
             final String url = getCollectionUrl(key);
             final String result = mClient.delete(accessToken, url);
-            return Response.success(key, result);
+            return new Response(key, result);
         } catch (final Exception e) {
             Logger.ex(e);
-            return Response.failure(key, new DataError(e));
+            return new Response(key, new DataError(e));
         }
     }
 

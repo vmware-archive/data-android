@@ -38,7 +38,7 @@ public class RemoteStoreTest extends AndroidTestCase {
         final Context context = Mockito.mock(Context.class);
         final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
 
-        Mockito.doReturn(DataStore.Response.success(KEY, VALUE)).when(remoteStore).get(TOKEN, KEY);
+        Mockito.doReturn(new DataStore.Response(KEY, VALUE)).when(remoteStore).get(TOKEN, KEY);
 
         assertTrue(remoteStore.contains(TOKEN, KEY));
 
@@ -47,9 +47,10 @@ public class RemoteStoreTest extends AndroidTestCase {
 
     public void testContainsInvokesGetWithFailure() {
         final Context context = Mockito.mock(Context.class);
+        final DataError error = new DataError(new Exception());
         final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
 
-        Mockito.doReturn(DataStore.Response.failure(KEY, null)).when(remoteStore).get(TOKEN, KEY);
+        Mockito.doReturn(new DataStore.Response(KEY, error)).when(remoteStore).get(TOKEN, KEY);
 
         assertFalse(remoteStore.contains(TOKEN, KEY));
 
@@ -67,7 +68,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
@@ -86,7 +87,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.FAILURE, response.status);
+        assertTrue(response.isFailure());
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
@@ -105,7 +106,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
@@ -124,7 +125,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
 
-        assertEquals(DataStore.Response.Status.FAILURE, response.status);
+        assertTrue(response.isFailure());
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 
@@ -143,7 +144,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals(KEY, response.key);
         assertEquals(VALUE, response.value);
 
@@ -162,7 +163,7 @@ public class RemoteStoreTest extends AndroidTestCase {
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
 
-        assertEquals(DataStore.Response.Status.FAILURE, response.status);
+        assertTrue(response.isFailure());
         assertEquals(KEY, response.key);
         assertNotNull(response.error);
 

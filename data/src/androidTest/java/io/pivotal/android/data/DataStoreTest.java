@@ -8,9 +8,9 @@ import android.test.AndroidTestCase;
 public class DataStoreTest extends AndroidTestCase {
 
     public void testDataStoreResponseSuccess() {
-        final DataStore.Response response = DataStore.Response.success("key", "value");
+        final DataStore.Response response = new DataStore.Response("key", "value");
 
-        assertEquals(DataStore.Response.Status.SUCCESS, response.status);
+        assertTrue(response.isSuccess());
         assertEquals("key", response.key);
         assertEquals("value", response.value);
         assertNull(response.error);
@@ -18,21 +18,12 @@ public class DataStoreTest extends AndroidTestCase {
 
     public void testDataStoreResponseFailure() {
         final DataError error = new DataError(new RuntimeException());
-        final DataStore.Response response = DataStore.Response.failure("key", error);
+        final DataStore.Response response = new DataStore.Response("key", error);
 
-        assertEquals(DataStore.Response.Status.FAILURE, response.status);
+        assertTrue(response.isFailure());
         assertEquals("key", response.key);
         assertEquals(error, response.error);
         assertNull(response.value);
-    }
-
-    public void testDataStoreResponsePending() {
-        final DataStore.Response response = DataStore.Response.pending("key", "value");
-
-        assertEquals(DataStore.Response.Status.PENDING, response.status);
-        assertEquals("key", response.key);
-        assertEquals("value", response.value);
-        assertNull(response.error);
     }
 
 }

@@ -39,7 +39,7 @@ public class ObserverHandler extends Handler {
     private void notifyObservers(final Message msg) {
         for (final DataStore.Observer observer : mObservers) {
             final DataStore.Response resp = (DataStore.Response) msg.obj;
-            if (resp.status == DataStore.Response.Status.FAILURE) {
+            if (resp.isFailure()) {
                 Logger.d("Notify Observer failure: " + resp.key + ", " + resp.error);
                 observer.onError(resp.key, resp.error);
             } else {

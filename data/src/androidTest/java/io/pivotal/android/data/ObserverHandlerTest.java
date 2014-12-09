@@ -24,19 +24,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final Set<DataStore.Observer> observers = Sets.newSet(observer);
         final ObserverHandler handler = new ObserverHandler(observers, LOCK);
-        final DataStore.Response response = DataStore.Response.success(KEY, VALUE);
-
-        final Message message = handler.obtainMessage(1000, response);
-        handler.handleMessage(message);
-
-        Mockito.verify(observer).onChange(KEY, VALUE);
-    }
-
-    public void testNotifyResponsePending() {
-        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
-        final Set<DataStore.Observer> observers = Sets.newSet(observer);
-        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
-        final DataStore.Response response = DataStore.Response.pending(KEY, VALUE);
+        final DataStore.Response response = new DataStore.Response(KEY, VALUE);
 
         final Message message = handler.obtainMessage(1000, response);
         handler.handleMessage(message);
@@ -48,7 +36,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final Set<DataStore.Observer> observers = Sets.newSet(observer);
         final ObserverHandler handler = new ObserverHandler(observers, LOCK);
-        final DataStore.Response response = DataStore.Response.failure(KEY, ERROR);
+        final DataStore.Response response = new DataStore.Response(KEY, ERROR);
 
         final Message message = handler.obtainMessage(1000, response);
         handler.handleMessage(message);

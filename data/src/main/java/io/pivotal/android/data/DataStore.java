@@ -38,31 +38,31 @@ public interface DataStore {
 
     public static class Response {
 
-        public static enum Status {
-            FAILURE, SUCCESS, PENDING
-        }
-
-        public final Status status;
         public final String key, value;
         public final DataError error;
 
-        private Response(final Status status, final String key, final String value, final DataError error) {
-            this.status = status;
+        public Response(final String key, final String value) {
             this.key = key;
             this.value = value;
+            this.error = null;
+        }
+
+        public Response(final String key, final DataError error) {
+            this.key = key;
+            this.value = null;
             this.error = error;
         }
 
-        public static Response failure(final String key, final DataError error) {
-            return new Response(Status.FAILURE, key, null, error);
+        public boolean isSuccess() {
+            return this.error == null;
         }
 
-        public static Response success(final String key, final String value) {
-            return new Response(Status.SUCCESS, key, value, null);
+        public boolean isFailure() {
+            return this.error != null;
         }
 
-        public static Response pending(final String key, final String value) {
-            return new Response(Status.PENDING, key, value, null);
+        public boolean isNotModified() {
+            return this.error != null && this.error.isNotModified();
         }
     }
 }

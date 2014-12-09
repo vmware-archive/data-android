@@ -240,7 +240,7 @@ public class RequestCacheTest extends AndroidTestCase {
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
         final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
         final LocalStore localStore = Mockito.mock(LocalStore.class);
-        final DataStore.Response response = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response response = new DataStore.Response(KEY, new DataError(new Exception()));
 
         Mockito.when(context.getSharedPreferences("request_cache", Context.MODE_PRIVATE)).thenReturn(preferences);
         Mockito.when(preferences.getString("requests", "")).thenReturn(PUT_LIST);
@@ -267,7 +267,7 @@ public class RequestCacheTest extends AndroidTestCase {
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
         final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
         final LocalStore localStore = Mockito.mock(LocalStore.class);
-        final DataStore.Response response = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response response = new DataStore.Response(KEY, new DataError(new Exception()));
 
         Mockito.when(context.getSharedPreferences("request_cache", Context.MODE_PRIVATE)).thenReturn(preferences);
         Mockito.when(preferences.getString("requests", "")).thenReturn(DELETE_LIST);

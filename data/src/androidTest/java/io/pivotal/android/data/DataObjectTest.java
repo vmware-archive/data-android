@@ -26,7 +26,7 @@ public class DataObjectTest extends AndroidTestCase {
     public void testGetInvokesDataStore() {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
-        final DataStore.Response response = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response response = new DataStore.Response(KEY, VALUE);
 
         Mockito.when(dataStore.get(TOKEN, KEY)).thenReturn(response);
 
@@ -38,7 +38,7 @@ public class DataObjectTest extends AndroidTestCase {
     public void testPutInvokesDataStore() {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
-        final DataStore.Response response = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response response = new DataStore.Response(KEY, VALUE);
 
         Mockito.when(dataStore.put(TOKEN, KEY, VALUE)).thenReturn(response);
 
@@ -50,7 +50,7 @@ public class DataObjectTest extends AndroidTestCase {
     public void testDeleteInvokesDataStore() {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, KEY);
-        final DataStore.Response response = DataStore.Response.success(KEY, null);
+        final DataStore.Response response = new DataStore.Response(KEY, "");
 
         Mockito.when(dataStore.delete(TOKEN, KEY)).thenReturn(response);
 

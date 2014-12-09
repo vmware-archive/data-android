@@ -69,10 +69,10 @@ public class OfflineStore implements DataStore {
         if (isConnected()) {
             final Response remote = mRemoteStore.get(accessToken, key);
 
-            if (remote.status == Response.Status.SUCCESS) {
+            if (remote.isSuccess()) {
                 return mLocalStore.put(accessToken, remote.key, remote.value);
 
-            } else if (remote.error != null && remote.error.isNotModified()) {
+            } else if (remote.isNotModified()) {
                 return mLocalStore.get(accessToken, remote.key);
 
             } else {
@@ -115,7 +115,7 @@ public class OfflineStore implements DataStore {
         if (isConnected()) {
             final Response remote = mRemoteStore.put(accessToken, key, value);
 
-            if (remote.status == Response.Status.SUCCESS) {
+            if (remote.isSuccess()) {
                 return mLocalStore.put(accessToken, remote.key, remote.value);
 
             } else {
@@ -161,7 +161,7 @@ public class OfflineStore implements DataStore {
         if (isConnected()) {
             final Response remote = mRemoteStore.delete(accessToken, key);
 
-            if (remote.status == Response.Status.SUCCESS) {
+            if (remote.isSuccess()) {
                 return mLocalStore.delete(accessToken, remote.key);
 
             } else {
@@ -201,6 +201,6 @@ public class OfflineStore implements DataStore {
 
     protected Response newNoConnectionFailureResponse(final String key) {
         final RuntimeException exception = new RuntimeException("No connection.");
-        return Response.failure(key, new DataError(exception));
+        return new Response(key, new DataError(exception));
     }
 }

@@ -77,8 +77,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
-        final DataStore.Response remoteResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -94,7 +94,7 @@ public class OfflineStoreTest extends AndroidTestCase {
 
     public void testGetInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response remoteResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, new DataError(new Exception()));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -109,8 +109,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFailsWithNotModified() {
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final LocalStore localStore = Mockito.mock(LocalStore.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
-        final DataStore.Response remoteResponse = DataStore.Response.failure(KEY, new DataError(new DataException(304, "")));
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, new DataError(new DataException(304, "")));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -127,7 +127,7 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testGetInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, null));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
@@ -146,7 +146,7 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testGetInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsSupported() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, null));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
@@ -166,8 +166,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testPutInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
-        final DataStore.Response remoteResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -183,7 +183,7 @@ public class OfflineStoreTest extends AndroidTestCase {
 
     public void testPutInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response remoteResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, new DataError(new Exception()));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -198,8 +198,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testPutInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsSupported() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
-        final DataStore.Response fallbackResponse = DataStore.Response.success(KEY, FALLBACK);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response fallbackResponse = new DataStore.Response(KEY, FALLBACK);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, null));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
@@ -220,7 +220,7 @@ public class OfflineStoreTest extends AndroidTestCase {
 
     public void testPutFailsWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, null));
-        final DataStore.Response noConnectionResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response noConnectionResponse = new DataStore.Response(KEY, new DataError(new Exception()));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
         Mockito.doReturn(false).when(offlineStore).isSyncSupported();
@@ -237,8 +237,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testDeleteInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
-        final DataStore.Response remoteResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -254,7 +254,7 @@ public class OfflineStoreTest extends AndroidTestCase {
 
     public void testDeleteInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final DataStore.Response remoteResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response remoteResponse = new DataStore.Response(KEY, new DataError(new Exception()));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, remoteStore));
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
@@ -269,8 +269,8 @@ public class OfflineStoreTest extends AndroidTestCase {
     public void testDeleteInvokesLocalStoreWhenConnectionIsNotAvailableAndSyncIsSupported() {
         final LocalStore localStore = Mockito.mock(LocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
-        final DataStore.Response fallbackResponse = DataStore.Response.success(KEY, FALLBACK);
-        final DataStore.Response localResponse = DataStore.Response.success(KEY, VALUE);
+        final DataStore.Response fallbackResponse = new DataStore.Response(KEY, FALLBACK);
+        final DataStore.Response localResponse = new DataStore.Response(KEY, VALUE);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, localStore, null));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
@@ -291,7 +291,7 @@ public class OfflineStoreTest extends AndroidTestCase {
 
     public void testDeleteFailsWhenConnectionIsNotAvailableAndSyncIsNotSupported() {
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, COLLECTION, null, null));
-        final DataStore.Response noConnectionResponse = DataStore.Response.failure(KEY, new DataError(new Exception()));
+        final DataStore.Response noConnectionResponse = new DataStore.Response(KEY, new DataError(new Exception()));
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
         Mockito.doReturn(false).when(offlineStore).isSyncSupported();
