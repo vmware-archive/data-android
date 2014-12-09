@@ -72,6 +72,9 @@ public class OfflineStore implements DataStore {
             if (remote.status == Response.Status.SUCCESS) {
                 return mLocalStore.put(accessToken, remote.key, remote.value);
 
+            } else if (remote.error != null && remote.error.isNotModified()) {
+                return mLocalStore.get(accessToken, remote.key);
+
             } else {
                 return remote;
             }
