@@ -318,7 +318,7 @@ public class RemoteClientTest extends AndroidTestCase {
         client.checkEtagHeader(httpResponse, URL);
 
         Mockito.verify(httpResponse).getFirstHeader(ETAG);
-        Mockito.verify(etagStore, Mockito.never()).put(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(etagStore).put(URL, "");
     }
 
     public void testCheckEtagHeaderIfEtagsAreNotSupported() throws Exception {

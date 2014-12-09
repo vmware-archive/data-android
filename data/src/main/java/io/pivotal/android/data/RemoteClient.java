@@ -162,11 +162,11 @@ public interface RemoteClient {
         protected void checkEtagHeader(final HttpResponse response, final String url) {
             if (Pivotal.areEtagsEnabled()) {
                 final Header header = response.getFirstHeader(Headers.ETAG);
-                if (header != null) {
-                    final String etag = header.getValue();
-                    Logger.v("Response Header - " + Headers.ETAG + ": " + etag + ", url: " + url);
-                    mEtagStore.put(url, etag);
-                }
+                final String etag = header != null ? header.getValue() : "";
+
+                Logger.v("Response Header - " + Headers.ETAG + ": " + etag + ", url: " + url);
+
+                mEtagStore.put(url, etag);
             }
         }
 
