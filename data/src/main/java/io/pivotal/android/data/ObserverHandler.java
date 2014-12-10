@@ -6,25 +6,40 @@ package io.pivotal.android.data;
 import android.os.Handler;
 import android.os.Message;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class ObserverHandler extends Handler {
 
     private static final int MSG_NOTIFY = 1000;
+    private static final int MSG_DELAY = 100;
 
-    private final Object mLock;
-    private final Set<DataStore.Observer> mObservers;
+    private final Object mLock = new Object();
+    private final Set<DataStore.Observer> mObservers = new HashSet<DataStore.Observer>();
 
-    public ObserverHandler(final Set<DataStore.Observer> observers, final Object lock) {
-        mObservers = observers;
-        mLock = lock;
+    public boolean addObserver(final DataStore.Observer observer) {
+        Logger.d("Add Observer: " + observer);
+        synchronized (mLock) {
+            return mObservers.add(observer);
+        }
+    }
+
+    public boolean removeObserver(final DataStore.Observer observer) {
+        Logger.d("Remove Observer: " + observer);
+        synchronized (mLock) {
+            return mObservers.remove(observer);
+        }
+    }
+
+    public Set<DataStore.Observer> getObservers() {
+        return mObservers;
     }
 
     public void notifyResponse(final DataStore.Response response) {
-        removeMessages(MSG_NOTIFY);
-
         final Message msg = obtainMessage(MSG_NOTIFY, response);
-        sendMessageDelayed(msg, 100);
+
+        removeMessages(MSG_NOTIFY);
+        sendMessageDelayed(msg, MSG_DELAY);
     }
 
     @Override
@@ -38,14 +53,9 @@ public class ObserverHandler extends Handler {
 
     private void notifyObservers(final Message msg) {
         for (final DataStore.Observer observer : mObservers) {
-            final DataStore.Response resp = (DataStore.Response) msg.obj;
-            if (resp.isFailure()) {
-                Logger.d("Notify Observer failure: " + resp.key + ", " + resp.error);
-                observer.onError(resp.key, resp.error);
-            } else {
-                Logger.d("Notify Observer success: " + resp.key + ", " + resp.value);
-                observer.onChange(resp.key, resp.value);
-            }
+            final DataStore.Response response = (DataStore.Response) msg.obj;
+            Logger.d("Notify Observer response: " + response);
+            observer.onResponse(response);
         }
     }
 }

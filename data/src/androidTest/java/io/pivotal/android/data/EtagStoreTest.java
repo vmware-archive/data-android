@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public class EtagStoreTest extends AndroidTestCase {
 
+    private static final String ETAG_CACHE = "PCFData:EtagCache";
+
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
 
@@ -26,7 +28,7 @@ public class EtagStoreTest extends AndroidTestCase {
         final Context context = Mockito.mock(Context.class);
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
 
-        Mockito.when(context.getSharedPreferences("etags", Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(context.getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
 
         final EtagStore store = new EtagStore.Default(context);
 
@@ -34,7 +36,7 @@ public class EtagStoreTest extends AndroidTestCase {
 
         assertEquals(VALUE, store.get(KEY));
 
-        Mockito.verify(context).getSharedPreferences("etags", Context.MODE_PRIVATE);
+        Mockito.verify(context).getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE);
         Mockito.verify(preferences).getString(KEY, null);
     }
 
@@ -43,7 +45,7 @@ public class EtagStoreTest extends AndroidTestCase {
         final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
         final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
 
-        Mockito.when(context.getSharedPreferences("etags", Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(context.getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
 
         final EtagStore store = new EtagStore.Default(context);
 
@@ -53,7 +55,7 @@ public class EtagStoreTest extends AndroidTestCase {
 
         store.put(KEY, VALUE);
 
-        Mockito.verify(context).getSharedPreferences("etags", Context.MODE_PRIVATE);
+        Mockito.verify(context).getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE);
         Mockito.verify(preferences).edit();
         Mockito.verify(editor).putString(KEY, VALUE);
         Mockito.verify(editor).commit();

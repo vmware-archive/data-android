@@ -15,10 +15,12 @@ import android.content.SharedPreferences;
 
     public static class Default implements EtagStore {
 
+        private static final String ETAG_CACHE = "PCFData:EtagCache";
+
         private final SharedPreferences mPrefs;
 
         public Default(final Context context) {
-            mPrefs = context.getSharedPreferences("etags", Context.MODE_PRIVATE);
+            mPrefs = context.getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE);
         }
 
         @SuppressLint("CommitPrefEdits")

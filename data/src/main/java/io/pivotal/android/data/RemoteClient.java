@@ -146,16 +146,8 @@ public interface RemoteClient {
             final int statusCode = statusLine.getStatusCode();
             final String reasonPhrase = statusLine.getReasonPhrase();
 
-            if (statusCode == 304) {
-                throw new NotModifiedException(statusCode, reasonPhrase);
-            }
-
-            if (statusCode == 412) {
-                throw new PreconditionFailedException(statusCode, reasonPhrase);
-            }
-
             if (statusCode < 200 || statusCode > 299) {
-                throw new DataException(statusCode, reasonPhrase);
+                throw new DataHttpException(statusCode, reasonPhrase);
             }
         }
 

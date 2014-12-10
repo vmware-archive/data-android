@@ -10,8 +10,8 @@ public class DataError extends Error {
     public DataError(final Exception e) {
         super(e.getLocalizedMessage(), e);
 
-        if (e instanceof DataException) {
-            mCode = ((DataException) e).getStatusCode();
+        if (e instanceof DataHttpException) {
+            mCode = ((DataHttpException) e).getStatusCode();
         }
 
         if (e instanceof NotConnectedException) {

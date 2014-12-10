@@ -6,9 +6,13 @@ package io.pivotal.android.data;
 import android.test.AndroidTestCase;
 
 import java.util.Properties;
+import java.util.UUID;
 
 public class PivotalTest extends AndroidTestCase {
 
+    private static final String KEY = UUID.randomUUID().toString();
+    private static final String VALUE = UUID.randomUUID().toString();
+    private static final String RESULT = UUID.randomUUID().toString();
 
     @Override
     protected void tearDown() throws Exception {
@@ -18,34 +22,34 @@ public class PivotalTest extends AndroidTestCase {
     }
 
     public void testGetSucceeds() {
-        final String key = "key";
-        final String value = "value";
-
         final Properties properties = new Properties();
-        properties.setProperty(key, value);
+        properties.setProperty(KEY, VALUE);
 
         Pivotal.setProperties(properties);
-        assertEquals(value, Pivotal.get(key));
+
+        assertEquals(VALUE, Pivotal.get(KEY));
     }
 
     public void testGetFails() {
-        final String key = "key";
-        final String value = "value";
-
         final Properties properties = new Properties();
 
         Pivotal.setProperties(properties);
 
         try {
-            assertEquals(value, Pivotal.get(key));
+            assertEquals(VALUE, Pivotal.get(KEY));
             fail();
         } catch (final IllegalStateException e) {
             assertNotNull(e);
         }
     }
 
-    public void testGetClientId() {
-        assertEquals("http://example.com", Pivotal.getServiceUrl());
+    public void testGetServiceUrl() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.serviceUrl", RESULT);
+
+        Pivotal.setProperties(properties);
+
+        assertEquals(RESULT, Pivotal.getServiceUrl());
     }
 
     public void testEtagsValueEnabled() {
@@ -53,6 +57,7 @@ public class PivotalTest extends AndroidTestCase {
         properties.setProperty("pivotal.data.etagSupport", "enabled");
 
         Pivotal.setProperties(properties);
+
         assertTrue(Pivotal.areEtagsEnabled());
     }
 
@@ -61,6 +66,16 @@ public class PivotalTest extends AndroidTestCase {
         properties.setProperty("pivotal.data.etagSupport", "disabled");
 
         Pivotal.setProperties(properties);
+
+        assertFalse(Pivotal.areEtagsEnabled());
+    }
+
+    public void testEtagsValueRandom() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.etagSupport", RESULT);
+
+        Pivotal.setProperties(properties);
+
         assertFalse(Pivotal.areEtagsEnabled());
     }
 

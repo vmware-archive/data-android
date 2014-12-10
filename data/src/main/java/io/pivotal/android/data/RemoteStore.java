@@ -8,30 +8,21 @@ import android.os.AsyncTask;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 public class RemoteStore implements DataStore {
 
-    private final Object mLock = new Object();
-    private final Set<Observer> mObservers = new HashSet<Observer>();
-
     private final String mCollection;
-    private final ObserverHandler mHandler;
     private final RemoteClient mClient;
+    private final ObserverHandler mHandler;
 
     public RemoteStore(final Context context, final String collection) {
-        mHandler = createObserverHandler(mObservers, mLock);
-        mClient = createRemoteClient(context);
+        this(collection, new ObserverHandler(), new RemoteClient.Default(new EtagStore.Default(context)));
+    }
+
+    RemoteStore(final String collection, final ObserverHandler handler, final RemoteClient client) {
         mCollection = collection;
-    }
-
-    protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-        return new ObserverHandler(observers, lock);
-    }
-
-    protected RemoteClient createRemoteClient(final Context context) {
-        return new RemoteClient.Default(new EtagStore.Default(context));
+        mHandler = handler;
+        mClient = client;
     }
 
     protected String getCollectionUrl(final String key) throws MalformedURLException {
@@ -154,21 +145,11 @@ public class RemoteStore implements DataStore {
 
     @Override
     public boolean addObserver(final Observer observer) {
-        synchronized (mLock) {
-            return mObservers.add(observer);
-        }
+        return mHandler.addObserver(observer);
     }
 
     @Override
     public boolean removeObserver(final Observer observer) {
-        synchronized (mLock) {
-            return mObservers.remove(observer);
-        }
-    }
-
-    protected Set<Observer> getObservers() {
-        synchronized (mLock) {
-            return mObservers;
-        }
+        return mHandler.removeObserver(observer);
     }
 }

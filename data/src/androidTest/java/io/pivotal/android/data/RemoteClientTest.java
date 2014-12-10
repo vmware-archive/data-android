@@ -26,14 +26,13 @@ import java.util.UUID;
 
 public class RemoteClientTest extends AndroidTestCase {
 
-    private static final String URL = "http://example.com";
-
     private static final String IF_NONE_MATCH = "If-None-Match";
     private static final String IF_MATCH = "If-Match";
     private static final String ETAG = "Etag";
 
     private static final String TOKEN = UUID.randomUUID().toString();
     private static final String RESULT = UUID.randomUUID().toString();
+    private static final String URL = "http://example.com";
 
     @Override
     protected void setUp() throws Exception {
@@ -214,7 +213,7 @@ public class RemoteClientTest extends AndroidTestCase {
         try {
             client.checkStatusLine(httpStatusLine);
             fail();
-        } catch (final NotModifiedException e) {
+        } catch (final DataHttpException e) {
             assertEquals(statusCode, e.getStatusCode());
             assertEquals(RESULT, e.getMessage());
         }
@@ -235,7 +234,7 @@ public class RemoteClientTest extends AndroidTestCase {
         try {
             client.checkStatusLine(httpStatusLine);
             fail();
-        } catch (final PreconditionFailedException e) {
+        } catch (final DataHttpException e) {
             assertEquals(statusCode, e.getStatusCode());
             assertEquals(RESULT, e.getMessage());
         }
@@ -256,7 +255,7 @@ public class RemoteClientTest extends AndroidTestCase {
         try {
             client.checkStatusLine(httpStatusLine);
             fail();
-        } catch (final DataException e) {
+        } catch (final DataHttpException e) {
             assertEquals(statusCode, e.getStatusCode());
             assertEquals(RESULT, e.getMessage());
         }

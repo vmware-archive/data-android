@@ -7,6 +7,7 @@ import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
+import java.util.Random;
 import java.util.UUID;
 
 public class DataObjectTest extends AndroidTestCase {
@@ -14,13 +15,11 @@ public class DataObjectTest extends AndroidTestCase {
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
     private static final String TOKEN = UUID.randomUUID().toString();
+    private static final boolean RESULT = new Random().nextBoolean();
 
     private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
         @Override
-        public void onChange(final String key, final String value) {}
-
-        @Override
-        public void onError(final String key, final DataError error) {}
+        public void onResponse(final DataStore.Response response) {}
     };
 
     public void testGetInvokesDataStore() {
@@ -63,9 +62,9 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, null);
 
-        Mockito.when(dataStore.addObserver(OBSERVER)).thenReturn(true);
+        Mockito.when(dataStore.addObserver(OBSERVER)).thenReturn(RESULT);
 
-        assertTrue(dataObject.addObserver(OBSERVER));
+        assertEquals(RESULT, dataObject.addObserver(OBSERVER));
 
         Mockito.verify(dataStore).addObserver(OBSERVER);
     }
@@ -74,9 +73,9 @@ public class DataObjectTest extends AndroidTestCase {
         final DataStore dataStore = Mockito.mock(DataStore.class);
         final DataObject dataObject = new DataObject(dataStore, null);
 
-        Mockito.when(dataStore.removeObserver(OBSERVER)).thenReturn(true);
+        Mockito.when(dataStore.removeObserver(OBSERVER)).thenReturn(RESULT);
 
-        assertTrue(dataObject.removeObserver(OBSERVER));
+        assertEquals(RESULT, dataObject.removeObserver(OBSERVER));
 
         Mockito.verify(dataStore).removeObserver(OBSERVER);
     }

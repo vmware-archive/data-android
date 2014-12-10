@@ -7,40 +7,34 @@ import android.os.Message;
 import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
-import org.mockito.internal.util.collections.Sets;
-
-import java.util.Set;
-import java.util.UUID;
 
 public class ObserverHandlerTest extends AndroidTestCase {
 
-    private static final DataError ERROR = new DataError(new Exception());
-    private static final String KEY = UUID.randomUUID().toString();
-    private static final String VALUE = UUID.randomUUID().toString();
-
-    private static final Object LOCK = new Object();
-
-    public void testNotifyResponseSuccess() {
+    public void testAddObserver() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
-        final Set<DataStore.Observer> observers = Sets.newSet(observer);
-        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
-        final DataStore.Response response = new DataStore.Response(KEY, VALUE);
+        final ObserverHandler handler = new ObserverHandler();
 
-        final Message message = handler.obtainMessage(1000, response);
-        handler.handleMessage(message);
-
-        Mockito.verify(observer).onChange(KEY, VALUE);
+        assertTrue(handler.addObserver(observer));
+        assertTrue(handler.getObservers().contains(observer));
     }
 
-    public void testNotifyResponseFailure() {
+    public void testRemoveObserver() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
-        final Set<DataStore.Observer> observers = Sets.newSet(observer);
-        final ObserverHandler handler = new ObserverHandler(observers, LOCK);
-        final DataStore.Response response = new DataStore.Response(KEY, ERROR);
+        final ObserverHandler handler = new ObserverHandler();
+
+        assertTrue(handler.getObservers().add(observer));
+        assertTrue(handler.removeObserver(observer));
+    }
+
+    public void testHandleMessage() {
+        final DataStore.Response response = Mockito.mock(DataStore.Response.class);
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final ObserverHandler handler = new ObserverHandler();
+        handler.addObserver(observer);
 
         final Message message = handler.obtainMessage(1000, response);
         handler.handleMessage(message);
 
-        Mockito.verify(observer).onError(KEY, ERROR);
+        Mockito.verify(observer).onResponse(response);
     }
 }

@@ -27,13 +27,10 @@ public interface RequestCache {
     public static class Default implements RequestCache {
 
         private static final Object LOCK = new Object();
+
         private static final String EMPTY = "";
-
-        private static final String REQUEST_CACHE = "request_cache";
-
-        private static final class Keys {
-            public static final String REQUESTS = "requests";
-        }
+        private static final String REQUEST_CACHE = "PCFData:RequestCache";
+        private static final String REQUEST_KEY = "PCFData:Requests";
 
         private static final class Methods {
             public static final int GET = 0;
@@ -87,7 +84,7 @@ public interface RequestCache {
 
         private PendingRequest.List getRequests() {
             try {
-                final byte[] bytes = mPrefs.getString(Keys.REQUESTS, EMPTY).getBytes();
+                final byte[] bytes = mPrefs.getString(REQUEST_KEY, EMPTY).getBytes();
                 final ObjectMapper mapper = new ObjectMapper();
                 return mapper.readValue(bytes, PendingRequest.List.class);
             } catch (final Exception e) {
@@ -100,7 +97,7 @@ public interface RequestCache {
                 final ObjectMapper mapper = new ObjectMapper();
                 final String data = mapper.writeValueAsString(requests);
                 final SharedPreferences.Editor editor = mPrefs.edit();
-                editor.putString(Keys.REQUESTS, data);
+                editor.putString(REQUEST_KEY, data);
                 editor.apply();
             } catch (final Exception e) {
                 // do nothing
@@ -109,7 +106,7 @@ public interface RequestCache {
 
         private void clearRequests() {
             final SharedPreferences.Editor editor = mPrefs.edit();
-            editor.putString(Keys.REQUESTS, EMPTY);
+            editor.putString(REQUEST_KEY, EMPTY);
             editor.apply();
         }
 
@@ -149,7 +146,6 @@ public interface RequestCache {
         }
 
         private void execute(final PendingRequest request, final String token) {
-
             final OfflineStore store = getOfflineStore(mContext, request.collection);
             final String accessToken = token != null ? token : request.token;
 

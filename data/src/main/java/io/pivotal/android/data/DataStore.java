@@ -25,16 +25,12 @@ public interface DataStore {
 
 
     public static interface Observer {
-        public void onChange(String key, String value);
-
-        public void onError(String key, DataError error);
+        public void onResponse(Response response);
     }
-
 
     public static interface Listener {
         public void onResponse(Response response);
     }
-
 
     public static class Response {
 
@@ -63,6 +59,10 @@ public interface DataStore {
 
         public boolean isNotModified() {
             return this.error != null && this.error.isNotModified();
+        }
+
+        public boolean hasPreconditionFailed() {
+            return this.error != null && this.error.hasPreconditionFailed();
         }
     }
 }

@@ -8,32 +8,27 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.AsyncTask;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class LocalStore implements DataStore {
 
     private static final String EMPTY = "";
-
-    private final Object mLock = new Object();
-    private final Set<Observer> mObservers = new HashSet<Observer>();
+    private static final String COLLECTION_PREFIX = "PCFData:Collection:";
 
     private final String mCollection;
     private final ObserverHandler mHandler;
     private final SharedPreferences mPreferences;
 
     public LocalStore(final Context context, final String collection) {
-        mHandler = createObserverHandler(mObservers, mLock);
-        mPreferences = createSharedPreferences(context, collection);
+        this(collection, new ObserverHandler(), createSharedPreferences(context, collection));
+    }
+
+    private static SharedPreferences createSharedPreferences(final Context context, final String collection) {
+        return context.getSharedPreferences(COLLECTION_PREFIX + collection, Context.MODE_PRIVATE);
+    }
+
+    LocalStore(final String collection, final ObserverHandler handler, final SharedPreferences preferences) {
         mCollection = collection;
-    }
-
-    protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-        return new ObserverHandler(observers, lock);
-    }
-
-    protected SharedPreferences createSharedPreferences(final Context context, final String collection) {
-        return context.getSharedPreferences(collection, Context.MODE_PRIVATE);
+        mHandler = handler;
+        mPreferences = preferences;
     }
 
     @Override
@@ -137,24 +132,12 @@ public class LocalStore implements DataStore {
 
     @Override
     public boolean addObserver(final Observer observer) {
-        Logger.d("Add Observer: " + observer);
-        synchronized (mLock) {
-            return mObservers.add(observer);
-        }
+        return mHandler.addObserver(observer);
     }
 
     @Override
     public boolean removeObserver(final Observer observer) {
-        Logger.d("Remove Observer: " + observer);
-        synchronized (mLock) {
-            return mObservers.remove(observer);
-        }
-    }
-
-    protected Set<Observer> getObservers() {
-        synchronized (mLock) {
-            return mObservers;
-        }
+        return mHandler.removeObserver(observer);
     }
 
     protected static class ObserverProxy implements OnSharedPreferenceChangeListener {

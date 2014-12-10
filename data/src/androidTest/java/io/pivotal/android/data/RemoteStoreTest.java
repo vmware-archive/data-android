@@ -8,8 +8,7 @@ import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
-import java.net.MalformedURLException;
-import java.util.Set;
+import java.util.Random;
 import java.util.UUID;
 
 public class RemoteStoreTest extends AndroidTestCase {
@@ -19,13 +18,11 @@ public class RemoteStoreTest extends AndroidTestCase {
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
     private static final String TOKEN = UUID.randomUUID().toString();
+    private static final boolean RESULT = new Random().nextBoolean();
 
     private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
         @Override
-        public void onChange(final String key, final String value) {}
-
-        @Override
-        public void onError(final String key, final DataError error) {}
+        public void onResponse(final DataStore.Response response) {}
     };
 
     @Override
@@ -60,10 +57,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testGetInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.when(remoteClient.get(TOKEN, URL)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
@@ -79,10 +75,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testGetInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.doThrow(new RuntimeException()).when(remoteClient).get(TOKEN, URL);
 
         final DataStore.Response response = remoteStore.get(TOKEN, KEY);
@@ -98,10 +93,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testPutInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.when(remoteClient.put(TOKEN, URL, VALUE)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
@@ -117,10 +111,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testPutInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.doThrow(new RuntimeException()).when(remoteClient).put(TOKEN, URL, VALUE);
 
         final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
@@ -136,10 +129,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testDeleteInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.when(remoteClient.delete(TOKEN, URL)).thenReturn(VALUE);
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
@@ -155,10 +147,9 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testDeleteInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
 
-        final RemoteStore remoteStore = getRemoteStore(remoteClient, observerHandler);
-
-        Mockito.doNothing().when(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
+        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
         Mockito.doThrow(new RuntimeException()).when(remoteClient).delete(TOKEN, URL);
 
         final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
@@ -171,54 +162,26 @@ public class RemoteStoreTest extends AndroidTestCase {
         Mockito.verify(remoteClient).delete(TOKEN, URL);
     }
 
-    public void testAddObserverIfNotAlreadyRegistered() {
-        final Context context = Mockito.mock(Context.class);
-        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
+    public void testAddObserverInvokesHandler() {
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, null));
 
-        assertTrue(remoteStore.addObserver(OBSERVER));
+        Mockito.when(observerHandler.addObserver(OBSERVER)).thenReturn(RESULT);
+
+        assertEquals(RESULT, remoteStore.addObserver(OBSERVER));
+
+        Mockito.verify(observerHandler).addObserver(OBSERVER);
     }
 
-    public void testAddObserverIfAlreadyRegistered() {
-        final Context context = Mockito.mock(Context.class);
-        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
-        remoteStore.getObservers().add(OBSERVER);
+    public void testRemoveObserverInvokesHandler() {
+        final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, null));
 
-        assertFalse(remoteStore.addObserver(OBSERVER));
-    }
+        Mockito.when(observerHandler.removeObserver(OBSERVER)).thenReturn(RESULT);
 
-    public void testRemoveObserverIfAlreadyRegistered() {
-        final Context context = Mockito.mock(Context.class);
-        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
-        remoteStore.getObservers().add(OBSERVER);
+        assertEquals(RESULT, remoteStore.removeObserver(OBSERVER));
 
-        assertTrue(remoteStore.removeObserver(OBSERVER));
-    }
-
-    public void testRemoveObserverIfNotAlreadyRegistered() {
-        final Context context = Mockito.mock(Context.class);
-        final RemoteStore remoteStore = new RemoteStore(context, COLLECTION);
-
-        assertFalse(remoteStore.removeObserver(OBSERVER));
-    }
-
-    private RemoteStore getRemoteStore(final RemoteClient remoteClient, final ObserverHandler observerHandler) {
-        return new RemoteStore(null, null) {
-
-            @Override
-            protected RemoteClient createRemoteClient(final Context context) {
-                return remoteClient;
-            }
-
-            @Override
-            protected ObserverHandler createObserverHandler(final Set<Observer> observers, final Object lock) {
-                return observerHandler;
-            }
-
-            @Override
-            protected String getCollectionUrl(final String key) throws MalformedURLException {
-                return URL;
-            }
-        };
+        Mockito.verify(observerHandler).removeObserver(OBSERVER);
     }
 
 }

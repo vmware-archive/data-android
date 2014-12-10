@@ -27,22 +27,41 @@ public class DataErrorTest extends AndroidTestCase {
 
     public void testWithDataException() {
         final String message = "error";
-        final Exception exception = new DataException(400, message);
+        final Exception exception = new DataHttpException(400, message);
         final DataError error = new DataError(exception);
 
-        assertEquals(400, error.getCode());
-        assertEquals(message, error.getMessage());
         assertFalse(error.isUnauthorized());
     }
 
-    public void testWith401DataException() {
+    public void testWith401Unauthorized() {
         final String message = "error";
-        final Exception exception = new DataException(401, message);
+        final Exception exception = new DataHttpException(401, message);
         final DataError error = new DataError(exception);
 
-        assertEquals(401, error.getCode());
-        assertEquals(message, error.getMessage());
         assertTrue(error.isUnauthorized());
     }
 
+    public void testWith100NotConnected() {
+        final String message = "error";
+        final Exception exception = new DataHttpException(100, message);
+        final DataError error = new DataError(exception);
+
+        assertTrue(error.isNotConnected());
+    }
+
+    public void testWith304NotModified() {
+        final String message = "error";
+        final Exception exception = new DataHttpException(304, message);
+        final DataError error = new DataError(exception);
+
+        assertTrue(error.isNotModified());
+    }
+
+    public void testWith412PreconditionFailed() {
+        final String message = "error";
+        final Exception exception = new DataHttpException(412, message);
+        final DataError error = new DataError(exception);
+
+        assertTrue(error.hasPreconditionFailed());
+    }
 }
