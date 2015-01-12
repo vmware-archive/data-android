@@ -3,27 +3,16 @@
  */
 package io.pivotal.android.data;
 
-import android.content.Context;
 import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
 import java.util.Random;
-import java.util.UUID;
 
+@SuppressWarnings("unchecked")
 public class RemoteStoreTest extends AndroidTestCase {
 
-    private static final String URL = "http://example.com";
-    private static final String COLLECTION = UUID.randomUUID().toString();
-    private static final String KEY = UUID.randomUUID().toString();
-    private static final String VALUE = UUID.randomUUID().toString();
-    private static final String TOKEN = UUID.randomUUID().toString();
     private static final boolean RESULT = new Random().nextBoolean();
-
-    private static final DataStore.Observer OBSERVER = new DataStore.Observer() {
-        @Override
-        public void onResponse(final DataStore.Response response) {}
-    };
 
     @Override
     protected void setUp() throws Exception {
@@ -31,157 +20,121 @@ public class RemoteStoreTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
     }
 
-    public void testContainsInvokesGetWithSuccess() {
-        final Context context = Mockito.mock(Context.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
-
-        Mockito.doReturn(new DataStore.Response(KEY, VALUE)).when(remoteStore).get(TOKEN, KEY);
-
-        assertTrue(remoteStore.contains(TOKEN, KEY));
-
-        Mockito.verify(remoteStore).get(TOKEN, KEY);
-    }
-
-    public void testContainsInvokesGetWithFailure() {
-        final Context context = Mockito.mock(Context.class);
-        final DataError error = new DataError(new Exception());
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(context, COLLECTION));
-
-        Mockito.doReturn(new DataStore.Response(KEY, error)).when(remoteStore).get(TOKEN, KEY);
-
-        assertFalse(remoteStore.contains(TOKEN, KEY));
-
-        Mockito.verify(remoteStore).get(TOKEN, KEY);
-    }
-
     public void testGetInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
+        final Response response = Mockito.mock(Response.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.when(remoteClient.get(TOKEN, URL)).thenReturn(VALUE);
+        Mockito.when(remoteClient.get(Mockito.any(Request.class))).thenReturn(response);
 
-        final DataStore.Response response = remoteStore.get(TOKEN, KEY);
+        assertEquals(response, remoteStore.get(request));
 
-        assertTrue(response.isSuccess());
-        assertEquals(KEY, response.key);
-        assertEquals(VALUE, response.value);
-
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).get(TOKEN, URL);
+        Mockito.verify(remoteClient).get(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testGetInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.doThrow(new RuntimeException()).when(remoteClient).get(TOKEN, URL);
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).get(Mockito.any(Request.class));
 
-        final DataStore.Response response = remoteStore.get(TOKEN, KEY);
-
+        final Response response = remoteStore.get(request);
         assertTrue(response.isFailure());
-        assertEquals(KEY, response.key);
-        assertNotNull(response.error);
+        assertEquals(request.object, response.object);
 
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).get(TOKEN, URL);
+        Mockito.verify(remoteClient).get(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testPutInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
+        final Response response = Mockito.mock(Response.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.when(remoteClient.put(TOKEN, URL, VALUE)).thenReturn(VALUE);
+        Mockito.when(remoteClient.put(Mockito.any(Request.class))).thenReturn(response);
 
-        final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
+        assertEquals(response, remoteStore.put(request));
 
-        assertTrue(response.isSuccess());
-        assertEquals(KEY, response.key);
-        assertEquals(VALUE, response.value);
-
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
+        Mockito.verify(remoteClient).put(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testPutInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.doThrow(new RuntimeException()).when(remoteClient).put(TOKEN, URL, VALUE);
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).put(Mockito.any(Request.class));
 
-        final DataStore.Response response = remoteStore.put(TOKEN, KEY, VALUE);
-
+        final Response response = remoteStore.put(request);
         assertTrue(response.isFailure());
-        assertEquals(KEY, response.key);
-        assertNotNull(response.error);
+        assertEquals(request.object, response.object);
 
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).put(TOKEN, URL, VALUE);
+        Mockito.verify(remoteClient).put(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testDeleteInvokesRemoteClientAndObserverHandlerWithSuccessResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
+        final Response response = Mockito.mock(Response.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.when(remoteClient.delete(TOKEN, URL)).thenReturn(VALUE);
+        Mockito.when(remoteClient.delete(Mockito.any(Request.class))).thenReturn(response);
 
-        final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
+        assertEquals(response, remoteStore.delete(request));
 
-        assertTrue(response.isSuccess());
-        assertEquals(KEY, response.key);
-        assertEquals(VALUE, response.value);
-
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).delete(TOKEN, URL);
+        Mockito.verify(remoteClient).delete(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testDeleteInvokesRemoteClientAndObserverHandlerWithFailureResponse() throws Exception {
+        final Request request = Mockito.mock(Request.class);
         final RemoteClient remoteClient = Mockito.mock(RemoteClient.class);
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, remoteClient));
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, remoteClient));
 
-        Mockito.doReturn(URL).when(remoteStore).getCollectionUrl(KEY);
-        Mockito.doThrow(new RuntimeException()).when(remoteClient).delete(TOKEN, URL);
+        Mockito.doThrow(new RuntimeException()).when(remoteClient).delete(Mockito.any(Request.class));
 
-        final DataStore.Response response = remoteStore.delete(TOKEN, KEY);
-
+        final Response response = remoteStore.delete(request);
         assertTrue(response.isFailure());
-        assertEquals(KEY, response.key);
-        assertNotNull(response.error);
+        assertEquals(request.object, response.object);
 
-        Mockito.verify(observerHandler).notifyResponse(Mockito.any(DataStore.Response.class));
-        Mockito.verify(remoteClient).delete(TOKEN, URL);
+        Mockito.verify(remoteClient).delete(request);
+        Mockito.verify(observerHandler).notifyResponse(response);
     }
 
     public void testAddObserverInvokesHandler() {
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, null));
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, null));
 
-        Mockito.when(observerHandler.addObserver(OBSERVER)).thenReturn(RESULT);
+        Mockito.when(observerHandler.addObserver(observer)).thenReturn(RESULT);
 
-        assertEquals(RESULT, remoteStore.addObserver(OBSERVER));
+        assertEquals(RESULT, remoteStore.addObserver(observer));
 
-        Mockito.verify(observerHandler).addObserver(OBSERVER);
+        Mockito.verify(observerHandler).addObserver(observer);
     }
 
     public void testRemoveObserverInvokesHandler() {
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
-        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(COLLECTION, observerHandler, null));
+        final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
+        final RemoteStore remoteStore = Mockito.spy(new RemoteStore(observerHandler, null));
 
-        Mockito.when(observerHandler.removeObserver(OBSERVER)).thenReturn(RESULT);
+        Mockito.when(observerHandler.removeObserver(observer)).thenReturn(RESULT);
 
-        assertEquals(RESULT, remoteStore.removeObserver(OBSERVER));
+        assertEquals(RESULT, remoteStore.removeObserver(observer));
 
-        Mockito.verify(observerHandler).removeObserver(OBSERVER);
+        Mockito.verify(observerHandler).removeObserver(observer);
     }
 
 }

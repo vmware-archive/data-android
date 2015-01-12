@@ -13,10 +13,6 @@ public class DataError extends Error {
         if (e instanceof DataHttpException) {
             mCode = ((DataHttpException) e).getStatusCode();
         }
-
-        if (e instanceof NotConnectedException) {
-            mCode = 100;
-        }
     }
 
     public int getCode() {
@@ -33,9 +29,5 @@ public class DataError extends Error {
 
     public boolean isNotModified() {
         return mCode == 304;
-    }
-
-    public boolean isNotConnected() {
-        return mCode == 100;
     }
 }

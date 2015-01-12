@@ -16,7 +16,6 @@ import java.util.Properties;
         private static final String ETAG_SUPPORT = "pivotal.data.etagSupport";
     }
 
-
     private static final String[] LOCATIONS = {
             "assets/pivotal.properties", "res/raw/pivotal.properties"
     };

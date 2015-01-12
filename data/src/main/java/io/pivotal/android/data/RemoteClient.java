@@ -22,16 +22,16 @@ import org.apache.http.params.HttpParams;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface RemoteClient {
+public interface RemoteClient<T> {
 
-    public String get(final String accessToken, final String url) throws Exception;
+    public Response<T> get(final Request<T> request) throws Exception;
 
-    public String delete(final String accessToken, final String url) throws Exception;
+    public Response<T> put(final Request<T> request) throws Exception;
 
-    public String put(final String accessToken, final String url, final String value) throws Exception;
+    public Response<T> delete(final Request<T> request) throws Exception;
 
 
-    public static class Default implements RemoteClient {
+    public static class Default<T> implements RemoteClient<T> {
 
         public static final class Timeouts {
             public static final int CONNECTION = 4000;
@@ -52,32 +52,84 @@ public interface RemoteClient {
         }
 
         @Override
-        public String get(final String accessToken, final String url) throws Exception {
-            final HttpGet request = new HttpGet(url);
-            addAuthHeader(request, accessToken);
-            addEtagHeader(request, url, Headers.IF_NONE_MATCH);
+        public Response<T> get(final Request<T> request) throws Exception {
 
-            return execute(request);
+            if (request.object instanceof KeyValue) {
+
+                final KeyValue object = (KeyValue) request.object;
+                final String url = object.getUrl();
+
+                final HttpGet get = new HttpGet(url);
+
+                addAuthHeader(get, request.accessToken);
+
+                if (!request.force) {
+                    addEtagHeader(get, url, Headers.IF_NONE_MATCH);
+                }
+
+                final KeyValue responseObject = new KeyValue(object);
+                responseObject.value = execute(get);
+
+                return new Response<T>((T) responseObject);
+
+            } else {
+                throw new UnsupportedOperationException();
+            }
         }
 
         @Override
-        public String delete(final String accessToken, final String url) throws Exception {
-            final HttpDelete request = new HttpDelete(url);
-            addAuthHeader(request, accessToken);
-            addEtagHeader(request, url, Headers.IF_MATCH);
+        public Response<T> put(final Request<T> request) throws Exception {
 
-            return execute(request);
+            if (request.object instanceof KeyValue) {
+
+                final KeyValue object = (KeyValue) request.object;
+                final String url = object.getUrl();
+
+                final HttpPut put = new HttpPut(url);
+                put.setEntity(new ByteArrayEntity(object.value.getBytes()));
+
+                addAuthHeader(put, request.accessToken);
+
+                if (!request.force) {
+                    addEtagHeader(put, url, Headers.IF_MATCH);
+                }
+
+                final String result = execute(put);
+
+                final KeyValue responseObject = new KeyValue(object);
+                responseObject.value = TextUtils.isEmpty(result) ? object.value : result;
+
+                return new Response<T>((T) responseObject);
+
+            } else {
+                throw new UnsupportedOperationException();
+            }
         }
 
         @Override
-        public String put(final String accessToken, final String url, final String value) throws Exception {
-            final HttpPut request = new HttpPut(url);
-            request.setEntity(new ByteArrayEntity(value.getBytes()));
-            addAuthHeader(request, accessToken);
-            addEtagHeader(request, url, Headers.IF_MATCH);
+        public Response<T> delete(final Request<T> request) throws Exception {
 
-            final String result = execute(request);
-            return TextUtils.isEmpty(result) ? value : result;
+            if (request.object instanceof KeyValue) {
+
+                final KeyValue object = (KeyValue) request.object;
+                final String url = object.getUrl();
+
+                final HttpDelete delete = new HttpDelete(url);
+
+                addAuthHeader(delete, request.accessToken);
+
+                if (!request.force) {
+                    addEtagHeader(delete, url, Headers.IF_MATCH);
+                }
+
+                final KeyValue responseObject = new KeyValue(object);
+                responseObject.value = execute(delete);
+
+                return new Response<T>((T) responseObject);
+
+            } else {
+                throw new UnsupportedOperationException();
+            }
         }
 
 
@@ -94,7 +146,6 @@ public interface RemoteClient {
 
 
         // ========================================================
-
 
 
         protected void addAuthHeader(final HttpUriRequest request, final String accessToken) {
@@ -120,7 +171,6 @@ public interface RemoteClient {
 
 
         // ========================================================
-
 
 
         protected HttpClient getHttpClient() {

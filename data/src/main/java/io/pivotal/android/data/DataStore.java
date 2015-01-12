@@ -3,66 +3,31 @@
  */
 package io.pivotal.android.data;
 
-public interface DataStore {
+public interface DataStore<T> {
 
-    public boolean contains(final String accessToken, final String key);
+    public Response<T> get(final Request<T> request);
 
-    public Response get(final String accessToken, final String key);
+    public void get(final Request<T> request, final Listener<T> listener);
 
-    public void get(final String accessToken, final String key, final Listener listener);
+    public Response<T> put(final Request<T> request);
 
-    public Response put(final String accessToken, final String key, final String value);
+    public void put(final Request<T> request, final Listener<T> listener);
 
-    public void put(final String accessToken, final String key, final String value, final Listener listener);
+    public Response<T> delete(final Request<T> request);
 
-    public Response delete(final String accessToken, final String key);
+    public void delete(final Request<T> request, final Listener<T> listener);
 
-    public void delete(final String accessToken, final String key, final Listener listener);
+    public boolean addObserver(final Observer<T> observer);
 
-    public boolean addObserver(final Observer observer);
-
-    public boolean removeObserver(final Observer observer);
+    public boolean removeObserver(final Observer<T> observer);
 
 
-    public static interface Observer {
-        public void onResponse(Response response);
+    public static interface Observer<T> {
+        public void onResponse(Response<T> response);
     }
 
-    public static interface Listener {
-        public void onResponse(Response response);
+    public static interface Listener<T> {
+        public void onResponse(Response<T> response);
     }
 
-    public static class Response {
-
-        public final String key, value;
-        public final DataError error;
-
-        public Response(final String key, final String value) {
-            this.key = key;
-            this.value = value;
-            this.error = null;
-        }
-
-        public Response(final String key, final DataError error) {
-            this.key = key;
-            this.value = null;
-            this.error = error;
-        }
-
-        public boolean isSuccess() {
-            return this.error == null;
-        }
-
-        public boolean isFailure() {
-            return this.error != null;
-        }
-
-        public boolean isNotModified() {
-            return this.error != null && this.error.isNotModified();
-        }
-
-        public boolean hasPreconditionFailed() {
-            return this.error != null && this.error.hasPreconditionFailed();
-        }
-    }
 }

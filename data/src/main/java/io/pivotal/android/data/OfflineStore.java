@@ -6,201 +6,182 @@ package io.pivotal.android.data;
 import android.content.Context;
 import android.os.AsyncTask;
 
-public class OfflineStore implements DataStore {
+public class OfflineStore<T> implements DataStore<T> {
 
     private final Context mContext;
-    private final String mCollection;
-    private final LocalStore mLocalStore;
-    private final RemoteStore mRemoteStore;
+    private final DataStore<T> mLocalStore;
+    private final RemoteStore<T> mRemoteStore;
 
-    private RequestCache mRequestCache;
+    private RequestCache<T> mRequestCache;
 
-    public static OfflineStore create(final Context context, final String collection) {
-        final LocalStore localStore = new LocalStore(context, collection);
-        final RemoteStore remoteStore = new RemoteStore(context, collection);
-        return new OfflineStore(context, collection, localStore, remoteStore);
+    public static OfflineStore<KeyValue> createKeyValue(final Context context) {
+        final DataStore<KeyValue> localStore = new KeyValueStore(context);
+        final RemoteStore<KeyValue> remoteStore = new RemoteStore<KeyValue>(context);
+        return new OfflineStore<KeyValue>(context, localStore, remoteStore);
     }
 
-    public OfflineStore(final Context context, final String collection, final LocalStore localStore, final RemoteStore remoteStore) {
+    public OfflineStore(final Context context, final DataStore<T> localStore, final RemoteStore<T> remoteStore) {
         mContext = context;
-        mCollection = collection;
         mLocalStore = localStore;
         mRemoteStore = remoteStore;
     }
 
     @Override
-    public boolean contains(final String accessToken, final String key) {
-        return mLocalStore.contains(accessToken, key);
+    public Response<T> get(final Request<T> request) {
+        Logger.d("Get: " + request.object);
+
+        if (isConnected()) {
+            final Response<T> response = mRemoteStore.get(request);
+
+            if (response.isSuccess()) {
+                request.object = response.object;
+                return mLocalStore.put(request);
+
+            } else if (response.isNotModified()) {
+                return mLocalStore.get(request);
+
+            } else {
+                return response;
+            }
+
+        } else {
+            final Response<T> response = mLocalStore.get(request);
+
+            getRequestCache().queueGet(request);
+
+            return response;
+        }
     }
 
     @Override
-    public boolean addObserver(final Observer observer) {
+    public void get(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
+
+            @Override
+            protected Response<T> doInBackground(final Void... params) {
+                return OfflineStore.this.get(request);
+            }
+
+            @Override
+            protected void onPostExecute(final Response<T> resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
+    public Response<T> put(final Request<T> request) {
+        Logger.d("Put: " + request.object);
+
+        if (isConnected()) {
+            final Response<T> response = mRemoteStore.put(request);
+
+            if (response.isSuccess()) {
+                request.object = response.object;
+                return mLocalStore.put(request);
+
+            } else {
+                return response;
+            }
+
+        } else {
+            final Response<T> fallback = mLocalStore.get(request);
+            final Response<T> response = mLocalStore.put(request);
+
+            request.fallback = fallback.object;
+
+            getRequestCache().queuePut(request);
+
+            return response;
+        }
+    }
+
+    @Override
+    public void put(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
+
+            @Override
+            protected Response<T> doInBackground(final Void... params) {
+                return OfflineStore.this.put(request);
+            }
+
+            @Override
+            protected void onPostExecute(final Response<T> resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
+    public Response<T> delete(final Request<T> request) {
+        Logger.d("Delete: " + request.object);
+
+        if (isConnected()) {
+            final Response<T> response = mRemoteStore.delete(request);
+
+            if (response.isSuccess()) {
+                return mLocalStore.delete(request);
+
+            } else {
+                return response;
+            }
+
+        } else {
+            final Response<T> fallback = mLocalStore.get(request);
+            final Response<T> response = mLocalStore.delete(request);
+
+            request.fallback = fallback.object;
+
+            getRequestCache().queueDelete(request);
+
+            return response;
+        }
+    }
+
+    @Override
+    public void delete(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
+
+            @Override
+            protected Response<T> doInBackground(final Void... params) {
+                return OfflineStore.this.delete(request);
+            }
+
+            @Override
+            protected void onPostExecute(final Response<T> resp) {
+                if (listener != null) {
+                    listener.onResponse(resp);
+                }
+            }
+        }.execute();
+    }
+
+    @Override
+    public boolean addObserver(final Observer<T> observer) {
         return mLocalStore.addObserver(observer)
-            && mRemoteStore.addObserver(observer);
+                && mRemoteStore.addObserver(observer);
     }
 
     @Override
-    public boolean removeObserver(final Observer observer) {
+    public boolean removeObserver(final Observer<T> observer) {
         return mLocalStore.removeObserver(observer)
-            && mRemoteStore.removeObserver(observer);
+                && mRemoteStore.removeObserver(observer);
     }
 
     protected boolean isConnected() {
-        return ConnectivityReceiver.isConnected(mContext);
+        return Connectivity.isConnected(mContext);
     }
 
-    protected boolean isSyncSupported() {
-        return ConnectivityReceiver.hasReceiver(mContext);
-    }
-
-    protected RequestCache getRequestCache() {
+    protected RequestCache<T> getRequestCache() {
         if (mRequestCache == null) {
             synchronized (this) {
-                mRequestCache = new RequestCache.Default(mContext);
+                mRequestCache = new RequestCache.Default<T>(mContext, this, mLocalStore);
             }
         }
         return mRequestCache;
-    }
-
-    @Override
-    public Response get(final String accessToken, final String key) {
-        Logger.d("Get: " + key);
-
-        if (isConnected()) {
-            final Response remote = mRemoteStore.get(accessToken, key);
-
-            if (remote.isSuccess()) {
-                return mLocalStore.put(accessToken, remote.key, remote.value);
-
-            } else if (remote.isNotModified()) {
-                return mLocalStore.get(accessToken, remote.key);
-
-            } else {
-                return remote;
-            }
-
-        } else {
-            final Response local = mLocalStore.get(accessToken, key);
-
-            if (isSyncSupported()) {
-                getRequestCache().queueGet(accessToken, mCollection, key);
-            }
-
-            return local;
-        }
-    }
-
-    @Override
-    public void get(final String accessToken, final String key, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
-
-            @Override
-            protected Response doInBackground(final Void... params) {
-                return OfflineStore.this.get(accessToken, key);
-            }
-
-            @Override
-            protected void onPostExecute(final Response resp) {
-                if (listener != null) {
-                    listener.onResponse(resp);
-                }
-            }
-        }.execute();
-    }
-
-    @Override
-    public Response put(final String accessToken, final String key, final String value) {
-        Logger.d("Put: " + key + ", " + value);
-
-        if (isConnected()) {
-            final Response remote = mRemoteStore.put(accessToken, key, value);
-
-            if (remote.isSuccess()) {
-                return mLocalStore.put(accessToken, remote.key, remote.value);
-
-            } else {
-                return remote;
-            }
-
-        } else if (isSyncSupported()) {
-            final Response fallback = mLocalStore.get(accessToken, key);
-            final Response local = mLocalStore.put(accessToken, key, value);
-
-            getRequestCache().queuePut(accessToken, mCollection, key, value, fallback.value);
-
-            return local;
-
-        } else {
-            return newNoConnectionFailureResponse(key);
-        }
-    }
-
-    @Override
-    public void put(final String accessToken, final String key, final String value, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
-
-            @Override
-            protected Response doInBackground(final Void... params) {
-                return OfflineStore.this.put(accessToken, key, value);
-            }
-
-            @Override
-            protected void onPostExecute(final Response resp) {
-                if (listener != null) {
-                    listener.onResponse(resp);
-                }
-            }
-        }.execute();
-    }
-
-
-    @Override
-    public Response delete(final String accessToken, final String key) {
-        Logger.d("Delete: " + key);
-
-        if (isConnected()) {
-            final Response remote = mRemoteStore.delete(accessToken, key);
-
-            if (remote.isSuccess()) {
-                return mLocalStore.delete(accessToken, remote.key);
-
-            } else {
-                return remote;
-            }
-
-        } else if (isSyncSupported()) {
-            final Response fallback = mLocalStore.get(accessToken, key);
-            final Response local = mLocalStore.delete(accessToken, key);
-
-            getRequestCache().queueDelete(accessToken, mCollection, key, fallback.value);
-
-            return local;
-
-        } else {
-            return newNoConnectionFailureResponse(key);
-        }
-    }
-
-    @Override
-    public void delete(final String accessToken, final String key, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
-
-            @Override
-            protected Response doInBackground(final Void... params) {
-                return OfflineStore.this.delete(accessToken, key);
-            }
-
-            @Override
-            protected void onPostExecute(final Response resp) {
-                if (listener != null) {
-                    listener.onResponse(resp);
-                }
-            }
-        }.execute();
-    }
-
-    protected Response newNoConnectionFailureResponse(final String key) {
-        final RuntimeException exception = new RuntimeException("No connection.");
-        return new Response(key, new DataError(exception));
     }
 }

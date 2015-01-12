@@ -3,88 +3,20 @@
  */
 package io.pivotal.android.data;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
-import java.util.Random;
 import java.util.UUID;
 
+@SuppressWarnings("unchecked")
 public class RequestCacheTest extends AndroidTestCase {
 
-    private static final String REQUEST_CACHE = "PCFData:RequestCache";
-    private static final String REQUEST_KEY = "PCFData:Requests";
-
-    private static final int METHOD = new Random().nextInt();
+    private static final String TOKEN = UUID.randomUUID().toString();
+    private static final String COLLECTION = UUID.randomUUID().toString();
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
-    private static final String TOKEN = UUID.randomUUID().toString();
-    private static final String FALLBACK = UUID.randomUUID().toString();
-    private static final String COLLECTION = UUID.randomUUID().toString();
-
-    private static final String SINGLE_LIST = "[{"
-            + "\"collection\":\"" + COLLECTION + "\""
-            + ",\"fallback\":\"" + FALLBACK + "\""
-            + ",\"key\":\"" + KEY + "\""
-            + ",\"token\":\"" + TOKEN + "\""
-            + ",\"value\":\"" + VALUE + "\""
-            + ",\"method\":" + METHOD
-        + "}]";
-
-    private static final String STATIC_LIST = "[{"
-            + "\"collection\":\"" + "collection" + "\""
-            + ",\"fallback\":\"" + "fallback" + "\""
-            + ",\"key\":\"" + "key" + "\""
-            + ",\"token\":\"" + "token" + "\""
-            + ",\"value\":\"" + "value" + "\""
-            + ",\"method\":" + 1
-        + "}]";
-
-    private static final String MERGED_LIST = "[{"
-            + "\"collection\":\"" + "collection" + "\""
-            + ",\"fallback\":\"" + "fallback" + "\""
-            + ",\"key\":\"" + "key" + "\""
-            + ",\"token\":\"" + "token" + "\""
-            + ",\"value\":\"" + "value" + "\""
-            + ",\"method\":" + 1
-        + "},{"
-            + "\"collection\":\"" + COLLECTION + "\""
-            + ",\"fallback\":\"" + FALLBACK + "\""
-            + ",\"key\":\"" + KEY + "\""
-            + ",\"token\":\"" + TOKEN + "\""
-            + ",\"value\":\"" + VALUE + "\""
-            + ",\"method\":" + METHOD
-        + "}]";
-
-    private static final String GET_LIST = "[{"
-            + "\"collection\":\"" + COLLECTION + "\""
-            + ",\"fallback\":\"" + FALLBACK + "\""
-            + ",\"key\":\"" + KEY + "\""
-            + ",\"token\":\"" + TOKEN + "\""
-            + ",\"value\":\"" + VALUE + "\""
-            + ",\"method\":" + 0
-        + "}]";
-
-    private static final String PUT_LIST = "[{"
-            + "\"collection\":\"" + COLLECTION + "\""
-            + ",\"fallback\":\"" + FALLBACK + "\""
-            + ",\"key\":\"" + KEY + "\""
-            + ",\"token\":\"" + TOKEN + "\""
-            + ",\"value\":\"" + VALUE + "\""
-            + ",\"method\":" + 1
-        + "}]";
-
-    private static final String DELETE_LIST = "[{"
-            + "\"collection\":\"" + COLLECTION + "\""
-            + ",\"fallback\":\"" + FALLBACK + "\""
-            + ",\"key\":\"" + KEY + "\""
-            + ",\"token\":\"" + TOKEN + "\""
-            + ",\"value\":\"" + VALUE + "\""
-            + ",\"method\":" + 2
-        + "}]";
+    private static final int METHOD = (int) (Math.random() * 3.0);
 
     @Override
     protected void setUp() throws Exception {
@@ -92,193 +24,68 @@ public class RequestCacheTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
     }
 
-    public void testAddGetRequestInvokesAddPendingRequest() {
-        final Context context = Mockito.mock(Context.class);
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
+    public void testDefaultGet() {
+        final Request request = Mockito.mock(Request.class);
+        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
+        final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
-        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
 
-        requestCache.queueGet(TOKEN, COLLECTION, KEY);
+        defaultCache.queueGet(request);
 
-        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.GET);
+        Mockito.verify(queue).add(queued);
     }
 
-    public void testAddPutRequestInvokesAddPendingRequest() {
-        final Context context = Mockito.mock(Context.class);
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
+    public void testDefaultPut() {
+        final Request request = Mockito.mock(Request.class);
+        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
+        final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
-        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
 
-        requestCache.queuePut(TOKEN, COLLECTION, KEY, VALUE, FALLBACK);
+        defaultCache.queuePut(request);
 
-        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.PUT);
+        Mockito.verify(queue).add(queued);
     }
 
-    public void testAddDeleteRequestInvokesAddPendingRequest() {
-        final Context context = Mockito.mock(Context.class);
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
+    public void testDefaultDelete() {
+        final Request request = Mockito.mock(Request.class);
+        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
+        final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
-        Mockito.doNothing().when(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
 
-        requestCache.queueDelete(TOKEN, COLLECTION, KEY, FALLBACK);
+        defaultCache.queueDelete(request);
 
-        Mockito.verify(requestCache).queuePending(Mockito.any(RequestCache.Default.PendingRequest.class));
+        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.DELETE);
+        Mockito.verify(queue).add(queued);
     }
 
-    @SuppressLint("CommitPrefEdits")
-    public void testAddPendingRequestStoresObjectInSharedPreferencesWhenEmpty() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
+    public void testDefaultExecutePending() {
+        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
+        final RequestCacheExecutor executor = Mockito.mock(RequestCacheExecutor.class);
+        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final RequestCache.Default defaultCache = new RequestCache.Default(queue, executor);
 
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn("");
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(REQUEST_KEY, SINGLE_LIST)).thenReturn(editor);
+        Mockito.when(queue.empty()).thenReturn(list);
 
-        final RequestCache.Default requestCache = new RequestCache.Default(context);
-        requestCache.queuePending(new RequestCache.Default.PendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE, FALLBACK));
+        defaultCache.executePending(TOKEN);
 
-        Mockito.verify(preferences).edit();
-        Mockito.verify(editor).putString(REQUEST_KEY, SINGLE_LIST);
-        Mockito.verify(editor).apply();
+        Mockito.verify(executor).execute(list, TOKEN);
     }
 
-    @SuppressLint("CommitPrefEdits")
-    public void testAddPendingRequestStoresObjectInSharedPreferencesWhenNotEmpty() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
+    public void testQueuedRequest() {
+        final Request request = new Request(TOKEN, new KeyValue(COLLECTION, KEY, VALUE));
+        final RequestCache.QueuedRequest queued = new RequestCache.QueuedRequest(request, METHOD);
 
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(STATIC_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(REQUEST_KEY, MERGED_LIST)).thenReturn(editor);
-
-        final RequestCache.Default requestCache = new RequestCache.Default(context);
-        requestCache.queuePending(new RequestCache.Default.PendingRequest(METHOD, TOKEN, COLLECTION, KEY, VALUE, FALLBACK));
-
-        Mockito.verify(preferences).edit();
-        Mockito.verify(editor).putString(REQUEST_KEY, MERGED_LIST);
-        Mockito.verify(editor).apply();
-    }
-
-    public void testExecutePendingRequestsExecutesGetRequestAndClearsRequests() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
-        final DataStore.Response response = Mockito.mock(DataStore.Response.class);
-
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(GET_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(REQUEST_KEY, "")).thenReturn(editor);
-
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
-        final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
-
-        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
-        Mockito.doReturn(response).when(offlineStore).get(TOKEN, KEY);
-
-        requestCache.executePending(null);
-
-        Mockito.verify(offlineStore).get(TOKEN, KEY);
-        Mockito.verify(editor).putString(REQUEST_KEY, "");
-    }
-
-    public void testExecutePendingRequestsExecutesPutRequestAndClearsRequests() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
-        final DataStore.Response response = Mockito.mock(DataStore.Response.class);
-
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(PUT_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(REQUEST_KEY, "")).thenReturn(editor);
-
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
-        final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
-
-        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
-        Mockito.doReturn(response).when(offlineStore).put(TOKEN, KEY, VALUE);
-
-        requestCache.executePending(null);
-
-        Mockito.verify(offlineStore).put(TOKEN, KEY, VALUE);
-        Mockito.verify(editor).putString(REQUEST_KEY, "");
-    }
-
-    public void testExecutePendingRequestsExecutesDeleteRequestAndClearsRequests() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
-        final DataStore.Response response = Mockito.mock(DataStore.Response.class);
-
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(DELETE_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(REQUEST_KEY, "")).thenReturn(editor);
-
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
-        final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
-
-        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
-        Mockito.doReturn(response).when(offlineStore).delete(TOKEN, KEY);
-
-        requestCache.executePending(null);
-
-        Mockito.verify(offlineStore).delete(TOKEN, KEY);
-        Mockito.verify(editor).putString(REQUEST_KEY, "");
-    }
-
-    public void testExecuteWithPutFallback() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
-        final LocalStore localStore = Mockito.mock(LocalStore.class);
-        final DataStore.Response response = new DataStore.Response(KEY, new DataError(new Exception()));
-
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(PUT_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
-        final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
-
-        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
-        Mockito.doReturn(response).when(offlineStore).put(TOKEN, KEY, VALUE);
-        Mockito.doReturn(localStore).when(requestCache).getLocalStore(context, COLLECTION);
-        Mockito.doReturn(null).when(localStore).put(TOKEN, KEY, FALLBACK);
-
-        requestCache.executePending(TOKEN);
-
-        Mockito.verify(requestCache).getLocalStore(context, COLLECTION);
-        Mockito.verify(localStore).put(TOKEN, KEY, FALLBACK);
-    }
-
-    public void testExecuteWithDeleteFallback() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
-        final LocalStore localStore = Mockito.mock(LocalStore.class);
-        final DataStore.Response response = new DataStore.Response(KEY, new DataError(new Exception()));
-
-        Mockito.when(context.getSharedPreferences(REQUEST_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-        Mockito.when(preferences.getString(REQUEST_KEY, "")).thenReturn(DELETE_LIST);
-        Mockito.when(preferences.edit()).thenReturn(editor);
-
-        final RequestCache.Default requestCache = Mockito.spy(new RequestCache.Default(context));
-        final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
-
-        Mockito.doReturn(offlineStore).when(requestCache).getOfflineStore(context, COLLECTION);
-        Mockito.doReturn(response).when(offlineStore).delete(TOKEN, KEY);
-        Mockito.doReturn(localStore).when(requestCache).getLocalStore(context, COLLECTION);
-        Mockito.doReturn(null).when(localStore).put(TOKEN, KEY, FALLBACK);
-
-        requestCache.executePending(TOKEN);
-
-        Mockito.verify(requestCache).getLocalStore(context, COLLECTION);
-        Mockito.verify(localStore).put(TOKEN, KEY, FALLBACK);
+        assertEquals(TOKEN, queued.accessToken);
+        assertEquals(METHOD, queued.method);
+        assertEquals(request.object, queued.object);
+        assertEquals(request.force, queued.force);
     }
 }

@@ -8,7 +8,14 @@ import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
+@SuppressWarnings("unchecked")
 public class ObserverHandlerTest extends AndroidTestCase {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
+    }
 
     public void testAddObserver() {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
@@ -27,7 +34,7 @@ public class ObserverHandlerTest extends AndroidTestCase {
     }
 
     public void testHandleMessage() {
-        final DataStore.Response response = Mockito.mock(DataStore.Response.class);
+        final Response response = Mockito.mock(Response.class);
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final ObserverHandler handler = new ObserverHandler();
         handler.addObserver(observer);

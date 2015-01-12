@@ -5,7 +5,13 @@ package io.pivotal.android.data;
 
 import android.test.AndroidTestCase;
 
+import java.util.Random;
+import java.util.UUID;
+
 public class DataErrorTest extends AndroidTestCase {
+
+    private static final int CODE = new Random().nextInt();
+    private static final String MESSAGE = UUID.randomUUID().toString();
 
     public void testNullExceptionThrowsNullPointer() {
         try {
@@ -17,49 +23,37 @@ public class DataErrorTest extends AndroidTestCase {
     }
 
     public void testWithStandardException() {
-        final String message = "error";
-        final Exception exception = new Exception(message);
+        final Exception exception = new Exception(MESSAGE);
         final DataError error = new DataError(exception);
 
         assertEquals(-1, error.getCode());
-        assertEquals(message, error.getMessage());
+        assertEquals(MESSAGE, error.getMessage());
     }
 
     public void testWithDataException() {
-        final String message = "error";
-        final Exception exception = new DataHttpException(400, message);
+        final Exception exception = new DataHttpException(CODE, MESSAGE);
         final DataError error = new DataError(exception);
 
-        assertFalse(error.isUnauthorized());
+        assertEquals(CODE, error.getCode());
+        assertEquals(MESSAGE, error.getMessage());
     }
 
     public void testWith401Unauthorized() {
-        final String message = "error";
-        final Exception exception = new DataHttpException(401, message);
+        final Exception exception = new DataHttpException(401, MESSAGE);
         final DataError error = new DataError(exception);
 
         assertTrue(error.isUnauthorized());
     }
 
-    public void testWith100NotConnected() {
-        final String message = "error";
-        final Exception exception = new DataHttpException(100, message);
-        final DataError error = new DataError(exception);
-
-        assertTrue(error.isNotConnected());
-    }
-
     public void testWith304NotModified() {
-        final String message = "error";
-        final Exception exception = new DataHttpException(304, message);
+        final Exception exception = new DataHttpException(304, MESSAGE);
         final DataError error = new DataError(exception);
 
         assertTrue(error.isNotModified());
     }
 
     public void testWith412PreconditionFailed() {
-        final String message = "error";
-        final Exception exception = new DataHttpException(412, message);
+        final Exception exception = new DataHttpException(412, MESSAGE);
         final DataError error = new DataError(exception);
 
         assertTrue(error.hasPreconditionFailed());

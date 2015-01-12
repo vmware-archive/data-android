@@ -5,19 +5,18 @@ package io.pivotal.android.data;
 
 import junit.framework.TestCase;
 
+import java.util.Random;
+import java.util.UUID;
+
 public class DataHttpExceptionTest extends TestCase {
 
-    public void testWithNullMessage() {
-        final DataHttpException exception = new DataHttpException(0, null);
+    private static final int CODE = new Random().nextInt();
+    private static final String MESSAGE = UUID.randomUUID().toString();
 
-        assertEquals(0, exception.getStatusCode());
-        assertNull(exception.getMessage());
-    }
+    public void testConstructor() {
+        final DataHttpException exception = new DataHttpException(CODE, MESSAGE);
 
-    public void testWithStatusCodeAndMessage() {
-        final DataHttpException exception = new DataHttpException(401, "Unauthorized");
-
-        assertEquals(401, exception.getStatusCode());
-        assertEquals("Unauthorized", exception.getMessage());
+        assertEquals(CODE, exception.getStatusCode());
+        assertEquals(MESSAGE, exception.getMessage());
     }
 }

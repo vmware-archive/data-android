@@ -6,64 +6,48 @@ package io.pivotal.android.data;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+public class RemoteStore<T> implements DataStore<T> {
 
-public class RemoteStore implements DataStore {
+    private final RemoteClient<T> mClient;
+    private final ObserverHandler<T> mHandler;
 
-    private final String mCollection;
-    private final RemoteClient mClient;
-    private final ObserverHandler mHandler;
-
-    public RemoteStore(final Context context, final String collection) {
-        this(collection, new ObserverHandler(), new RemoteClient.Default(new EtagStore.Default(context)));
+    public RemoteStore(final Context context) {
+        this(new ObserverHandler<T>(), new RemoteClient.Default<T>(new EtagStore(context)));
     }
 
-    RemoteStore(final String collection, final ObserverHandler handler, final RemoteClient client) {
-        mCollection = collection;
+    public RemoteStore(final ObserverHandler<T> handler, final RemoteClient<T> client) {
         mHandler = handler;
         mClient = client;
     }
 
-    protected String getCollectionUrl(final String key) throws MalformedURLException {
-        return new URL(Pivotal.getServiceUrl() + "/" + mCollection + "/" + key).toString();
-    }
-
     @Override
-    public boolean contains(final String accessToken, final String key) {
-        final Response response = get(accessToken, key);
-        return response.isSuccess();
-    }
-
-    @Override
-    public Response get(final String accessToken, final String key) {
-        final Response response = getResponse(accessToken, key);
+    public Response<T> get(final Request<T> request) {
+        final Response<T> response = getResponse(request);
         mHandler.notifyResponse(response);
         return response;
     }
 
-    private Response getResponse(final String accessToken, final String key) {
+    private Response<T> getResponse(final Request<T> request) {
         try {
-            final String url = getCollectionUrl(key);
-            final String result = mClient.get(accessToken, url);
-            return new Response(key, result);
+            return mClient.get(request);
+
         } catch (final Exception e) {
             Logger.ex(e);
-            return new Response(key, new DataError(e));
+            return new Response<T>(request.object, new DataError(e));
         }
     }
 
     @Override
-    public void get(final String accessToken, final String key, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
+    public void get(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
 
             @Override
-            protected Response doInBackground(final Void... params) {
-                return RemoteStore.this.get(accessToken, key);
+            protected Response<T> doInBackground(final Void... params) {
+                return RemoteStore.this.get(request);
             }
 
             @Override
-            protected void onPostExecute(final Response resp) {
+            protected void onPostExecute(final Response<T> resp) {
                 if (listener != null) {
                     listener.onResponse(resp);
                 }
@@ -72,34 +56,33 @@ public class RemoteStore implements DataStore {
     }
 
     @Override
-    public Response put(final String accessToken, final String key, final String value) {
-        final Response response = putResponse(accessToken, key, value);
+    public Response<T> put(final Request<T> request) {
+        final Response<T> response = putResponse(request);
         mHandler.notifyResponse(response);
         return response;
     }
 
-    private Response putResponse(final String accessToken, final String key, final String value) {
+    private Response<T> putResponse(final Request<T> request) {
         try {
-            final String url = getCollectionUrl(key);
-            final String result = mClient.put(accessToken, url, value);
-            return new Response(key, result);
+            return mClient.put(request);
+
         } catch (final Exception e) {
             Logger.ex(e);
-            return new Response(key, new DataError(e));
+            return new Response<T>(request.object, new DataError(e));
         }
     }
 
     @Override
-    public void put(final String accessToken, final String key, final String value, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
+    public void put(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
 
             @Override
-            protected Response doInBackground(final Void... params) {
-                return RemoteStore.this.put(accessToken, key, value);
+            protected Response<T> doInBackground(final Void... params) {
+                return RemoteStore.this.put(request);
             }
 
             @Override
-            protected void onPostExecute(final Response resp) {
+            protected void onPostExecute(final Response<T> resp) {
                 if (listener != null) {
                     listener.onResponse(resp);
                 }
@@ -108,34 +91,33 @@ public class RemoteStore implements DataStore {
     }
 
     @Override
-    public Response delete(final String accessToken, final String key) {
-        final Response response = deleteResponse(accessToken, key);
+    public Response<T> delete(final Request<T> request) {
+        final Response<T> response = deleteResponse(request);
         mHandler.notifyResponse(response);
         return response;
     }
 
-    private Response deleteResponse(final String accessToken, final String key) {
+    private Response<T> deleteResponse(final Request<T> request) {
         try {
-            final String url = getCollectionUrl(key);
-            final String result = mClient.delete(accessToken, url);
-            return new Response(key, result);
+            return mClient.delete(request);
+
         } catch (final Exception e) {
             Logger.ex(e);
-            return new Response(key, new DataError(e));
+            return new Response<T>(request.object, new DataError(e));
         }
     }
 
     @Override
-    public void delete(final String accessToken, final String key, final Listener listener) {
-        new AsyncTask<Void, Void, Response>() {
+    public void delete(final Request<T> request, final Listener<T> listener) {
+        new AsyncTask<Void, Void, Response<T>>() {
 
             @Override
-            protected Response doInBackground(final Void... params) {
-                return RemoteStore.this.delete(accessToken, key);
+            protected Response<T> doInBackground(final Void... params) {
+                return RemoteStore.this.delete(request);
             }
 
             @Override
-            protected void onPostExecute(final Response resp) {
+            protected void onPostExecute(final Response<T> resp) {
                 if (listener != null) {
                     listener.onResponse(resp);
                 }
@@ -144,12 +126,12 @@ public class RemoteStore implements DataStore {
     }
 
     @Override
-    public boolean addObserver(final Observer observer) {
+    public boolean addObserver(final Observer<T> observer) {
         return mHandler.addObserver(observer);
     }
 
     @Override
-    public boolean removeObserver(final Observer observer) {
+    public boolean removeObserver(final Observer<T> observer) {
         return mHandler.removeObserver(observer);
     }
 }

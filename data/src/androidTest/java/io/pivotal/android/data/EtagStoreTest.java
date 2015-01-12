@@ -3,8 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
@@ -12,8 +10,6 @@ import org.mockito.Mockito;
 import java.util.UUID;
 
 public class EtagStoreTest extends AndroidTestCase {
-
-    private static final String ETAG_CACHE = "PCFData:EtagCache";
 
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
@@ -24,40 +20,25 @@ public class EtagStoreTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
     }
 
-    public void testGetInvokesSharedPreferences() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+    public void testGetInvokesPersistence() {
+        final DataPersistence persistence = Mockito.mock(DataPersistence.class);
+        final EtagStore store = new EtagStore(persistence);
 
-        Mockito.when(context.getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
-
-        final EtagStore store = new EtagStore.Default(context);
-
-        Mockito.when(preferences.getString(KEY, null)).thenReturn(VALUE);
+        Mockito.when(persistence.getString(Mockito.anyString())).thenReturn(VALUE);
 
         assertEquals(VALUE, store.get(KEY));
 
-        Mockito.verify(context).getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE);
-        Mockito.verify(preferences).getString(KEY, null);
+        Mockito.verify(persistence).getString(KEY);
     }
 
-    public void testPutInvokesSharedPreferences() {
-        final Context context = Mockito.mock(Context.class);
-        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
-        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
+    public void testPutInvokesPersistence() {
+        final DataPersistence persistence = Mockito.mock(DataPersistence.class);
+        final EtagStore store = new EtagStore(persistence);
 
-        Mockito.when(context.getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE)).thenReturn(preferences);
+        Mockito.when(persistence.putString(Mockito.anyString(), Mockito.anyString())).thenReturn(VALUE);
 
-        final EtagStore store = new EtagStore.Default(context);
+        assertEquals(VALUE, store.put(KEY, VALUE));
 
-        Mockito.when(preferences.edit()).thenReturn(editor);
-        Mockito.when(editor.putString(KEY, VALUE)).thenReturn(editor);
-        Mockito.when(editor.commit()).thenReturn(true);
-
-        store.put(KEY, VALUE);
-
-        Mockito.verify(context).getSharedPreferences(ETAG_CACHE, Context.MODE_PRIVATE);
-        Mockito.verify(preferences).edit();
-        Mockito.verify(editor).putString(KEY, VALUE);
-        Mockito.verify(editor).commit();
+        Mockito.verify(persistence).putString(KEY, VALUE);
     }
 }
