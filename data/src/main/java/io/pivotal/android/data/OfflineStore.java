@@ -34,8 +34,10 @@ public class OfflineStore<T> implements DataStore<T> {
             final Response<T> response = mRemoteStore.get(request);
 
             if (response.isSuccess()) {
-                request.object = response.object;
-                return mLocalStore.put(request);
+                final Request<T> localRequest = new Request<T>(request);
+                localRequest.object = response.object;
+
+                return mLocalStore.put(localRequest);
 
             } else if (response.isNotModified()) {
                 return mLocalStore.get(request);
@@ -79,7 +81,6 @@ public class OfflineStore<T> implements DataStore<T> {
             final Response<T> response = mRemoteStore.put(request);
 
             if (response.isSuccess()) {
-                request.object = response.object;
                 return mLocalStore.put(request);
 
             } else {

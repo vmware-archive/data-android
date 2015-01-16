@@ -24,7 +24,7 @@ public interface RequestCache<T> {
 
         private static final String REQUEST_CACHE = "PCFData:RequestCache";
 
-        private RequestCacheQueue<T> mQueue;
+        private final RequestCacheQueue<T> mQueue;
         private final RequestCacheExecutor<T> mExecutor;
 
         public Default(final Context context, final OfflineStore<T> offlineStore, final DataStore<T> fallbackStore) {

@@ -3,8 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RequestCacheQueue<T> {
@@ -48,7 +46,6 @@ public class RequestCacheQueue<T> {
             final String serialized = mPersistence.getString(REQUEST_KEY);
             return mapper.readValue(serialized, RequestCache.QueuedRequest.List.class);
         } catch (final Exception e) {
-            Log.e("test", "" + e);
             return new RequestCache.QueuedRequest.List<T>();
         }
     }

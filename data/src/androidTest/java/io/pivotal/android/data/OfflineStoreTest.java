@@ -29,14 +29,14 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(request)).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(request)).thenReturn(localResponse);
+        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
         Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore).put(request);
+        Mockito.verify(keyValueStore).put(Mockito.any(Request.class));
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFails() {
@@ -48,14 +48,14 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(request)).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(request)).thenReturn(localResponse);
+        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(remoteResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
         Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore, Mockito.never()).put(request);
+        Mockito.verify(keyValueStore, Mockito.never()).put(Mockito.any(Request.class));
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFailsWithNotModified() {
@@ -67,8 +67,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(request)).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.get(request)).thenReturn(localResponse);
+        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.get(request));
 
@@ -85,7 +85,7 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(request)).thenReturn(localResponse);
+        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(localResponse);
         Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
 
         assertEquals(localResponse, offlineStore.get(request));
@@ -104,8 +104,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.put(request)).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(request)).thenReturn(localResponse);
+        Mockito.when(remoteStore.put(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.put(request));
 
@@ -122,7 +122,7 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.put(request)).thenReturn(remoteResponse);
+        Mockito.when(remoteStore.put(Mockito.any(Request.class))).thenReturn(remoteResponse);
 
         assertEquals(remoteResponse, offlineStore.put(request));
 
@@ -140,8 +140,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(request)).thenReturn(fallbackResponse);
-        Mockito.when(keyValueStore.put(request)).thenReturn(localResponse);
+        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(fallbackResponse);
+        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
         Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
 
         assertEquals(localResponse, offlineStore.put(request));
@@ -162,8 +162,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.delete(request)).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.delete(request)).thenReturn(localResponse);
+        Mockito.when(remoteStore.delete(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.delete(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.delete(request));
 
@@ -180,7 +180,7 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.delete(request)).thenReturn(remoteResponse);
+        Mockito.when(remoteStore.delete(Mockito.any(Request.class))).thenReturn(remoteResponse);
 
         assertEquals(remoteResponse, offlineStore.delete(request));
 
@@ -198,8 +198,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(request)).thenReturn(fallbackResponse);
-        Mockito.when(keyValueStore.delete(request)).thenReturn(localResponse);
+        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(fallbackResponse);
+        Mockito.when(keyValueStore.delete(Mockito.any(Request.class))).thenReturn(localResponse);
         Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
 
         assertEquals(localResponse, offlineStore.delete(request));
@@ -217,8 +217,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final OfflineStore offlineStore = new OfflineStore(null, keyValueStore, remoteStore);
 
-        Mockito.when(keyValueStore.addObserver(observer)).thenReturn(true);
-        Mockito.when(remoteStore.addObserver(observer)).thenReturn(RESULT);
+        Mockito.when(keyValueStore.addObserver(Mockito.any(DataStore.Observer.class))).thenReturn(true);
+        Mockito.when(remoteStore.addObserver(Mockito.any(DataStore.Observer.class))).thenReturn(RESULT);
 
         assertEquals(RESULT, offlineStore.addObserver(observer));
 
@@ -232,8 +232,8 @@ public class OfflineStoreTest extends AndroidTestCase {
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final OfflineStore offlineStore = new OfflineStore(null, keyValueStore, remoteStore);
 
-        Mockito.when(keyValueStore.removeObserver(observer)).thenReturn(true);
-        Mockito.when(remoteStore.removeObserver(observer)).thenReturn(RESULT);
+        Mockito.when(keyValueStore.removeObserver(Mockito.any(DataStore.Observer.class))).thenReturn(true);
+        Mockito.when(remoteStore.removeObserver(Mockito.any(DataStore.Observer.class))).thenReturn(RESULT);
 
         assertEquals(RESULT, offlineStore.removeObserver(observer));
 

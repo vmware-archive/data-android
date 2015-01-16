@@ -19,6 +19,10 @@ public class Request<T> {
 
     public Request() {}
 
+    public Request(final Request<T> request) {
+        this(request.accessToken, request.object, request.force);
+    }
+
     public Request(final String accessToken, final T object) {
         this(accessToken, object, false);
     }
