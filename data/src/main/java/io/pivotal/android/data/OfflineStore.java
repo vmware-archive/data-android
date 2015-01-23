@@ -39,6 +39,10 @@ public class OfflineStore<T> implements DataStore<T> {
 
                 return mLocalStore.put(localRequest);
 
+            } else if (response.isNotFound()) {
+                mLocalStore.delete(request);
+                return response;
+
             } else if (response.isNotModified()) {
                 return mLocalStore.get(request);
 
@@ -177,7 +181,7 @@ public class OfflineStore<T> implements DataStore<T> {
         return Connectivity.isConnected(mContext);
     }
 
-    protected RequestCache<T> getRequestCache() {
+    public RequestCache<T> getRequestCache() {
         if (mRequestCache == null) {
             synchronized (this) {
                 mRequestCache = new RequestCache.Default<T>(mContext, this, mLocalStore);

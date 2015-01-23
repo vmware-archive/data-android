@@ -31,6 +31,10 @@ public class Response<T> {
         return this.error != null && this.error.isNotModified();
     }
 
+    public boolean isNotFound() {
+        return this.error != null && this.error.isNotFound();
+    }
+
     public boolean hasPreconditionFailed() {
         return this.error != null && this.error.hasPreconditionFailed();
     }

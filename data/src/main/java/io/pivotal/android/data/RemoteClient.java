@@ -186,22 +186,17 @@ public interface RemoteClient<T> {
 
             Logger.v("Response Status: " + statusLine);
 
-            checkStatusLine(statusLine);
-            checkEtagHeader(response, url);
-
-            return getResponseBody(response);
-        }
-
-        protected void checkStatusLine(final StatusLine statusLine) throws Exception {
             final int statusCode = statusLine.getStatusCode();
             final String reasonPhrase = statusLine.getReasonPhrase();
 
             if (statusCode < 200 || statusCode > 299) {
+                if (statusCode == 404 && Pivotal.areEtagsEnabled()) {
+                    mEtagStore.put(url, "");
+                }
+
                 throw new DataHttpException(statusCode, reasonPhrase);
             }
-        }
 
-        protected void checkEtagHeader(final HttpResponse response, final String url) {
             if (Pivotal.areEtagsEnabled()) {
                 final Header header = response.getFirstHeader(Headers.ETAG);
                 final String etag = header != null ? header.getValue() : "";
@@ -210,6 +205,8 @@ public interface RemoteClient<T> {
 
                 mEtagStore.put(url, etag);
             }
+
+            return getResponseBody(response);
         }
 
         protected String getResponseBody(final HttpResponse response) throws IOException {

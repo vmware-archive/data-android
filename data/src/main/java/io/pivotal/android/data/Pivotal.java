@@ -11,9 +11,14 @@ import java.util.Properties;
 
 /* package */ class Pivotal {
 
+    private static final class Strategies {
+        private static final String OPTIMISTIC_LOCKING = "OptimisticLocking";
+        private static final String LAST_WRITE_WINS = "LastWriteWins";
+    }
+
     private static final class Keys {
         private static final String SERVICE_URL = "pivotal.data.serviceUrl";
-        private static final String ETAG_SUPPORT = "pivotal.data.etagSupport";
+        private static final String COLLISION_STRATEGY = "pivotal.data.collisionStrategy";
     }
 
     private static final String[] LOCATIONS = {
@@ -70,8 +75,8 @@ import java.util.Properties;
 
     public static boolean areEtagsEnabled() {
         try {
-            final String etagSupport = get(Keys.ETAG_SUPPORT);
-            return etagSupport != null && etagSupport.equals("enabled");
+            final String collisionStrategy = get(Keys.COLLISION_STRATEGY);
+            return collisionStrategy != null && collisionStrategy.equals(Strategies.OPTIMISTIC_LOCKING);
         } catch (final IllegalStateException e) {
             return false;
         }

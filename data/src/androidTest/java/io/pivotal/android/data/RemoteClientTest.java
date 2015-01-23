@@ -190,7 +190,7 @@ public class RemoteClientTest extends AndroidTestCase {
 
     public void testAddEtagHeaderIfEtagsAreSupportedAndAvailable() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "enabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
@@ -206,7 +206,7 @@ public class RemoteClientTest extends AndroidTestCase {
 
     public void testAddEtagHeaderIfEtagsAreSupportedAndNotAvailable() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "enabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
@@ -238,151 +238,91 @@ public class RemoteClientTest extends AndroidTestCase {
         assertEquals(RemoteClient.Default.Timeouts.SOCKET, HttpConnectionParams.getSoTimeout(params));
     }
 
-    public void testHandleResponse() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+    public void testHandleResponseWithSuccessStatusCodeAndEtagsDisabled() throws Exception {
+        final EtagStore etagStore = Mockito.mock(EtagStore.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
 
         Mockito.when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
-        Mockito.doNothing().when(client).checkStatusLine(httpStatusLine);
-        Mockito.doNothing().when(client).checkEtagHeader(httpResponse, URL);
+        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(200);
         Mockito.doReturn(RESULT).when(client).getResponseBody(httpResponse);
 
         assertEquals(RESULT, client.handleResponse(httpResponse, URL));
 
         Mockito.verify(httpResponse).getStatusLine();
-        Mockito.verify(client).checkStatusLine(httpStatusLine);
-        Mockito.verify(client).checkEtagHeader(httpResponse, URL);
+        Mockito.verify(etagStore, Mockito.never()).put(URL, RESULT);
         Mockito.verify(client).getResponseBody(httpResponse);
     }
 
-
-    public void testCheckStatusLineThrowsNotModifiedException() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
-        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
-
-        final int statusCode = 304;
-
-        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(statusCode);
-        Mockito.when(httpStatusLine.getReasonPhrase()).thenReturn(RESULT);
-
-        try {
-            client.checkStatusLine(httpStatusLine);
-            fail();
-        } catch (final DataHttpException e) {
-            assertEquals(statusCode, e.getStatusCode());
-            assertEquals(RESULT, e.getMessage());
-        }
-
-        Mockito.verify(httpStatusLine).getStatusCode();
-        Mockito.verify(httpStatusLine).getReasonPhrase();
-    }
-
-    public void testCheckStatusLineThrowsPreconditionFailedException() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
-        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
-
-        final int statusCode = 412;
-
-        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(statusCode);
-        Mockito.when(httpStatusLine.getReasonPhrase()).thenReturn(RESULT);
-
-        try {
-            client.checkStatusLine(httpStatusLine);
-            fail();
-        } catch (final DataHttpException e) {
-            assertEquals(statusCode, e.getStatusCode());
-            assertEquals(RESULT, e.getMessage());
-        }
-
-        Mockito.verify(httpStatusLine).getStatusCode();
-        Mockito.verify(httpStatusLine).getReasonPhrase();
-    }
-
-    public void testCheckStatusLineThrowsDataException() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
-        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
-
-        final int statusCode = 500;
-
-        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(statusCode);
-        Mockito.when(httpStatusLine.getReasonPhrase()).thenReturn(RESULT);
-
-        try {
-            client.checkStatusLine(httpStatusLine);
-            fail();
-        } catch (final DataHttpException e) {
-            assertEquals(statusCode, e.getStatusCode());
-            assertEquals(RESULT, e.getMessage());
-        }
-
-        Mockito.verify(httpStatusLine).getStatusCode();
-        Mockito.verify(httpStatusLine).getReasonPhrase();
-    }
-
-    public void testCheckStatusLineDoesNotThrowExceptionOnSuccess() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
-        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
-
-        final int statusCode = 200;
-
-        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(statusCode);
-        Mockito.when(httpStatusLine.getReasonPhrase()).thenReturn(RESULT);
-
-        try {
-            client.checkStatusLine(httpStatusLine);
-        } catch (final Exception e) {
-            fail();
-        }
-
-        Mockito.verify(httpStatusLine).getStatusCode();
-        Mockito.verify(httpStatusLine).getReasonPhrase();
-    }
-
-    public void testCheckEtagHeaderIfEtagsAreSupportedAndPresent() throws Exception {
+    public void testHandleResponseWithSuccessStatusCodeAndEtagsEnabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "enabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
         final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
         final Header httpHeader = Mockito.mock(Header.class);
 
+        Mockito.when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
+        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(200);
         Mockito.when(httpResponse.getFirstHeader(ETAG)).thenReturn(httpHeader);
         Mockito.when(httpHeader.getValue()).thenReturn(RESULT);
+        Mockito.doReturn(RESULT).when(client).getResponseBody(httpResponse);
 
-        client.checkEtagHeader(httpResponse, URL);
+        assertEquals(RESULT, client.handleResponse(httpResponse, URL));
 
+        Mockito.verify(httpResponse).getStatusLine();
         Mockito.verify(httpResponse).getFirstHeader(ETAG);
         Mockito.verify(httpHeader).getValue();
         Mockito.verify(etagStore).put(URL, RESULT);
+        Mockito.verify(client).getResponseBody(httpResponse);
     }
 
-    public void testCheckEtagHeaderIfEtagsAreSupportedAndNotPresent() throws Exception {
+    public void testHandleResponseWithNotFoundStatusCodeAndEtagsDisabled() throws Exception {
+        final EtagStore etagStore = Mockito.mock(EtagStore.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
+        final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
+
+        Mockito.when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
+        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(404);
+        Mockito.doReturn(RESULT).when(client).getResponseBody(httpResponse);
+
+        try {
+            client.handleResponse(httpResponse, URL);
+        } catch (final DataHttpException e) {
+            assertEquals(404, e.getStatusCode());
+        }
+
+        Mockito.verify(httpResponse).getStatusLine();
+        Mockito.verify(etagStore, Mockito.never()).put(URL, "");
+    }
+
+    public void testHandleResponseWithNotFoundStatusCodeAndEtagsEnabled() throws Exception {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "enabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
         final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
+        final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
 
-        Mockito.when(httpResponse.getFirstHeader(ETAG)).thenReturn(null);
+        Mockito.when(httpResponse.getStatusLine()).thenReturn(httpStatusLine);
+        Mockito.when(httpStatusLine.getStatusCode()).thenReturn(404);
+        Mockito.doReturn(RESULT).when(client).getResponseBody(httpResponse);
 
-        client.checkEtagHeader(httpResponse, URL);
+        try {
+            client.handleResponse(httpResponse, URL);
+        } catch (final DataHttpException e) {
+            assertEquals(404, e.getStatusCode());
+        }
 
-        Mockito.verify(httpResponse).getFirstHeader(ETAG);
+        Mockito.verify(httpResponse).getStatusLine();
         Mockito.verify(etagStore).put(URL, "");
-    }
-
-    public void testCheckEtagHeaderIfEtagsAreNotSupported() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
-        final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
-
-        client.checkEtagHeader(httpResponse, URL);
-
-        Mockito.verify(httpResponse, Mockito.never()).getFirstHeader(Mockito.anyString());
     }
 
     public void testGetResponseBodyReturnsCorrectResult() throws Exception {

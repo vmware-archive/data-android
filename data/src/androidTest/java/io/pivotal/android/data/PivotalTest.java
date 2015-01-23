@@ -52,27 +52,27 @@ public class PivotalTest extends AndroidTestCase {
         assertEquals(RESULT, Pivotal.getServiceUrl());
     }
 
-    public void testEtagsValueEnabled() {
+    public void testAreEtagsEnabledWithCollisionStrategyOptimisticLocking() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "enabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
 
         Pivotal.setProperties(properties);
 
         assertTrue(Pivotal.areEtagsEnabled());
     }
 
-    public void testEtagsValueDisabled() {
+    public void testAreEtagsEnabledWithCollisionStrategyLastWriteWins() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", "disabled");
+        properties.setProperty("pivotal.data.collisionStrategy", "LastWriteWins");
 
         Pivotal.setProperties(properties);
 
         assertFalse(Pivotal.areEtagsEnabled());
     }
 
-    public void testEtagsValueRandom() {
+    public void testAreEtagsEnabledWithCollisionStrategyRandom() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.etagSupport", RESULT);
+        properties.setProperty("pivotal.data.collisionStrategy", RESULT);
 
         Pivotal.setProperties(properties);
 

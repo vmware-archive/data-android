@@ -30,4 +30,8 @@ public class DataError extends Error {
     public boolean isNotModified() {
         return mCode == 304;
     }
+
+    public boolean isNotFound() {
+        return mCode == 404;
+    }
 }

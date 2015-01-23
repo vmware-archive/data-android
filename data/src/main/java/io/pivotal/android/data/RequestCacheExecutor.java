@@ -13,27 +13,27 @@ public class RequestCacheExecutor<T> {
         mFallbackStore = fallbackStore;
     }
 
-    public void execute(final RequestCache.QueuedRequest.List<T> requests, final String token) {
-        for (final RequestCache.QueuedRequest<T> request : requests) {
+    public void execute(final QueuedRequest.List<T> requests, final String token) {
+        for (final QueuedRequest<T> request : requests) {
             execute(request, token);
         }
     }
 
-    private void execute(final RequestCache.QueuedRequest<T> request, final String token) {
+    private void execute(final QueuedRequest<T> request, final String token) {
         if (token != null) {
             request.accessToken = token;
         }
 
         switch (request.method) {
-            case RequestCache.QueuedRequest.Methods.GET:
-                mOfflineStore.get(request);
+            case QueuedRequest.Methods.GET:
+                executeGet(request);
                 break;
 
-            case RequestCache.QueuedRequest.Methods.PUT:
+            case QueuedRequest.Methods.PUT:
                 executePut(request);
                 break;
 
-            case RequestCache.QueuedRequest.Methods.DELETE:
+            case QueuedRequest.Methods.DELETE:
                 executeDelete(request);
                 break;
 
@@ -42,7 +42,11 @@ public class RequestCacheExecutor<T> {
         }
     }
 
-    private void executePut(final RequestCache.QueuedRequest<T> request) {
+    private void executeGet(final QueuedRequest<T> request) {
+        mOfflineStore.get(request);
+    }
+
+    private void executePut(final QueuedRequest<T> request) {
         final Response<T> response = mOfflineStore.put(request);
         if (response.isFailure()) {
             request.object = request.fallback;
@@ -50,7 +54,7 @@ public class RequestCacheExecutor<T> {
         }
     }
 
-    private void executeDelete(final RequestCache.QueuedRequest<T> request) {
+    private void executeDelete(final QueuedRequest<T> request) {
         final Response<T> response = mOfflineStore.delete(request);
         if (response.isFailure()) {
             request.object = request.fallback;

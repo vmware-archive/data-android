@@ -26,7 +26,7 @@ public class RequestCacheTest extends AndroidTestCase {
 
     public void testDefaultGet() {
         final Request request = Mockito.mock(Request.class);
-        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
@@ -34,13 +34,13 @@ public class RequestCacheTest extends AndroidTestCase {
 
         defaultCache.queueGet(request);
 
-        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.GET);
+        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.GET);
         Mockito.verify(queue).add(queued);
     }
 
     public void testDefaultPut() {
         final Request request = Mockito.mock(Request.class);
-        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
@@ -48,13 +48,13 @@ public class RequestCacheTest extends AndroidTestCase {
 
         defaultCache.queuePut(request);
 
-        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.PUT);
+        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.PUT);
         Mockito.verify(queue).add(queued);
     }
 
     public void testDefaultDelete() {
         final Request request = Mockito.mock(Request.class);
-        final RequestCache.QueuedRequest queued = Mockito.mock(RequestCache.QueuedRequest.class);
+        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
@@ -62,14 +62,14 @@ public class RequestCacheTest extends AndroidTestCase {
 
         defaultCache.queueDelete(request);
 
-        Mockito.verify(defaultCache).createQueuedRequest(request, RequestCache.QueuedRequest.Methods.DELETE);
+        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.DELETE);
         Mockito.verify(queue).add(queued);
     }
 
     public void testDefaultExecutePending() {
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCacheExecutor executor = Mockito.mock(RequestCacheExecutor.class);
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         final RequestCache.Default defaultCache = new RequestCache.Default(queue, executor);
 
         Mockito.when(queue.empty()).thenReturn(list);
@@ -77,15 +77,5 @@ public class RequestCacheTest extends AndroidTestCase {
         defaultCache.executePending(TOKEN);
 
         Mockito.verify(executor).execute(list, TOKEN);
-    }
-
-    public void testQueuedRequest() {
-        final Request request = new Request(TOKEN, new KeyValue(COLLECTION, KEY, VALUE));
-        final RequestCache.QueuedRequest queued = new RequestCache.QueuedRequest(request, METHOD);
-
-        assertEquals(TOKEN, queued.accessToken);
-        assertEquals(METHOD, queued.method);
-        assertEquals(request.object, queued.object);
-        assertEquals(request.force, queued.force);
     }
 }

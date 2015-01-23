@@ -53,6 +53,21 @@ public class ResponseTest extends AndroidTestCase {
         assertTrue(response.isNotModified());
     }
 
+    public void testIsNotFound() {
+        Response<Object> response = new Response<Object>();
+
+        assertFalse(response.isNotFound());
+
+        response.error = new DataError(new Exception());
+
+        assertFalse(response.isNotFound());
+
+        DataHttpException exception = new DataHttpException(404, UUID.randomUUID().toString());
+        response.error = new DataError(exception);
+
+        assertTrue(response.isNotFound());
+    }
+
     public void testHasPreconditionFailed() {
         Response<Object> response = new Response<Object>();
 

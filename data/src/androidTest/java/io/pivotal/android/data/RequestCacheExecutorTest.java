@@ -22,10 +22,10 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
 
     public void testExecuteWithDesiredToken() {
         try {
-            final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
+            final QueuedRequest request = Mockito.mock(QueuedRequest.class);
             request.accessToken = UUID.randomUUID().toString();
 
-            final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+            final QueuedRequest.List list = new QueuedRequest.List();
             list.add(request);
 
             final RequestCacheExecutor executor = new RequestCacheExecutor(null, null);
@@ -44,10 +44,10 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         try {
             final String token = UUID.randomUUID().toString();
 
-            final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
+            final QueuedRequest request = Mockito.mock(QueuedRequest.class);
             request.accessToken = token;
 
-            final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+            final QueuedRequest.List list = new QueuedRequest.List();
             list.add(request);
 
             final RequestCacheExecutor executor = new RequestCacheExecutor(null, null);
@@ -63,10 +63,10 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
     }
 
     public void testExecuteGetSuccess() {
-        final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
-        request.method = RequestCache.QueuedRequest.Methods.GET;
+        final QueuedRequest request = Mockito.mock(QueuedRequest.class);
+        request.method = QueuedRequest.Methods.GET;
 
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         list.add(request);
 
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
@@ -80,17 +80,17 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
 
     public void testExecutePutSuccess() {
         final Response response = Mockito.mock(Response.class);
-        final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
-        request.method = RequestCache.QueuedRequest.Methods.PUT;
+        final QueuedRequest request = Mockito.mock(QueuedRequest.class);
+        request.method = QueuedRequest.Methods.PUT;
 
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         list.add(request);
 
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
         final DataStore fallbackStore = Mockito.mock(DataStore.class);
         final RequestCacheExecutor executor = new RequestCacheExecutor(offlineStore, fallbackStore);
 
-        Mockito.when(offlineStore.put(Mockito.any(RequestCache.QueuedRequest.class))).thenReturn(response);
+        Mockito.when(offlineStore.put(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(false);
 
         executor.execute(list, null);
@@ -100,17 +100,17 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
 
     public void testExecutePutFailure() {
         final Response response = Mockito.mock(Response.class);
-        final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
-        request.method = RequestCache.QueuedRequest.Methods.PUT;
+        final QueuedRequest request = Mockito.mock(QueuedRequest.class);
+        request.method = QueuedRequest.Methods.PUT;
 
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         list.add(request);
 
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
         final DataStore fallbackStore = Mockito.mock(DataStore.class);
         final RequestCacheExecutor executor = new RequestCacheExecutor(offlineStore, fallbackStore);
 
-        Mockito.when(offlineStore.put(Mockito.any(RequestCache.QueuedRequest.class))).thenReturn(response);
+        Mockito.when(offlineStore.put(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(true);
 
         executor.execute(list, null);
@@ -121,17 +121,17 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
 
     public void testExecuteDeleteSuccess() {
         final Response response = Mockito.mock(Response.class);
-        final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
-        request.method = RequestCache.QueuedRequest.Methods.DELETE;
+        final QueuedRequest request = Mockito.mock(QueuedRequest.class);
+        request.method = QueuedRequest.Methods.DELETE;
 
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         list.add(request);
 
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
         final DataStore fallbackStore = Mockito.mock(DataStore.class);
         final RequestCacheExecutor executor = new RequestCacheExecutor(offlineStore, fallbackStore);
 
-        Mockito.when(offlineStore.delete(Mockito.any(RequestCache.QueuedRequest.class))).thenReturn(response);
+        Mockito.when(offlineStore.delete(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(false);
 
         executor.execute(list, null);
@@ -141,17 +141,17 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
 
     public void testExecuteDeleteFailure() {
         final Response response = Mockito.mock(Response.class);
-        final RequestCache.QueuedRequest request = Mockito.mock(RequestCache.QueuedRequest.class);
-        request.method = RequestCache.QueuedRequest.Methods.DELETE;
+        final QueuedRequest request = Mockito.mock(QueuedRequest.class);
+        request.method = QueuedRequest.Methods.DELETE;
 
-        final RequestCache.QueuedRequest.List list = new RequestCache.QueuedRequest.List();
+        final QueuedRequest.List list = new QueuedRequest.List();
         list.add(request);
 
         final OfflineStore offlineStore = Mockito.mock(OfflineStore.class);
         final DataStore fallbackStore = Mockito.mock(DataStore.class);
         final RequestCacheExecutor executor = new RequestCacheExecutor(offlineStore, fallbackStore);
 
-        Mockito.when(offlineStore.delete(Mockito.any(RequestCache.QueuedRequest.class))).thenReturn(response);
+        Mockito.when(offlineStore.delete(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(true);
 
         executor.execute(list, null);

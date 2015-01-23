@@ -52,6 +52,13 @@ public class DataErrorTest extends AndroidTestCase {
         assertTrue(error.isNotModified());
     }
 
+    public void testWith404NotFound() {
+        final Exception exception = new DataHttpException(404, MESSAGE);
+        final DataError error = new DataError(exception);
+
+        assertTrue(error.isNotFound());
+    }
+
     public void testWith412PreconditionFailed() {
         final Exception exception = new DataHttpException(412, MESSAGE);
         final DataError error = new DataError(exception);

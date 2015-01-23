@@ -32,8 +32,8 @@ public class RequestCacheQueueTest extends AndroidTestCase {
 
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
         final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
-        final RequestCache.QueuedRequest<KeyValue> queuedRequest = new RequestCache.QueuedRequest<KeyValue>(request, METHOD);
-        final RequestCache.QueuedRequest.List<KeyValue> list = new RequestCache.QueuedRequest.List<KeyValue>();
+        final QueuedRequest<KeyValue> queuedRequest = new QueuedRequest<KeyValue>(request, METHOD);
+        final QueuedRequest.List<KeyValue> list = new QueuedRequest.List<KeyValue>();
         list.add(queuedRequest);
 
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
@@ -42,9 +42,9 @@ public class RequestCacheQueueTest extends AndroidTestCase {
         Mockito.when(persistence.getString(Mockito.anyString())).thenReturn(serialized);
 
         final RequestCacheQueue<KeyValue> queue = new RequestCacheQueue<KeyValue>(persistence);
-        final RequestCache.QueuedRequest.List<KeyValue> response = queue.getRequests();
+        final QueuedRequest.List<KeyValue> response = queue.getRequests();
 
-        final RequestCache.QueuedRequest<KeyValue> deserializedItem = response.get(0);
+        final QueuedRequest<KeyValue> deserializedItem = response.get(0);
 
         assertEquals(METHOD, deserializedItem.method);
         assertEquals(TOKEN, deserializedItem.accessToken);
@@ -60,8 +60,8 @@ public class RequestCacheQueueTest extends AndroidTestCase {
 
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
         final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
-        final RequestCache.QueuedRequest<KeyValue> queuedRequest = new RequestCache.QueuedRequest<KeyValue>(request, METHOD);
-        final RequestCache.QueuedRequest.List<KeyValue> list = new RequestCache.QueuedRequest.List<KeyValue>();
+        final QueuedRequest<KeyValue> queuedRequest = new QueuedRequest<KeyValue>(request, METHOD);
+        final QueuedRequest.List<KeyValue> list = new QueuedRequest.List<KeyValue>();
         list.add(queuedRequest);
 
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
@@ -77,13 +77,13 @@ public class RequestCacheQueueTest extends AndroidTestCase {
     public void testAdd() {
         final Object object = new Object();
         final Request request = new Request(TOKEN, object);
-        final RequestCache.QueuedRequest queuedRequest = new RequestCache.QueuedRequest(request, METHOD);
-        final RequestCache.QueuedRequest.List list = Mockito.mock(RequestCache.QueuedRequest.List.class);
+        final QueuedRequest queuedRequest = new QueuedRequest(request, METHOD);
+        final QueuedRequest.List list = Mockito.mock(QueuedRequest.List.class);
 
         final RequestCacheQueue queue = Mockito.spy(new RequestCacheQueue(null));
 
         Mockito.stub(queue.getRequests()).toReturn(list);
-        Mockito.doNothing().when(queue).putRequests(Mockito.any(RequestCache.QueuedRequest.List.class));
+        Mockito.doNothing().when(queue).putRequests(Mockito.any(QueuedRequest.List.class));
 
         queue.add(queuedRequest);
 
@@ -93,14 +93,14 @@ public class RequestCacheQueueTest extends AndroidTestCase {
     }
 
     public void testEmpty() {
-        final RequestCache.QueuedRequest.List list = Mockito.mock(RequestCache.QueuedRequest.List.class);
+        final QueuedRequest.List list = Mockito.mock(QueuedRequest.List.class);
 
         final RequestCacheQueue queue = Mockito.spy(new RequestCacheQueue(null));
 
         Mockito.stub(queue.getRequests()).toReturn(list);
         Mockito.doNothing().when(queue).deleteRequests();
 
-        final RequestCache.QueuedRequest.List result = queue.empty();
+        final QueuedRequest.List result = queue.empty();
 
         assertEquals(list, result);
 
