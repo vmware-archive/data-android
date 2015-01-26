@@ -184,8 +184,8 @@ public class RemoteClientTest extends AndroidTestCase {
 
         client.addUserAgentHeader(httpRequest);
 
-        final String sdkVersion = String.format("PCFData/%s", BuildConfig.SDK_VERSION);
-        final String androidVersion = String.format("[Android Version %s (Build %s)]", Build.VERSION.RELEASE, Build.ID);
+        final String sdkVersion = String.format("PCFData/%s;", BuildConfig.SDK_VERSION);
+        final String androidVersion = String.format("Android Version %s (Build %s)", Build.VERSION.RELEASE, Build.ID);
         Mockito.verify(httpRequest).addHeader(RemoteClient.Default.Headers.USER_AGENT, sdkVersion + " " + androidVersion);
     }
 

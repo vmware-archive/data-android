@@ -175,8 +175,8 @@ public interface RemoteClient<T> {
         }
 
         protected void addUserAgentHeader(final HttpUriRequest request) {
-            final String sdkVersion = String.format("PCFData/%s", BuildConfig.SDK_VERSION);
-            final String androidVersion = String.format("[Android Version %s (Build %s)]", Build.VERSION.RELEASE, Build.ID);
+            final String sdkVersion = String.format("PCFData/%s;", BuildConfig.SDK_VERSION);
+            final String androidVersion = String.format("Android Version %s (Build %s)", Build.VERSION.RELEASE, Build.ID);
             request.addHeader(Headers.USER_AGENT, sdkVersion + " " + androidVersion);
         }
 
