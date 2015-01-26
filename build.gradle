@@ -80,6 +80,8 @@ subprojects {
             versionName versionName
             minSdkVersion 10
             targetSdkVersion 19
+
+            buildConfigField "String", "SDK_VERSION", "\"${version}\""
         }
     }
 

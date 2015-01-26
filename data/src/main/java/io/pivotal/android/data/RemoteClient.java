@@ -3,6 +3,7 @@
  */
 package io.pivotal.android.data;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.apache.http.Header;
@@ -43,6 +44,7 @@ public interface RemoteClient<T> {
             public static final String IF_MATCH = "If-Match";
             public static final String IF_NONE_MATCH = "If-None-Match";
             public static final String ETAG = "Etag";
+            public static final String USER_AGENT = "User-Agent";
         }
 
         private final EtagStore mEtagStore;
@@ -61,6 +63,7 @@ public interface RemoteClient<T> {
 
                 final HttpGet get = new HttpGet(url);
 
+                addUserAgentHeader(get);
                 addAuthHeader(get, request.accessToken);
 
                 if (!request.force) {
@@ -88,6 +91,7 @@ public interface RemoteClient<T> {
                 final HttpPut put = new HttpPut(url);
                 put.setEntity(new ByteArrayEntity(object.value.getBytes()));
 
+                addUserAgentHeader(put);
                 addAuthHeader(put, request.accessToken);
 
                 if (!request.force) {
@@ -116,6 +120,7 @@ public interface RemoteClient<T> {
 
                 final HttpDelete delete = new HttpDelete(url);
 
+                addUserAgentHeader(delete);
                 addAuthHeader(delete, request.accessToken);
 
                 if (!request.force) {
@@ -167,6 +172,12 @@ public interface RemoteClient<T> {
                     Logger.e("Request Header - No etag found.");
                 }
             }
+        }
+
+        protected void addUserAgentHeader(final HttpUriRequest request) {
+            final String sdkVersion = String.format("PCFData/%s", BuildConfig.SDK_VERSION);
+            final String androidVersion = String.format("(Android; %d; %s)", Build.VERSION.SDK_INT, Build.VERSION.RELEASE);
+            request.addHeader(Headers.USER_AGENT, sdkVersion + " " + androidVersion);
         }
 
 
