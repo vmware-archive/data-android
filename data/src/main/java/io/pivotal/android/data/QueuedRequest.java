@@ -23,6 +23,7 @@ public class QueuedRequest<T> extends Request<T> {
 
     public QueuedRequest(final Request<T> request, final int method) {
         super(request.accessToken, request.object, request.force);
+        this.fallback = request.fallback;
         this.method = method;
     }
 

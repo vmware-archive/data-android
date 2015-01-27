@@ -22,6 +22,8 @@ import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public interface RemoteClient<T> {
 
@@ -59,7 +61,7 @@ public interface RemoteClient<T> {
             if (request.object instanceof KeyValue) {
 
                 final KeyValue object = (KeyValue) request.object;
-                final String url = object.getUrl();
+                final String url = getUrl(object);
 
                 final HttpGet get = new HttpGet(url);
 
@@ -86,7 +88,7 @@ public interface RemoteClient<T> {
             if (request.object instanceof KeyValue) {
 
                 final KeyValue object = (KeyValue) request.object;
-                final String url = object.getUrl();
+                final String url = getUrl(object);
 
                 final HttpPut put = new HttpPut(url);
                 put.setEntity(new ByteArrayEntity(object.value.getBytes()));
@@ -116,7 +118,7 @@ public interface RemoteClient<T> {
             if (request.object instanceof KeyValue) {
 
                 final KeyValue object = (KeyValue) request.object;
-                final String url = object.getUrl();
+                final String url = getUrl(object);
 
                 final HttpDelete delete = new HttpDelete(url);
 
@@ -135,6 +137,10 @@ public interface RemoteClient<T> {
             } else {
                 throw new UnsupportedOperationException();
             }
+        }
+
+        protected String getUrl(final KeyValue keyValue) throws MalformedURLException {
+            return new URL(Pivotal.getServiceUrl() + "/" + keyValue.collection + "/" + keyValue.key).toString();
         }
 
 

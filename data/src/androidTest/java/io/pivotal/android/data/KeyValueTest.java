@@ -33,10 +33,4 @@ public class KeyValueTest extends AndroidTestCase {
         assertEquals(VALUE, copy.value);
     }
 
-    public void testGetUrl() throws Exception {
-        final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-
-        assertEquals(Pivotal.getServiceUrl() + "/" + COLLECTION + "/" + KEY, keyValue.getUrl());
-    }
-
 }

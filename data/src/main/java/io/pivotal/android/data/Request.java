@@ -15,7 +15,14 @@ public class Request<T> {
         include = JsonTypeInfo.As.PROPERTY,
         property = "@type"
     )
-    public T object, fallback;
+    public T object;
+
+    @JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "@type"
+    )
+    public T fallback;
 
     public Request() {}
 

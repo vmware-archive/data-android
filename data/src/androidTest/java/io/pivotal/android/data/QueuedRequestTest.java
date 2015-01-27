@@ -14,6 +14,7 @@ public class QueuedRequestTest extends AndroidTestCase {
     private static final String COLLECTION = UUID.randomUUID().toString();
     private static final String KEY = UUID.randomUUID().toString();
     private static final String VALUE = UUID.randomUUID().toString();
+    private static final String FALLBACK = UUID.randomUUID().toString();
     private static final int METHOD = (int) (Math.random() * 3.0);
 
     @Override
@@ -24,11 +25,14 @@ public class QueuedRequestTest extends AndroidTestCase {
 
     public void testQueuedRequest() {
         final Request request = new Request(TOKEN, new KeyValue(COLLECTION, KEY, VALUE));
+        request.fallback = new KeyValue(COLLECTION, KEY, FALLBACK);
+
         final QueuedRequest queued = new QueuedRequest(request, METHOD);
 
         assertEquals(TOKEN, queued.accessToken);
         assertEquals(METHOD, queued.method);
         assertEquals(request.object, queued.object);
         assertEquals(request.force, queued.force);
+        assertEquals(request.fallback, queued.fallback);
     }
 }

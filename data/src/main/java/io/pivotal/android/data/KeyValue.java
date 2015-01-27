@@ -3,11 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class KeyValue {
     public String key, value, collection;
 
@@ -21,11 +16,6 @@ public class KeyValue {
         this.collection = collection;
         this.key = key;
         this.value = value;
-    }
-
-    @JsonIgnore
-    public String getUrl() throws MalformedURLException {
-        return new URL(Pivotal.getServiceUrl() + "/" + collection + "/" + key).toString();
     }
 
     @Override

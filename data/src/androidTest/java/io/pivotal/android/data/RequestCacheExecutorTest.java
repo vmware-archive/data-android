@@ -98,7 +98,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.verify(offlineStore).put(request);
     }
 
-    public void testExecutePutFailure() {
+    public void testExecutePutFailureWithFallback() {
         final Response response = Mockito.mock(Response.class);
         final QueuedRequest request = Mockito.mock(QueuedRequest.class);
         request.method = QueuedRequest.Methods.PUT;
@@ -139,7 +139,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.verify(offlineStore).delete(request);
     }
 
-    public void testExecuteDeleteFailure() {
+    public void testExecuteDeleteFailureWithFallback() {
         final Response response = Mockito.mock(Response.class);
         final QueuedRequest request = Mockito.mock(QueuedRequest.class);
         request.method = QueuedRequest.Methods.DELETE;
