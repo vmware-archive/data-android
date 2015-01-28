@@ -44,11 +44,11 @@ public class KeyValueObject {
         mDataStore.get(request, listener);
     }
 
-    public Response put(final String accessToken, final String value) {
+    public Response<KeyValue> put(final String accessToken, final String value) {
         return put(accessToken, value, false);
     }
 
-    public Response put(final String accessToken, final String value, final boolean force) {
+    public Response<KeyValue> put(final String accessToken, final String value, final boolean force) {
         Logger.d("Put: " + mKey + ", " + value);
         final Request<KeyValue> request = createRequest(accessToken, value, force);
         return mDataStore.put(request);
@@ -64,11 +64,11 @@ public class KeyValueObject {
         mDataStore.put(request, listener);
     }
 
-    public Response delete(final String accessToken) {
+    public Response<KeyValue> delete(final String accessToken) {
         return delete(accessToken, false);
     }
 
-    public Response delete(final String accessToken, final boolean force) {
+    public Response<KeyValue> delete(final String accessToken, final boolean force) {
         Logger.d("Delete: " + mKey);
         final Request<KeyValue> request = createRequest(accessToken, null, force);
         return mDataStore.delete(request);
