@@ -14,9 +14,9 @@ public interface RequestCache<T> {
 
     public void queueDelete(final Request<T> request);
 
-    public void executePending(final String token);
+    public void executePending();
 
-    public void executePendingAsync(final String token);
+    public void executePendingAsync();
 
     public static class Default<T> implements RequestCache<T> {
 
@@ -58,19 +58,19 @@ public interface RequestCache<T> {
         }
 
         @Override
-        public void executePending(final String token) {
+        public void executePending() {
             final QueuedRequest.List<T> requests = mQueue.empty();
 
-            mExecutor.execute(requests, token);
+            mExecutor.execute(requests);
         }
 
         @Override
-        public void executePendingAsync(final String token) {
+        public void executePendingAsync() {
             new AsyncTask<Void, Void, Void>() {
 
                 @Override
                 protected Void doInBackground(final Void... params) {
-                    executePending(token);
+                    executePending();
                     return null;
                 }
 

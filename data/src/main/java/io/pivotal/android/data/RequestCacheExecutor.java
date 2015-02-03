@@ -13,16 +13,13 @@ public class RequestCacheExecutor<T> {
         mFallbackStore = fallbackStore;
     }
 
-    public void execute(final QueuedRequest.List<T> requests, final String token) {
+    public void execute(final QueuedRequest.List<T> requests) {
         for (final QueuedRequest<T> request : requests) {
-            execute(request, token);
+            execute(request);
         }
     }
 
-    private void execute(final QueuedRequest<T> request, final String token) {
-        if (token != null) {
-            request.accessToken = token;
-        }
+    private void execute(final QueuedRequest<T> request) {
 
         switch (request.method) {
             case QueuedRequest.Methods.GET:

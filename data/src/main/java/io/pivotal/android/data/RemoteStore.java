@@ -12,7 +12,7 @@ public class RemoteStore<T> implements DataStore<T> {
     private final ObserverHandler<T> mHandler;
 
     public RemoteStore(final Context context) {
-        this(new ObserverHandler<T>(), new RemoteClient.Default<T>(new EtagStore(context)));
+        this(new ObserverHandler<T>(), new RemoteClient.Default<T>(context));
     }
 
     public RemoteStore(final ObserverHandler<T> handler, final RemoteClient<T> client) {

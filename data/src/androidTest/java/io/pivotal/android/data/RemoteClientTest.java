@@ -3,6 +3,8 @@
  */
 package io.pivotal.android.data;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.test.AndroidTestCase;
 
@@ -52,122 +54,129 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetAddsHeadersAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpGet.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(RESULT, ((KeyValue)client.get(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpGet.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class));
         Mockito.verify(client).addEtagHeader(Mockito.any(HttpGet.class), Mockito.eq(URL), Mockito.eq(IF_NONE_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpGet.class));
     }
 
     public void testForceGetDoesntAddEtagsAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
         request.force = true;
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpGet.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(RESULT, ((KeyValue)client.get(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpGet.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class));
         Mockito.verify(client, Mockito.never()).addEtagHeader(Mockito.any(HttpGet.class), Mockito.eq(URL), Mockito.eq(IF_NONE_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpGet.class));
     }
 
     public void testPutAddsHeadersAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpPut.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(RESULT, ((KeyValue)client.put(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpPut.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class));
         Mockito.verify(client).addEtagHeader(Mockito.any(HttpPut.class), Mockito.eq(URL), Mockito.eq(IF_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpPut.class));
     }
 
     public void testForcePutDoesntAddEtagsAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
         request.force = true;
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpPut.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(RESULT, ((KeyValue)client.put(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpPut.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class));
         Mockito.verify(client, Mockito.never()).addEtagHeader(Mockito.any(HttpPut.class), Mockito.eq(URL), Mockito.eq(IF_NONE_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpPut.class));
     }
 
     public void testPutAddsHeadersAndExecutesWithEmptyResultFromServer() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn("").when(client).execute(Mockito.any(HttpPut.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(VALUE, ((KeyValue)client.put(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpPut.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpPut.class));
         Mockito.verify(client).addEtagHeader(Mockito.any(HttpPut.class), Mockito.eq(URL), Mockito.eq(IF_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpPut.class));
     }
 
     public void testDeleteAddsHeadersAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpDelete.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
-        assertEquals(RESULT, ((KeyValue)client.delete(request).object).value);
+        assertEquals(RESULT, ((KeyValue) client.delete(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpDelete.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpDelete.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpDelete.class));
         Mockito.verify(client).addEtagHeader(Mockito.any(HttpDelete.class), Mockito.eq(URL), Mockito.eq(IF_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpDelete.class));
     }
 
     public void testForceDeleteDoesntAddEtagsAndExecutes() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
         request.force = true;
 
         Mockito.doReturn(URL).when(client).getUrl(Mockito.any(KeyValue.class));
         Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpDelete.class));
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
 
         assertEquals(RESULT, ((KeyValue)client.delete(request).object).value);
 
         Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpDelete.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpDelete.class), Mockito.eq(TOKEN));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpDelete.class));
         Mockito.verify(client, Mockito.never()).addEtagHeader(Mockito.any(HttpDelete.class), Mockito.eq(URL), Mockito.eq(IF_MATCH));
         Mockito.verify(client).execute(Mockito.any(HttpDelete.class));
     }
 
     public void testExecuteInvokesHttpClient() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final HttpClient httpClient = Mockito.mock(HttpClient.class);
@@ -186,7 +195,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testAddUserAgentHeaderAddsUserAgent() {
-        final RemoteClient.Default client = new RemoteClient.Default(null);
+        final RemoteClient.Default client = new RemoteClient.Default(null, null);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
 
         client.addUserAgentHeader(httpRequest);
@@ -197,19 +206,23 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testAddAuthHeaderAddsAccessToken() {
-        final RemoteClient.Default client = new RemoteClient.Default(null);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
 
-        client.addAuthHeader(httpRequest, TOKEN);
+        Mockito.doReturn(TOKEN).when(client).getAccessToken();
+
+        client.addAuthHeader(httpRequest);
 
         Mockito.verify(httpRequest).addHeader(RemoteClient.Default.Headers.AUTHORIZATION, "Bearer " + TOKEN);
     }
 
     public void testAddAuthHeaderDoesNotAddNullAccessToken() {
-        final RemoteClient.Default client = new RemoteClient.Default(null);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
 
-        client.addAuthHeader(httpRequest, null);
+        Mockito.doReturn(null).when(client).getAccessToken();
+
+        client.addAuthHeader(httpRequest);
 
         Mockito.verify(httpRequest, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
     }
@@ -220,7 +233,8 @@ public class RemoteClientTest extends AndroidTestCase {
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = new RemoteClient.Default(etagStore);
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = new RemoteClient.Default(context, etagStore);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
 
         Mockito.when(etagStore.get(URL)).thenReturn(RESULT);
@@ -236,7 +250,8 @@ public class RemoteClientTest extends AndroidTestCase {
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = new RemoteClient.Default(etagStore);
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = new RemoteClient.Default(context, etagStore);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
 
         Mockito.when(etagStore.get(URL)).thenReturn(null);
@@ -247,7 +262,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testAddEtagHeaderIfEtagsAreNotSupported() {
-        final RemoteClient.Default client = new RemoteClient.Default(null);
+        final RemoteClient.Default client = new RemoteClient.Default(null, null);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
 
         client.addEtagHeader(httpRequest, URL, IF_MATCH);
@@ -256,7 +271,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetHttpClientIsCreatedWithAppropriateTimeouts() {
-        final RemoteClient.Default client = new RemoteClient.Default(null);
+        final RemoteClient.Default client = new RemoteClient.Default(null, null);
         final HttpClient httpClient = client.getHttpClient();
         final HttpParams params = httpClient.getParams();
 
@@ -266,7 +281,8 @@ public class RemoteClientTest extends AndroidTestCase {
 
     public void testHandleResponseWithSuccessStatusCodeAndEtagsDisabled() throws Exception {
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(context, etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
 
@@ -287,7 +303,8 @@ public class RemoteClientTest extends AndroidTestCase {
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(context, etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
         final Header httpHeader = Mockito.mock(Header.class);
@@ -309,7 +326,8 @@ public class RemoteClientTest extends AndroidTestCase {
 
     public void testHandleResponseWithNotFoundStatusCodeAndEtagsDisabled() throws Exception {
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(context, etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
 
@@ -333,7 +351,8 @@ public class RemoteClientTest extends AndroidTestCase {
         Pivotal.setProperties(properties);
 
         final EtagStore etagStore = Mockito.mock(EtagStore.class);
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(etagStore));
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(context, etagStore));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final StatusLine httpStatusLine = Mockito.mock(StatusLine.class);
 
@@ -352,7 +371,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetResponseBodyReturnsCorrectResult() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
         final InputStream inputStream = new ByteArrayInputStream(RESULT.getBytes());
@@ -367,7 +386,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetResponseBodyClosesInputStream() throws Exception {
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null));
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
         final HttpResponse httpResponse = Mockito.mock(HttpResponse.class);
         final HttpEntity httpEntity = Mockito.mock(HttpEntity.class);
         final InputStream inputStream = Mockito.mock(InputStream.class);
@@ -380,5 +399,40 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpResponse).getEntity();
         Mockito.verify(httpEntity).getContent();
         Mockito.verify(inputStream).close();
+    }
+
+    public void testGetAccessTokenWithNoProvider() {
+        TokenProviderFactory.registerTokenProvider(null);
+
+        final RemoteClient.Default client = new RemoteClient.Default(null, null);
+
+        assertNull(client.getAccessToken());
+    }
+
+    public void testGetAccessTokenWithActivity() {
+        final TokenProvider provider = Mockito.mock(TokenProvider.class);
+        TokenProviderFactory.registerTokenProvider(provider);
+
+        final Activity activity = Mockito.mock(Activity.class);
+        final RemoteClient.Default client = new RemoteClient.Default(activity, null);
+
+        Mockito.when(provider.provideAccessTokenWithPrompt(Mockito.any(Activity.class))).thenReturn(TOKEN);
+
+        assertEquals(TOKEN, client.getAccessToken());
+
+        Mockito.verify(provider).provideAccessTokenWithPrompt(activity);
+    }
+
+    public void testGetAccessTokenWithContext() {
+        final TokenProvider provider = Mockito.mock(TokenProvider.class);
+        TokenProviderFactory.registerTokenProvider(provider);
+
+        final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
+
+        Mockito.when(provider.provideAccessToken(Mockito.any(Context.class))).thenReturn(TOKEN);
+
+        assertEquals(TOKEN, client.getAccessToken());
+
+        Mockito.verify(provider).provideAccessToken(mContext);
     }
 }

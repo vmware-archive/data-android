@@ -3,6 +3,8 @@
  */
 package io.pivotal.android.data;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -50,9 +52,16 @@ public interface RemoteClient<T> {
         }
 
         private final EtagStore mEtagStore;
+        private final Context mContext;
 
-        public Default(final EtagStore store) {
+        public Default(final Context context) {
+            mEtagStore = new EtagStore(context);
+            mContext = context;
+        }
+
+        public Default(final Context context, final EtagStore store) {
             mEtagStore = store;
+            mContext = context;
         }
 
         @Override
@@ -66,7 +75,7 @@ public interface RemoteClient<T> {
                 final HttpGet get = new HttpGet(url);
 
                 addUserAgentHeader(get);
-                addAuthHeader(get, request.accessToken);
+                addAuthHeader(get);
 
                 if (!request.force) {
                     addEtagHeader(get, url, Headers.IF_NONE_MATCH);
@@ -94,7 +103,7 @@ public interface RemoteClient<T> {
                 put.setEntity(new ByteArrayEntity(object.value.getBytes()));
 
                 addUserAgentHeader(put);
-                addAuthHeader(put, request.accessToken);
+                addAuthHeader(put);
 
                 if (!request.force) {
                     addEtagHeader(put, url, Headers.IF_MATCH);
@@ -123,7 +132,7 @@ public interface RemoteClient<T> {
                 final HttpDelete delete = new HttpDelete(url);
 
                 addUserAgentHeader(delete);
-                addAuthHeader(delete, request.accessToken);
+                addAuthHeader(delete);
 
                 if (!request.force) {
                     addEtagHeader(delete, url, Headers.IF_MATCH);
@@ -159,7 +168,20 @@ public interface RemoteClient<T> {
         // ========================================================
 
 
-        protected void addAuthHeader(final HttpUriRequest request, final String accessToken) {
+        protected String getAccessToken() {
+            final TokenProvider provider = TokenProviderFactory.obtainTokenProvider();
+            if (provider == null) {
+                return null;
+            } else if (mContext instanceof Activity) {
+                final Activity activity = (Activity) mContext;
+                return provider.provideAccessTokenWithPrompt(activity);
+            } else {
+                return provider.provideAccessToken(mContext);
+            }
+        }
+
+        protected void addAuthHeader(final HttpUriRequest request) {
+            final String accessToken = getAccessToken();
             if (accessToken != null) {
                 Logger.v("Request Header - " + Headers.AUTHORIZATION + ": Bearer " + accessToken);
                 request.addHeader(Headers.AUTHORIZATION, "Bearer " + accessToken);

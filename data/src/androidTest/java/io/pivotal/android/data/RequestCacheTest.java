@@ -74,8 +74,8 @@ public class RequestCacheTest extends AndroidTestCase {
 
         Mockito.when(queue.empty()).thenReturn(list);
 
-        defaultCache.executePending(TOKEN);
+        defaultCache.executePending();
 
-        Mockito.verify(executor).execute(list, TOKEN);
+        Mockito.verify(executor).execute(list);
     }
 }

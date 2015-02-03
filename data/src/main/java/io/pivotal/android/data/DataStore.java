@@ -29,5 +29,4 @@ public interface DataStore<T> {
     public static interface Listener<T> {
         public void onResponse(Response<T> response);
     }
-
 }

@@ -12,7 +12,17 @@ import android.content.pm.PackageManager;
 public class ConnectivityReceiver extends BroadcastReceiver {
 
     private static boolean sIsConnected;
-    private static ConnectivityListener sConnectivityListener;
+    private static ConnectivityListener sConnectivityListener = new ConnectivityListener() {
+
+        @Override
+        public void onNetworkConnected(final Context context) {
+            Data.syncInBackground(context);
+        }
+
+        @Override
+        public void onNetworkDisconnected(final Context context) {
+        }
+    };
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
@@ -27,6 +37,10 @@ public class ConnectivityReceiver extends BroadcastReceiver {
             sConnectivityListener.onNetworkDisconnected(context);
 
         } else if (!sIsConnected && connected) {
+
+            // TODO check network for real
+            // http://guides.cocoahero.com/determining-web-service-reachability-on-android.html
+
             sConnectivityListener.onNetworkConnected(context);
         }
 

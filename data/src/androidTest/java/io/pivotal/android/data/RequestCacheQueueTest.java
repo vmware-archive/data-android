@@ -31,7 +31,7 @@ public class RequestCacheQueueTest extends AndroidTestCase {
         final ObjectMapper mapper = new ObjectMapper();
 
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
         final QueuedRequest<KeyValue> queuedRequest = new QueuedRequest<KeyValue>(request, METHOD);
         final QueuedRequest.List<KeyValue> list = new QueuedRequest.List<KeyValue>();
         list.add(queuedRequest);
@@ -47,7 +47,6 @@ public class RequestCacheQueueTest extends AndroidTestCase {
         final QueuedRequest<KeyValue> deserializedItem = response.get(0);
 
         assertEquals(METHOD, deserializedItem.method);
-        assertEquals(TOKEN, deserializedItem.accessToken);
         assertEquals(keyValue.key, deserializedItem.object.key);
         assertEquals(keyValue.value, deserializedItem.object.value);
         assertEquals(keyValue.collection, deserializedItem.object.collection);
@@ -59,7 +58,7 @@ public class RequestCacheQueueTest extends AndroidTestCase {
         final ObjectMapper mapper = new ObjectMapper();
 
         final KeyValue keyValue = new KeyValue(COLLECTION, KEY, VALUE);
-        final Request<KeyValue> request = new Request<KeyValue>(TOKEN, keyValue);
+        final Request<KeyValue> request = new Request<KeyValue>(keyValue, false);
         final QueuedRequest<KeyValue> queuedRequest = new QueuedRequest<KeyValue>(request, METHOD);
         final QueuedRequest.List<KeyValue> list = new QueuedRequest.List<KeyValue>();
         list.add(queuedRequest);
@@ -76,7 +75,7 @@ public class RequestCacheQueueTest extends AndroidTestCase {
     @SuppressWarnings("unchecked")
     public void testAdd() {
         final Object object = new Object();
-        final Request request = new Request(TOKEN, object);
+        final Request request = new Request(object, false);
         final QueuedRequest queuedRequest = new QueuedRequest(request, METHOD);
         final QueuedRequest.List list = Mockito.mock(QueuedRequest.List.class);
 

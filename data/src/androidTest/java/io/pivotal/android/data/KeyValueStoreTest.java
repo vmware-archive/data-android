@@ -29,7 +29,7 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testGetInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(null, new KeyValue(COLLECTION, KEY, null));
+        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
         final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
 
         Mockito.when(persistence.getString(Mockito.anyString())).thenReturn(VALUE);
@@ -47,7 +47,7 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testPutInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(null, new KeyValue(COLLECTION, KEY, VALUE));
+        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, VALUE), false);
         final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
 
         Mockito.when(persistence.putString(Mockito.anyString(), Mockito.anyString())).thenReturn(VALUE);
@@ -65,7 +65,7 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testDeleteInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(null, new KeyValue(COLLECTION, KEY, null));
+        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
         final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
 
         Mockito.when(persistence.deleteString(Mockito.anyString())).thenReturn("");

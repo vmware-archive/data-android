@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 public class Request<T> {
 
-    public String accessToken;
+//    public String accessToken;
     public boolean force;
 
     @JsonTypeInfo(
@@ -27,16 +27,16 @@ public class Request<T> {
     public Request() {}
 
     public Request(final Request<T> request) {
-        this(request.accessToken, request.object, request.force);
+        this(request.object, request.fallback, request.force);
     }
 
-    public Request(final String accessToken, final T object) {
-        this(accessToken, object, false);
+    public Request(final T object, final boolean force) {
+        this(object, null, force);
     }
 
-    public Request(final String accessToken, final T object, final boolean force) {
-        this.accessToken = accessToken;
+    public Request(final T object, final T fallback, final boolean force) {
         this.object = object;
+        this.fallback = fallback;
         this.force = force;
     }
 }

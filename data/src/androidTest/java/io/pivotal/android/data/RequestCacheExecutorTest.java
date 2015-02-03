@@ -20,41 +20,13 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
     }
 
-    public void testExecuteWithDesiredToken() {
+    public void testExecute() {
         try {
-            final QueuedRequest request = Mockito.mock(QueuedRequest.class);
-            request.accessToken = UUID.randomUUID().toString();
-
             final QueuedRequest.List list = new QueuedRequest.List();
-            list.add(request);
+            list.add(Mockito.mock(QueuedRequest.class));
 
             final RequestCacheExecutor executor = new RequestCacheExecutor(null, null);
-
-            executor.execute(list, TOKEN);
-
-            assertEquals(request.accessToken, TOKEN);
-
-            fail("Expected exception");
-        } catch (final UnsupportedOperationException ex) {
-            assertNotNull(ex);
-        }
-    }
-
-    public void testExecuteWithNullToken() {
-        try {
-            final String token = UUID.randomUUID().toString();
-
-            final QueuedRequest request = Mockito.mock(QueuedRequest.class);
-            request.accessToken = token;
-
-            final QueuedRequest.List list = new QueuedRequest.List();
-            list.add(request);
-
-            final RequestCacheExecutor executor = new RequestCacheExecutor(null, null);
-
-            executor.execute(list, null);
-
-            assertEquals(request.accessToken, token);
+            executor.execute(list);
 
             fail("Expected exception");
         } catch (final UnsupportedOperationException ex) {
@@ -73,7 +45,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         final DataStore fallbackStore = Mockito.mock(DataStore.class);
         final RequestCacheExecutor executor = new RequestCacheExecutor(offlineStore, fallbackStore);
 
-        executor.execute(list, null);
+        executor.execute(list);
 
         Mockito.verify(offlineStore).get(request);
     }
@@ -93,7 +65,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.when(offlineStore.put(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(false);
 
-        executor.execute(list, null);
+        executor.execute(list);
 
         Mockito.verify(offlineStore).put(request);
     }
@@ -113,7 +85,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.when(offlineStore.put(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(true);
 
-        executor.execute(list, null);
+        executor.execute(list);
 
         Mockito.verify(offlineStore).put(request);
         Mockito.verify(fallbackStore).put(request);
@@ -134,7 +106,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.when(offlineStore.delete(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(false);
 
-        executor.execute(list, null);
+        executor.execute(list);
 
         Mockito.verify(offlineStore).delete(request);
     }
@@ -154,7 +126,7 @@ public class RequestCacheExecutorTest extends AndroidTestCase {
         Mockito.when(offlineStore.delete(Mockito.any(QueuedRequest.class))).thenReturn(response);
         Mockito.when(response.isFailure()).thenReturn(true);
 
-        executor.execute(list, null);
+        executor.execute(list);
 
         Mockito.verify(offlineStore).delete(request);
         Mockito.verify(fallbackStore).put(request);
