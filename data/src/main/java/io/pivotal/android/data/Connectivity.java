@@ -14,6 +14,6 @@ public class Connectivity {
         final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(service);
 
         final NetworkInfo activeNetwork = manager.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 }

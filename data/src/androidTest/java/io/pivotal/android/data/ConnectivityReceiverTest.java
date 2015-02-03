@@ -30,7 +30,7 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
         Mockito.when(context.getPackageManager()).thenReturn(packageManager);
         Mockito.when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connManager);
         Mockito.when(connManager.getActiveNetworkInfo()).thenReturn(networkInfo);
-        Mockito.when(networkInfo.isConnectedOrConnecting()).thenReturn(true);
+        Mockito.when(networkInfo.isConnected()).thenReturn(true);
 
         ConnectivityReceiver receiver = new ConnectivityReceiver();
         receiver.setIsConnected(false);
@@ -39,7 +39,7 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
 
         Mockito.verify(context).getSystemService(Context.CONNECTIVITY_SERVICE);
         Mockito.verify(connManager).getActiveNetworkInfo();
-        Mockito.verify(networkInfo).isConnectedOrConnecting();
+        Mockito.verify(networkInfo).isConnected();
         Mockito.verify(connectivityListener).onNetworkConnected(context);
     }
 
@@ -53,7 +53,7 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
         Mockito.when(context.getPackageManager()).thenReturn(packageManager);
         Mockito.when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(connManager);
         Mockito.when(connManager.getActiveNetworkInfo()).thenReturn(networkInfo);
-        Mockito.when(networkInfo.isConnectedOrConnecting()).thenReturn(false);
+        Mockito.when(networkInfo.isConnected()).thenReturn(false);
 
         ConnectivityReceiver receiver = new ConnectivityReceiver();
         receiver.setIsConnected(true);
@@ -62,7 +62,7 @@ public class ConnectivityReceiverTest extends AndroidTestCase {
 
         Mockito.verify(context).getSystemService(Context.CONNECTIVITY_SERVICE);
         Mockito.verify(connManager).getActiveNetworkInfo();
-        Mockito.verify(networkInfo).isConnectedOrConnecting();
+        Mockito.verify(networkInfo).isConnected();
         Mockito.verify(connectivityListener, Mockito.never()).onNetworkConnected(context);
     }
 }

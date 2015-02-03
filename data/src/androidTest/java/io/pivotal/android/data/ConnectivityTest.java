@@ -29,11 +29,11 @@ public class ConnectivityTest extends AndroidTestCase {
 
         Mockito.when(context.getSystemService(Context.CONNECTIVITY_SERVICE)).thenReturn(manager);
         Mockito.when(manager.getActiveNetworkInfo()).thenReturn(networkInfo);
-        Mockito.when(networkInfo.isConnectedOrConnecting()).thenReturn(RESULT);
+        Mockito.when(networkInfo.isConnected()).thenReturn(RESULT);
 
         assertEquals(RESULT, Connectivity.isConnected(context));
 
-        Mockito.verify(networkInfo).isConnectedOrConnecting();
+        Mockito.verify(networkInfo).isConnected();
     }
 
     public void testIsConnectedReturnsFalseWhenActiveNetworkInfoIsNull() {
