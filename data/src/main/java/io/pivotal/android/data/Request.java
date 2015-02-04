@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 public class Request<T> {
 
-//    public String accessToken;
     public boolean force;
 
     @JsonTypeInfo(

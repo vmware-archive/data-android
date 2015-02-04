@@ -79,6 +79,8 @@ public interface RemoteClient<T> {
 
                 if (!request.force) {
                     addEtagHeader(get, url, Headers.IF_NONE_MATCH);
+                } else {
+                    Logger.e("Request Header - No Etag. Request Forced.");
                 }
 
                 final KeyValue responseObject = new KeyValue(object);
@@ -107,6 +109,8 @@ public interface RemoteClient<T> {
 
                 if (!request.force) {
                     addEtagHeader(put, url, Headers.IF_MATCH);
+                } else {
+                    Logger.e("Request Header - No Etag. Request Forced.");
                 }
 
                 final String result = execute(put);
@@ -136,6 +140,8 @@ public interface RemoteClient<T> {
 
                 if (!request.force) {
                     addEtagHeader(delete, url, Headers.IF_MATCH);
+                } else {
+                    Logger.e("Request Header - No Etag. Request Forced.");
                 }
 
                 final KeyValue responseObject = new KeyValue(object);
@@ -199,6 +205,8 @@ public interface RemoteClient<T> {
                 } else {
                     Logger.e("Request Header - No etag found.");
                 }
+            } else {
+                Logger.e("Request Header - Etags Disabled.");
             }
         }
 
