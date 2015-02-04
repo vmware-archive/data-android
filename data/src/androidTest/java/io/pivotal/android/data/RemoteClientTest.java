@@ -416,11 +416,11 @@ public class RemoteClientTest extends AndroidTestCase {
         final Activity activity = Mockito.mock(Activity.class);
         final RemoteClient.Default client = new RemoteClient.Default(activity, null);
 
-        Mockito.when(provider.provideAccessTokenWithPrompt(Mockito.any(Activity.class))).thenReturn(TOKEN);
+        Mockito.when(provider.provideAccessTokenWithUserPrompt(Mockito.any(Activity.class))).thenReturn(TOKEN);
 
         assertEquals(TOKEN, client.getAccessToken());
 
-        Mockito.verify(provider).provideAccessTokenWithPrompt(activity);
+        Mockito.verify(provider).provideAccessTokenWithUserPrompt(activity);
     }
 
     public void testGetAccessTokenWithContext() {

@@ -174,7 +174,7 @@ public interface RemoteClient<T> {
                 return null;
             } else if (mContext instanceof Activity) {
                 final Activity activity = (Activity) mContext;
-                return provider.provideAccessTokenWithPrompt(activity);
+                return provider.provideAccessTokenWithUserPrompt(activity);
             } else {
                 return provider.provideAccessToken(mContext);
             }

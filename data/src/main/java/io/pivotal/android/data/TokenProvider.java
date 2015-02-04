@@ -9,5 +9,5 @@ import android.content.Context;
 public interface TokenProvider {
     public String provideAccessToken(final Context context);
 
-    public String provideAccessTokenWithPrompt(final Activity activity);
+    public String provideAccessTokenWithUserPrompt(final Activity activity);
 }
