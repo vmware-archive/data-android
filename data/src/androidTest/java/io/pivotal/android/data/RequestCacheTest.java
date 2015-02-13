@@ -7,16 +7,8 @@ import android.test.AndroidTestCase;
 
 import org.mockito.Mockito;
 
-import java.util.UUID;
-
 @SuppressWarnings("unchecked")
 public class RequestCacheTest extends AndroidTestCase {
-
-    private static final String TOKEN = UUID.randomUUID().toString();
-    private static final String COLLECTION = UUID.randomUUID().toString();
-    private static final String KEY = UUID.randomUUID().toString();
-    private static final String VALUE = UUID.randomUUID().toString();
-    private static final int METHOD = (int) (Math.random() * 3.0);
 
     @Override
     protected void setUp() throws Exception {

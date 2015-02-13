@@ -3,11 +3,8 @@
  */
 package io.pivotal.android.data;
 
-import android.app.Activity;
 import android.content.Context;
 
 public interface TokenProvider {
     public String provideAccessToken(final Context context);
-
-    public String provideAccessTokenWithUserPrompt(final Activity activity);
 }

@@ -3,7 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.text.TextUtils;
@@ -176,13 +175,10 @@ public interface RemoteClient<T> {
 
         protected String getAccessToken() {
             final TokenProvider provider = TokenProviderFactory.obtainTokenProvider();
-            if (provider == null) {
-                return null;
-            } else if (mContext instanceof Activity) {
-                final Activity activity = (Activity) mContext;
-                return provider.provideAccessTokenWithUserPrompt(activity);
-            } else {
+            if (provider != null) {
                 return provider.provideAccessToken(mContext);
+            } else {
+                return null;
             }
         }
 

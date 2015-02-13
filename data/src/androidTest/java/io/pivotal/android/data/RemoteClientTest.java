@@ -3,7 +3,6 @@
  */
 package io.pivotal.android.data;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.test.AndroidTestCase;
@@ -407,20 +406,6 @@ public class RemoteClientTest extends AndroidTestCase {
         final RemoteClient.Default client = new RemoteClient.Default(null, null);
 
         assertNull(client.getAccessToken());
-    }
-
-    public void testGetAccessTokenWithActivity() {
-        final TokenProvider provider = Mockito.mock(TokenProvider.class);
-        TokenProviderFactory.registerTokenProvider(provider);
-
-        final Activity activity = Mockito.mock(Activity.class);
-        final RemoteClient.Default client = new RemoteClient.Default(activity, null);
-
-        Mockito.when(provider.provideAccessTokenWithUserPrompt(Mockito.any(Activity.class))).thenReturn(TOKEN);
-
-        assertEquals(TOKEN, client.getAccessToken());
-
-        Mockito.verify(provider).provideAccessTokenWithUserPrompt(activity);
     }
 
     public void testGetAccessTokenWithContext() {

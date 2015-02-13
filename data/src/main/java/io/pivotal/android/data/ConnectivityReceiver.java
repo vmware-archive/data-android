@@ -13,14 +13,11 @@ public class ConnectivityReceiver extends BroadcastReceiver {
 
     private static boolean sIsConnected;
     private static ConnectivityListener sConnectivityListener = new ConnectivityListener() {
-
         @Override
-        public void onNetworkConnected(final Context context) {
-            Data.syncInBackground(context);
-        }
-
-        @Override
-        public void onNetworkDisconnected(final Context context) {
+        public void onNetworkStatusChanged(final Context context, final boolean connected) {
+            if (connected) {
+                Data.syncInBackground(context);
+            }
         }
     };
 
@@ -33,15 +30,8 @@ public class ConnectivityReceiver extends BroadcastReceiver {
 
         final boolean connected = Connectivity.isConnected(context);
 
-        if (sIsConnected && !connected) {
-            sConnectivityListener.onNetworkDisconnected(context);
-
-        } else if (!sIsConnected && connected) {
-
-            // TODO check network for real
-            // http://guides.cocoahero.com/determining-web-service-reachability-on-android.html
-
-            sConnectivityListener.onNetworkConnected(context);
+        if (sIsConnected != connected) {
+            sConnectivityListener.onNetworkStatusChanged(context, connected);
         }
 
         sIsConnected = connected;
