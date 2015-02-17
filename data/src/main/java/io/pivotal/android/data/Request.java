@@ -36,6 +36,10 @@ public class Request<T> {
         this(request.method, request.object, request.fallback, request.force);
     }
 
+    public Request(final int method, final T object) {
+        this(method, object, null, false);
+    }
+
     public Request(final int method, final T object, final boolean force) {
         this(method, object, null, force);
     }
@@ -53,6 +57,10 @@ public class Request<T> {
             this(request.object, request.fallback, request.force);
         }
 
+        public Get(final T object) {
+            this(object, null, false);
+        }
+
         public Get(final T object, final boolean force) {
             this(object, null, force);
         }
@@ -68,6 +76,10 @@ public class Request<T> {
             this(request.object, request.fallback, request.force);
         }
 
+        public Put(final T object) {
+            this(object, null, false);
+        }
+
         public Put(final T object, final boolean force) {
             this(object, null, force);
         }
@@ -81,6 +93,10 @@ public class Request<T> {
 
         public Delete(final Request<T> request) {
             this(request.object, request.fallback, request.force);
+        }
+
+        public Delete(final T object) {
+            this(object, null, false);
         }
 
         public Delete(final T object, final boolean force) {
