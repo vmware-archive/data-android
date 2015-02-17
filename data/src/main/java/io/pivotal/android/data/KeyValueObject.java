@@ -11,7 +11,7 @@ import io.pivotal.android.data.DataStore.Observer;
 public class KeyValueObject {
 
     public static KeyValueObject create(final Context context, final String collection, final String key) {
-        final OfflineStore<KeyValue> dataStore = OfflineStore.createKeyValue(context);
+        final DataStore<KeyValue> dataStore = KeyValueOfflineStore.create(context);
         return new KeyValueObject(dataStore, collection, key);
     }
 
@@ -30,46 +30,46 @@ public class KeyValueObject {
         mForce = force;
     }
 
-    protected Request<KeyValue> createRequest(final String value) {
+    protected Request<KeyValue> createRequest(final int method, final String value) {
         Logger.d("REQUEST: Collection: " + mCollection + ", Key: " + mKey + ", Value: " + value + ", Force: " + mForce);
         final KeyValue object = new KeyValue(mCollection, mKey, value);
-        return new Request<KeyValue>(object, mForce);
+        return new Request<KeyValue>(method, object, mForce);
     }
 
     public Response<KeyValue> get() {
         Logger.d("Get: " + mKey);
-        final Request<KeyValue> request = createRequest(null);
-        return mDataStore.get(request);
+        final Request<KeyValue> request = createRequest(Request.Methods.GET, null);
+        return mDataStore.execute(request);
     }
 
     public void get(final Listener<KeyValue> listener) {
         Logger.d("Get: " + mKey);
-        final Request<KeyValue> request = createRequest(null);
-        mDataStore.get(request, listener);
+        final Request<KeyValue> request = createRequest(Request.Methods.GET, null);
+        mDataStore.execute(request, listener);
     }
 
     public Response<KeyValue> put(final String value) {
         Logger.d("Put: " + mKey + ", " + value);
-        final Request<KeyValue> request = createRequest(value);
-        return mDataStore.put(request);
+        final Request<KeyValue> request = createRequest(Request.Methods.PUT, value);
+        return mDataStore.execute(request);
     }
 
     public void put(final String value, final Listener<KeyValue> listener) {
         Logger.d("Put: " + mKey + ", " + value);
-        final Request<KeyValue> request = createRequest(value);
-        mDataStore.put(request, listener);
+        final Request<KeyValue> request = createRequest(Request.Methods.PUT, value);
+        mDataStore.execute(request, listener);
     }
 
     public Response<KeyValue> delete() {
         Logger.d("Delete: " + mKey);
-        final Request<KeyValue> request = createRequest(null);
-        return mDataStore.delete(request);
+        final Request<KeyValue> request = createRequest(Request.Methods.DELETE, null);
+        return mDataStore.execute(request);
     }
 
     public void delete(final Listener<KeyValue> listener) {
         Logger.d("Delete: " + mKey);
-        final Request<KeyValue> request = createRequest(null);
-        mDataStore.delete(request, listener);
+        final Request<KeyValue> request = createRequest(Request.Methods.DELETE, null);
+        mDataStore.execute(request, listener);
     }
 
     public boolean addObserver(final Observer<KeyValue> observer) {

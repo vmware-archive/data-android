@@ -23,19 +23,18 @@ import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
-public interface RemoteClient<T> {
-
-    public Response<T> get(final Request<T> request) throws Exception;
-
-    public Response<T> put(final Request<T> request) throws Exception;
-
-    public Response<T> delete(final Request<T> request) throws Exception;
+public interface RemoteClient {
 
 
-    public static class Default<T> implements RemoteClient<T> {
+    public String get(String url, boolean force) throws Exception;
+
+    public String put(String url, byte[] entity, boolean force) throws Exception;
+
+    public String delete(String url, boolean force) throws Exception;
+
+
+    public static class Default implements RemoteClient {
 
         public static final class Timeouts {
             public static final int CONNECTION = 4000;
@@ -64,107 +63,55 @@ public interface RemoteClient<T> {
         }
 
         @Override
-        public Response<T> get(final Request<T> request) throws Exception {
-
-            if (request.object instanceof KeyValue) {
-
-                final KeyValue object = (KeyValue) request.object;
-                final String url = getUrl(object);
-
-                final HttpGet get = new HttpGet(url);
-
-                addUserAgentHeader(get);
-                addAuthHeader(get);
-
-                if (!request.force) {
-                    addEtagHeader(get, url, Headers.IF_NONE_MATCH);
-                } else {
-                    Logger.e("Request Header - No Etag. Request Forced.");
-                }
-
-                final KeyValue responseObject = new KeyValue(object);
-                responseObject.value = execute(get);
-
-                return new Response<T>((T) responseObject);
-
-            } else {
-                throw new UnsupportedOperationException();
-            }
+        public String get(final String url, final boolean force) throws Exception {
+            final HttpGet request = new HttpGet(url);
+            return execute(request, force);
         }
 
         @Override
-        public Response<T> put(final Request<T> request) throws Exception {
+        public String put(final String url, final byte[] entity, final boolean force) throws Exception {
+            final HttpPut request = new HttpPut(url);
+            request.setEntity(new ByteArrayEntity(entity));
 
-            if (request.object instanceof KeyValue) {
-
-                final KeyValue object = (KeyValue) request.object;
-                final String url = getUrl(object);
-
-                final HttpPut put = new HttpPut(url);
-                put.setEntity(new ByteArrayEntity(object.value.getBytes()));
-
-                addUserAgentHeader(put);
-                addAuthHeader(put);
-
-                if (!request.force) {
-                    addEtagHeader(put, url, Headers.IF_MATCH);
-                } else {
-                    Logger.e("Request Header - No Etag. Request Forced.");
-                }
-
-                final String result = execute(put);
-
-                final KeyValue responseObject = new KeyValue(object);
-                responseObject.value = TextUtils.isEmpty(result) ? object.value : result;
-
-                return new Response<T>((T) responseObject);
-
-            } else {
-                throw new UnsupportedOperationException();
-            }
+            final String result = execute(request, force);
+            return TextUtils.isEmpty(result) ? new String(entity) : result;
         }
 
         @Override
-        public Response<T> delete(final Request<T> request) throws Exception {
-
-            if (request.object instanceof KeyValue) {
-
-                final KeyValue object = (KeyValue) request.object;
-                final String url = getUrl(object);
-
-                final HttpDelete delete = new HttpDelete(url);
-
-                addUserAgentHeader(delete);
-                addAuthHeader(delete);
-
-                if (!request.force) {
-                    addEtagHeader(delete, url, Headers.IF_MATCH);
-                } else {
-                    Logger.e("Request Header - No Etag. Request Forced.");
-                }
-
-                final KeyValue responseObject = new KeyValue(object);
-                responseObject.value = execute(delete);
-
-                return new Response<T>((T) responseObject);
-
-            } else {
-                throw new UnsupportedOperationException();
-            }
+        public String delete(final String url, final boolean force) throws Exception {
+            final HttpDelete request = new HttpDelete(url);
+            return execute(request, force);
         }
 
-        protected String getUrl(final KeyValue keyValue) throws MalformedURLException {
-            return new URL(Pivotal.getServiceUrl() + "/" + keyValue.collection + "/" + keyValue.key).toString();
-        }
-
-
-        public String execute(final HttpUriRequest request) throws Exception {
+        protected String execute(final HttpUriRequest request, final boolean force) throws Exception {
             final String url = request.getURI().toString();
 
             Logger.v("Request Url: " + url);
 
-            final HttpClient client = getHttpClient();
-            final HttpResponse response = client.execute(request);
+            addAuthHeader(request);
+
+            addUserAgentHeader(request);
+
+            if (!force) {
+                addEtagHeader(request, url);
+            } else {
+                Logger.e("Request Header - No Etag. Request Forced.");
+            }
+
+            return execute(request);
+        }
+
+        protected String execute(final HttpUriRequest request) throws Exception {
+            final String url = request.getURI().toString();
+            final HttpClient httpClient = getHttpClient();
+
+            HttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 401) {
+                invalidateAccessToken();
+
+                response = httpClient.execute(request);
+            }
 
             return handleResponse(response, url);
         }
@@ -173,7 +120,7 @@ public interface RemoteClient<T> {
         // ========================================================
 
 
-        protected String getAccessToken() {
+        protected String provideAccessToken() {
             final TokenProvider provider = TokenProviderFactory.obtainTokenProvider();
             if (provider != null) {
                 return provider.provideAccessToken(mContext);
@@ -182,8 +129,15 @@ public interface RemoteClient<T> {
             }
         }
 
+        protected void invalidateAccessToken() {
+            final TokenProvider provider = TokenProviderFactory.obtainTokenProvider();
+            if (provider != null) {
+                provider.invalidateAccessToken(mContext);
+            }
+        }
+
         protected void addAuthHeader(final HttpUriRequest request) {
-            final String accessToken = getAccessToken();
+            final String accessToken = provideAccessToken();
             if (accessToken != null) {
                 Logger.v("Request Header - " + Headers.AUTHORIZATION + ": Bearer " + accessToken);
                 request.addHeader(Headers.AUTHORIZATION, "Bearer " + accessToken);
@@ -192,12 +146,16 @@ public interface RemoteClient<T> {
             }
         }
 
-        protected void addEtagHeader(final HttpUriRequest request, final String url, final String header) {
+        protected void addEtagHeader(final HttpUriRequest request, final String url) {
             if (Pivotal.areEtagsEnabled()) {
                 final String etag = mEtagStore.get(url);
                 if (etag != null) {
-                    Logger.v("Request Header - " + header + ": " + etag);
-                    request.addHeader(header, etag);
+                    if (request instanceof HttpGet) {
+                        request.addHeader(Headers.IF_NONE_MATCH, etag);
+                    } else {
+                        request.addHeader(Headers.IF_MATCH, etag);
+                    }
+                    Logger.v("Request Header - Etag: " + etag);
                 } else {
                     Logger.e("Request Header - No etag found.");
                 }

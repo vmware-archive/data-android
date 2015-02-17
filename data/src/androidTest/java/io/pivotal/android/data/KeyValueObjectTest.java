@@ -36,13 +36,13 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final Response<KeyValue> response = Mockito.mock(KeyValueResponse.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
-        Mockito.when(dataStore.get(request)).thenReturn(response);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
+        Mockito.when(dataStore.execute(request)).thenReturn(response);
 
         assertEquals(response, keyValueObject.get());
 
-        Mockito.verify(keyValueObject).createRequest(null);
-        Mockito.verify(dataStore).get(request);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.GET, null);
+        Mockito.verify(dataStore).execute(request);
     }
 
     public void testGetAsyncInvokesDataStore() {
@@ -51,12 +51,12 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final DataStore.Listener<KeyValue> listener = Mockito.mock(KeyValueListener.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
 
         keyValueObject.get(listener);
 
-        Mockito.verify(keyValueObject).createRequest(null);
-        Mockito.verify(dataStore).get(request, listener);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.GET, null);
+        Mockito.verify(dataStore).execute(request, listener);
     }
 
     public void testPutInvokesDataStore() {
@@ -65,13 +65,13 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final Response<KeyValue> response = Mockito.mock(KeyValueResponse.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
-        Mockito.when(dataStore.put(request)).thenReturn(response);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
+        Mockito.when(dataStore.execute(request)).thenReturn(response);
 
         assertEquals(response, keyValueObject.put(VALUE));
 
-        Mockito.verify(keyValueObject).createRequest(VALUE);
-        Mockito.verify(dataStore).put(request);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.PUT, VALUE);
+        Mockito.verify(dataStore).execute(request);
     }
 
     public void testPutAsyncInvokesDataStore() {
@@ -80,12 +80,12 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final DataStore.Listener<KeyValue> listener = Mockito.mock(KeyValueListener.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
 
         keyValueObject.put(VALUE, listener);
 
-        Mockito.verify(keyValueObject).createRequest(VALUE);
-        Mockito.verify(dataStore).put(request, listener);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.PUT, VALUE);
+        Mockito.verify(dataStore).execute(request, listener);
     }
 
     public void testDeleteInvokesDataStore() {
@@ -94,13 +94,13 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final Response<KeyValue> response = Mockito.mock(KeyValueResponse.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
-        Mockito.when(dataStore.delete(request)).thenReturn(response);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
+        Mockito.when(dataStore.execute(request)).thenReturn(response);
 
         assertEquals(response, keyValueObject.delete());
 
-        Mockito.verify(keyValueObject).createRequest(null);
-        Mockito.verify(dataStore).delete(request);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.DELETE, null);
+        Mockito.verify(dataStore).execute(request);
     }
 
     public void testDeleteAsyncInvokesDataStore() {
@@ -109,12 +109,12 @@ public class KeyValueObjectTest extends AndroidTestCase {
         final DataStore.Listener<KeyValue> listener = Mockito.mock(KeyValueListener.class);
         final KeyValueObject keyValueObject = Mockito.spy(new KeyValueObject(dataStore, COLLECTION, KEY));
 
-        Mockito.stub(keyValueObject.createRequest(Mockito.anyString())).toReturn(request);
+        Mockito.stub(keyValueObject.createRequest(Mockito.anyInt(), Mockito.anyString())).toReturn(request);
 
         keyValueObject.delete(listener);
 
-        Mockito.verify(keyValueObject).createRequest(null);
-        Mockito.verify(dataStore).delete(request, listener);
+        Mockito.verify(keyValueObject).createRequest(Request.Methods.DELETE, null);
+        Mockito.verify(dataStore).execute(request, listener);
     }
 
     public void testAddObserversInvokesDataStore() {

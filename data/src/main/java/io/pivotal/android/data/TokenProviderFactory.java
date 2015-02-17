@@ -3,7 +3,7 @@
  */
 package io.pivotal.android.data;
 
-public class TokenProviderFactory {
+/* package */ class TokenProviderFactory {
 
     private static TokenProvider sProvider;
 

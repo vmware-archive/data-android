@@ -13,25 +13,22 @@ public class RequestCacheExecutor<T> {
         mFallbackStore = fallbackStore;
     }
 
-    public void execute(final QueuedRequest.List<T> requests) {
-        for (final QueuedRequest<T> request : requests) {
+    public void execute(final PendingRequest.List<T> requests) {
+        for (final PendingRequest<T> request : requests) {
             execute(request);
         }
     }
 
-    private void execute(final QueuedRequest<T> request) {
+    private void execute(final PendingRequest<T> request) {
 
         switch (request.method) {
-            case QueuedRequest.Methods.GET:
-                executeGet(request);
+            case Request.Methods.GET:
+                mOfflineStore.execute(request);
                 break;
 
-            case QueuedRequest.Methods.PUT:
-                executePut(request);
-                break;
-
-            case QueuedRequest.Methods.DELETE:
-                executeDelete(request);
+            case Request.Methods.PUT:
+            case Request.Methods.DELETE:
+                executeWithFallback(request);
                 break;
 
             default:
@@ -39,23 +36,12 @@ public class RequestCacheExecutor<T> {
         }
     }
 
-    private void executeGet(final QueuedRequest<T> request) {
-        mOfflineStore.get(request);
-    }
-
-    private void executePut(final QueuedRequest<T> request) {
-        final Response<T> response = mOfflineStore.put(request);
+    private void executeWithFallback(final PendingRequest<T> request) {
+        final Response<T> response = mOfflineStore.execute(request);
         if (response.isFailure()) {
-            request.object = request.fallback;
-            mFallbackStore.put(request);
-        }
-    }
-
-    private void executeDelete(final QueuedRequest<T> request) {
-        final Response<T> response = mOfflineStore.delete(request);
-        if (response.isFailure()) {
-            request.object = request.fallback;
-            mFallbackStore.put(request);
+            final Request<T> put = new Request.Put<T>(request);
+            put.object = request.fallback;
+            mFallbackStore.execute(put);
         }
     }
 }

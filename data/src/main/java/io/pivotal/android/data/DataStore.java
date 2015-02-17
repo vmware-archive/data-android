@@ -5,17 +5,21 @@ package io.pivotal.android.data;
 
 public interface DataStore<T> {
 
-    public Response<T> get(final Request<T> request);
+    public Response<T> execute(final Request<T> request);
 
-    public void get(final Request<T> request, final Listener<T> listener);
+    public void execute(final Request<T> request, final Listener<T> listener);
 
-    public Response<T> put(final Request<T> request);
-
-    public void put(final Request<T> request, final Listener<T> listener);
-
-    public Response<T> delete(final Request<T> request);
-
-    public void delete(final Request<T> request, final Listener<T> listener);
+//    public Response<T> get(final Request<T> request);
+//
+//    public void get(final Request<T> request, final Listener<T> listener);
+//
+//    public Response<T> executeWithFallback(final Request<T> request);
+//
+//    public void executeWithFallback(final Request<T> request, final Listener<T> listener);
+//
+//    public Response<T> delete(final Request<T> request);
+//
+//    public void delete(final Request<T> request, final Listener<T> listener);
 
     public boolean addObserver(final Observer<T> observer);
 

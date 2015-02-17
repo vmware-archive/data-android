@@ -16,52 +16,24 @@ public class RequestCacheTest extends AndroidTestCase {
         System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
     }
 
-    public void testDefaultGet() {
+    public void testDefaultQueueRequest() {
         final Request request = Mockito.mock(Request.class);
-        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
+        final PendingRequest queued = Mockito.mock(PendingRequest.class);
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
 
-        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
+        Mockito.doReturn(queued).when(defaultCache).createPendingRequest(Mockito.any(Request.class));
 
-        defaultCache.queueGet(request);
+        defaultCache.queue(request);
 
-        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.GET);
-        Mockito.verify(queue).add(queued);
-    }
-
-    public void testDefaultPut() {
-        final Request request = Mockito.mock(Request.class);
-        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
-        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
-        final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
-
-        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
-
-        defaultCache.queuePut(request);
-
-        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.PUT);
-        Mockito.verify(queue).add(queued);
-    }
-
-    public void testDefaultDelete() {
-        final Request request = Mockito.mock(Request.class);
-        final QueuedRequest queued = Mockito.mock(QueuedRequest.class);
-        final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
-        final RequestCache.Default defaultCache = Mockito.spy(new RequestCache.Default(queue, null));
-
-        Mockito.doReturn(queued).when(defaultCache).createQueuedRequest(Mockito.any(Request.class), Mockito.anyInt());
-
-        defaultCache.queueDelete(request);
-
-        Mockito.verify(defaultCache).createQueuedRequest(request, QueuedRequest.Methods.DELETE);
+        Mockito.verify(defaultCache).createPendingRequest(request);
         Mockito.verify(queue).add(queued);
     }
 
     public void testDefaultExecutePending() {
         final RequestCacheQueue queue = Mockito.mock(RequestCacheQueue.class);
         final RequestCacheExecutor executor = Mockito.mock(RequestCacheExecutor.class);
-        final QueuedRequest.List list = new QueuedRequest.List();
+        final PendingRequest.List list = new PendingRequest.List();
         final RequestCache.Default defaultCache = new RequestCache.Default(queue, executor);
 
         Mockito.when(queue.empty()).thenReturn(list);

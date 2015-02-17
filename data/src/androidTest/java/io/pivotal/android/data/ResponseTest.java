@@ -9,17 +9,8 @@ import java.util.UUID;
 
 public class ResponseTest extends AndroidTestCase {
 
-    private static final String KEY = UUID.randomUUID().toString();
-    private static final String VALUE = UUID.randomUUID().toString();
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-//        System.setProperty("dexmaker.dexcache", mContext.getCacheDir().getPath());
-    }
-
     public void testIsSuccess() {
-        Response<Object> response = new Response<Object>();
+        final Response<Object> response = new Response<Object>();
 
         assertTrue(response.isSuccess());
 
@@ -29,7 +20,7 @@ public class ResponseTest extends AndroidTestCase {
     }
 
     public void testIsFailure() {
-        Response<Object> response = new Response<Object>();
+        final Response<Object> response = new Response<Object>();
 
         assertFalse(response.isFailure());
 
@@ -39,7 +30,7 @@ public class ResponseTest extends AndroidTestCase {
     }
 
     public void testIsNotModified() {
-        Response<Object> response = new Response<Object>();
+        final Response<Object> response = new Response<Object>();
 
         assertFalse(response.isNotModified());
 
@@ -54,7 +45,7 @@ public class ResponseTest extends AndroidTestCase {
     }
 
     public void testIsNotFound() {
-        Response<Object> response = new Response<Object>();
+        final Response<Object> response = new Response<Object>();
 
         assertFalse(response.isNotFound());
 
@@ -62,14 +53,14 @@ public class ResponseTest extends AndroidTestCase {
 
         assertFalse(response.isNotFound());
 
-        DataHttpException exception = new DataHttpException(404, UUID.randomUUID().toString());
+        final DataHttpException exception = new DataHttpException(404, UUID.randomUUID().toString());
         response.error = new DataError(exception);
 
         assertTrue(response.isNotFound());
     }
 
     public void testHasPreconditionFailed() {
-        Response<Object> response = new Response<Object>();
+        final Response<Object> response = new Response<Object>();
 
         assertFalse(response.hasPreconditionFailed());
 
@@ -77,9 +68,24 @@ public class ResponseTest extends AndroidTestCase {
 
         assertFalse(response.hasPreconditionFailed());
 
-        DataHttpException exception = new DataHttpException(412, UUID.randomUUID().toString());
+        final DataHttpException exception = new DataHttpException(412, UUID.randomUUID().toString());
         response.error = new DataError(exception);
 
         assertTrue(response.hasPreconditionFailed());
+    }
+
+    public void testIsUnauthorized() {
+        final Response<Object> response = new Response<Object>();
+
+        assertFalse(response.isUnauthorized());
+
+        response.error = new DataError(new Exception());
+
+        assertFalse(response.isUnauthorized());
+
+        final DataHttpException exception = new DataHttpException(401, UUID.randomUUID().toString());
+        response.error = new DataError(exception);
+
+        assertTrue(response.isUnauthorized());
     }
 }

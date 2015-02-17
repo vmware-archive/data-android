@@ -17,8 +17,8 @@ public class RequestCacheQueue<T> {
         mPersistence = persistence;
     }
 
-    public void add(final QueuedRequest<T> request) {
-        final QueuedRequest.List<T> requests;
+    public void add(final PendingRequest<T> request) {
+        final PendingRequest.List<T> requests;
 
         synchronized (LOCK) {
             requests = getRequests();
@@ -27,8 +27,8 @@ public class RequestCacheQueue<T> {
         }
     }
 
-    public QueuedRequest.List<T> empty() {
-        final QueuedRequest.List<T> requests;
+    public PendingRequest.List<T> empty() {
+        final PendingRequest.List<T> requests;
 
         synchronized (LOCK) {
             requests = getRequests();
@@ -39,18 +39,18 @@ public class RequestCacheQueue<T> {
     }
 
     @SuppressWarnings("unchecked")
-    protected QueuedRequest.List<T> getRequests() {
+    protected PendingRequest.List<T> getRequests() {
         try {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.registerSubtypes(KeyValue.class);
             final String serialized = mPersistence.getString(REQUEST_KEY);
-            return mapper.readValue(serialized, QueuedRequest.List.class);
+            return mapper.readValue(serialized, PendingRequest.List.class);
         } catch (final Exception e) {
-            return new QueuedRequest.List<T>();
+            return new PendingRequest.List<T>();
         }
     }
 
-    protected void putRequests(final QueuedRequest.List<T> requests) {
+    protected void putRequests(final PendingRequest.List<T> requests) {
         try {
             final ObjectMapper mapper = new ObjectMapper();
             final String data = mapper.writeValueAsString(requests);

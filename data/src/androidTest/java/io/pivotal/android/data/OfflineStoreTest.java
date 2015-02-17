@@ -21,26 +21,26 @@ public class OfflineStoreTest extends AndroidTestCase {
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
-        final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
+        final KeyValueLocalStore localStore = Mockito.mock(KeyValueLocalStore.class);
+        final KeyValueRemoteStore remoteStore = Mockito.mock(KeyValueRemoteStore.class);
         final Response localResponse = new Response(new Object(), null);
         final Response remoteResponse = new Response(new Object(), null);
-        final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, remoteStore));
+        final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, localStore, remoteStore));
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(localStore.execute(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore).put(Mockito.any(Request.class));
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(localStore).execute(Mockito.any(Request.class));
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFails() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final Response localResponse = new Response(new Object(), null);
         final Response remoteResponse = new Response(new Object(), new DataError(new Exception()));
@@ -48,35 +48,35 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.execute(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(remoteResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore, Mockito.never()).put(Mockito.any(Request.class));
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(keyValueStore, Mockito.never()).execute(Mockito.any(Request.class));
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFailsWithNotFound() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final Response remoteResponse = new Response(new Object(), new DataError(new DataHttpException(404, "")));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, remoteStore));
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
 
         assertEquals(remoteResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore).delete(request);
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(keyValueStore).execute(Mockito.isA(Request.Delete.class));
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteFailsWithNotModified() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final Response localResponse = new Response(new Object(), null);
         final Response remoteResponse = new Response(new Object(), new DataError(new DataHttpException(304, "")));
@@ -84,36 +84,36 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.get(Mockito.any(Request.class))).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.execute(Mockito.any(Request.class))).thenReturn(localResponse);
 
         assertEquals(localResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).get(request);
-        Mockito.verify(keyValueStore).get(request);
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(keyValueStore).execute(request);
     }
 
     public void testGetInvokesRemoteAndLocalStoreWhenConnectionIsNotAvailable() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
         final Response localResponse = new Response(new Object(), null);
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, null));
         final Request request = new Request();
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(keyValueStore.execute(Mockito.any(Request.class))).thenReturn(localResponse);
         Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
 
         assertEquals(localResponse, offlineStore.get(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(keyValueStore).get(request);
-        Mockito.verify(requestCache).queueGet(request);
+        Mockito.verify(keyValueStore).execute(request);
+        Mockito.verify(requestCache).queue(request);
     }
 
-    public void testPutInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+    public void testExecuteWithFallbackInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final Response localResponse = new Response(new Object(), null);
         final Response remoteResponse = new Response(new Object(), null);
@@ -121,35 +121,35 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.put(Mockito.any(Request.class))).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(keyValueStore.execute(Mockito.any(Request.class))).thenReturn(localResponse);
 
-        assertEquals(localResponse, offlineStore.put(request));
+        assertEquals(localResponse, offlineStore.executeWithFallback(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).put(request);
-        Mockito.verify(keyValueStore).put(request);
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(keyValueStore).execute(request);
     }
 
-    public void testPutInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+    public void testExecuteWithFallbackInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final Response remoteResponse = new Response(new Object(), new DataError(new Exception()));
         final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, remoteStore));
         final Request request = new Request();
 
         Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.put(Mockito.any(Request.class))).thenReturn(remoteResponse);
+        Mockito.when(remoteStore.execute(Mockito.any(Request.class))).thenReturn(remoteResponse);
 
-        assertEquals(remoteResponse, offlineStore.put(request));
+        assertEquals(remoteResponse, offlineStore.executeWithFallback(request));
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).put(request);
-        Mockito.verify(keyValueStore, Mockito.never()).put(request);
+        Mockito.verify(remoteStore).execute(request);
+        Mockito.verify(keyValueStore, Mockito.never()).execute(request);
     }
 
-    public void testPutInvokesRemoteAndLocalStoreWhenConnectionIsNotAvailable() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+    public void testExecuteWithFallbackInvokesRemoteAndLocalStoreWhenConnectionIsNotAvailable() {
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RequestCache requestCache = Mockito.mock(RequestCache.class);
         final Response fallbackResponse = new Response(new Object(), null);
         final Response localResponse = new Response(new Object(), null);
@@ -157,79 +157,21 @@ public class OfflineStoreTest extends AndroidTestCase {
         final Request request = new Request();
 
         Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(fallbackResponse);
-        Mockito.when(keyValueStore.put(Mockito.any(Request.class))).thenReturn(localResponse);
+        Mockito.when(keyValueStore.execute(Mockito.isA(Request.class))).thenReturn(localResponse);
+        Mockito.when(keyValueStore.execute(Mockito.isA(Request.Get.class))).thenReturn(fallbackResponse);
         Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
 
-        assertEquals(localResponse, offlineStore.put(request));
+        assertEquals(localResponse, offlineStore.executeWithFallback(request));
         assertEquals(fallbackResponse.object, request.fallback);
 
         Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(keyValueStore).get(request);
-        Mockito.verify(keyValueStore).put(request);
-        Mockito.verify(requestCache).queuePut(request);
-    }
-
-    public void testDeleteInvokesRemoteAndLocalStoreWhenConnectionIsAvailableAndRemoteSucceeds() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
-        final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final Response localResponse = new Response(new Object(), null);
-        final Response remoteResponse = new Response(new Object(), null);
-        final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, remoteStore));
-        final Request request = new Request();
-
-        Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.delete(Mockito.any(Request.class))).thenReturn(remoteResponse);
-        Mockito.when(keyValueStore.delete(Mockito.any(Request.class))).thenReturn(localResponse);
-
-        assertEquals(localResponse, offlineStore.delete(request));
-
-        Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).delete(request);
-        Mockito.verify(keyValueStore).delete(request);
-    }
-
-    public void testDeleteInvokesRemoteStoreWhenConnectionIsAvailableAndRemoteFails() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
-        final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
-        final Response remoteResponse = new Response(new Object(), new DataError(new Exception()));
-        final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, remoteStore));
-        final Request request = new Request();
-
-        Mockito.doReturn(true).when(offlineStore).isConnected();
-        Mockito.when(remoteStore.delete(Mockito.any(Request.class))).thenReturn(remoteResponse);
-
-        assertEquals(remoteResponse, offlineStore.delete(request));
-
-        Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(remoteStore).delete(request);
-        Mockito.verify(keyValueStore, Mockito.never()).delete(request);
-    }
-
-    public void testDeleteInvokesRemoteAndLocalStoreWhenConnectionIsNotAvailable() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
-        final RequestCache requestCache = Mockito.mock(RequestCache.class);
-        final Response fallbackResponse = new Response(new Object(), null);
-        final Response localResponse = new Response(new Object(), null);
-        final OfflineStore offlineStore = Mockito.spy(new OfflineStore(null, keyValueStore, null));
-        final Request request = new Request();
-
-        Mockito.doReturn(false).when(offlineStore).isConnected();
-        Mockito.when(keyValueStore.get(Mockito.any(Request.class))).thenReturn(fallbackResponse);
-        Mockito.when(keyValueStore.delete(Mockito.any(Request.class))).thenReturn(localResponse);
-        Mockito.doReturn(requestCache).when(offlineStore).getRequestCache();
-
-        assertEquals(localResponse, offlineStore.delete(request));
-        assertEquals(fallbackResponse.object, request.fallback);
-
-        Mockito.verify(offlineStore).isConnected();
-        Mockito.verify(keyValueStore).get(request);
-        Mockito.verify(keyValueStore).delete(request);
-        Mockito.verify(requestCache).queueDelete(request);
+        Mockito.verify(keyValueStore).execute(Mockito.isA(Request.Get.class));
+        Mockito.verify(keyValueStore).execute(request);
+        Mockito.verify(requestCache).queue(request);
     }
 
     public void testAddObserverInvokesLocalStoreAndRemoteStore() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final OfflineStore offlineStore = new OfflineStore(null, keyValueStore, remoteStore);
@@ -244,7 +186,7 @@ public class OfflineStoreTest extends AndroidTestCase {
     }
 
     public void testRemoveObserverInvokesLocalStoreAndRemoteStore() {
-        final KeyValueStore keyValueStore = Mockito.mock(KeyValueStore.class);
+        final KeyValueLocalStore keyValueStore = Mockito.mock(KeyValueLocalStore.class);
         final RemoteStore remoteStore = Mockito.mock(RemoteStore.class);
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
         final OfflineStore offlineStore = new OfflineStore(null, keyValueStore, remoteStore);

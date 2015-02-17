@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import java.util.Random;
 import java.util.UUID;
 
-public class KeyValueStoreTest extends AndroidTestCase {
+public class KeyValueLocalStoreTest extends AndroidTestCase {
 
     public static class KeyValueObserverHandler extends ObserverHandler<KeyValue> {}
     public interface KeyValueObserver extends DataStore.Observer<KeyValue> {}
@@ -29,12 +29,12 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testGetInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
-        final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
+        final Request<KeyValue> request = new Request.Get<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
+        final KeyValueLocalStore store = new KeyValueLocalStore(observerHandler, persistence);
 
         Mockito.when(persistence.getString(Mockito.anyString())).thenReturn(VALUE);
 
-        final Response<KeyValue> response = store.get(request);
+        final Response<KeyValue> response = store.execute(request);
 
         assertTrue(response.isSuccess());
         assertEquals(KEY, response.object.key);
@@ -47,12 +47,12 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testPutInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, VALUE), false);
-        final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
+        final Request<KeyValue> request = new Request.Put<KeyValue>(new KeyValue(COLLECTION, KEY, VALUE), false);
+        final KeyValueLocalStore store = new KeyValueLocalStore(observerHandler, persistence);
 
         Mockito.when(persistence.putString(Mockito.anyString(), Mockito.anyString())).thenReturn(VALUE);
 
-        final Response<KeyValue> response = store.put(request);
+        final Response<KeyValue> response = store.execute(request);
 
         assertTrue(response.isSuccess());
         assertEquals(KEY, response.object.key);
@@ -65,12 +65,12 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testDeleteInvokesPersistence() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataPersistence persistence = Mockito.mock(DataPersistence.class);
-        final Request<KeyValue> request = new Request<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
-        final KeyValueStore store = new KeyValueStore(observerHandler, persistence);
+        final Request<KeyValue> request = new Request.Delete<KeyValue>(new KeyValue(COLLECTION, KEY, null), false);
+        final KeyValueLocalStore store = new KeyValueLocalStore(observerHandler, persistence);
 
         Mockito.when(persistence.deleteString(Mockito.anyString())).thenReturn("");
 
-        final Response<KeyValue> response = store.delete(request);
+        final Response<KeyValue> response = store.execute(request);
 
         assertTrue(response.isSuccess());
         assertEquals(KEY, response.object.key);
@@ -83,7 +83,7 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testAddObserverInvokesHandler() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataStore.Observer<KeyValue> observer = Mockito.mock(KeyValueObserver.class);
-        final KeyValueStore keyValueStore = Mockito.spy(new KeyValueStore(observerHandler, null));
+        final KeyValueLocalStore keyValueStore = Mockito.spy(new KeyValueLocalStore(observerHandler, null));
 
         Mockito.when(observerHandler.addObserver(observer)).thenReturn(RESULT);
 
@@ -95,7 +95,7 @@ public class KeyValueStoreTest extends AndroidTestCase {
     public void testRemoveObserverInvokesHandler() {
         final ObserverHandler<KeyValue> observerHandler = Mockito.mock(KeyValueObserverHandler.class);
         final DataStore.Observer<KeyValue> observer = Mockito.mock(KeyValueObserver.class);
-        final KeyValueStore keyValueStore = Mockito.spy(new KeyValueStore(observerHandler, null));
+        final KeyValueLocalStore keyValueStore = Mockito.spy(new KeyValueLocalStore(observerHandler, null));
 
         Mockito.when(observerHandler.removeObserver(observer)).thenReturn(RESULT);
 

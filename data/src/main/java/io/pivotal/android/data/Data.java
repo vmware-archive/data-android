@@ -16,12 +16,12 @@ public class Data {
     }
 
     public static void sync(final Context context) {
-        final OfflineStore<KeyValue> offlineStore = OfflineStore.createKeyValue(context);
+        final OfflineStore<KeyValue> offlineStore = KeyValueOfflineStore.create(context);
         offlineStore.getRequestCache().executePending();
     }
 
     public static void syncInBackground(final Context context) {
-        final OfflineStore<KeyValue> offlineStore = OfflineStore.createKeyValue(context);
+        final OfflineStore<KeyValue> offlineStore = KeyValueOfflineStore.create(context);
         offlineStore.getRequestCache().executePendingAsync();
     }
 }

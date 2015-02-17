@@ -7,4 +7,6 @@ import android.content.Context;
 
 public interface TokenProvider {
     public String provideAccessToken(final Context context);
+
+    public void invalidateAccessToken(final Context context);
 }

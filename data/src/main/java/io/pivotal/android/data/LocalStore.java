@@ -4,28 +4,32 @@
 package io.pivotal.android.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.AsyncTask;
 
-public abstract class RemoteStore<T> implements DataStore<T> {
+public abstract class LocalStore<T> implements DataStore<T> {
 
-    private final RemoteClient mClient;
+    private static final String DATA_PREFIX = "PCFData:Data";
+
     private final ObserverHandler<T> mHandler;
+    private final DataPersistence mPersistence;
 
-    public RemoteStore(final Context context) {
-        this(new ObserverHandler<T>(), new RemoteClient.Default(context));
+    public LocalStore(final Context context) {
+        this(new ObserverHandler<T>(), new DataPersistence(context, DATA_PREFIX));
     }
 
-    public RemoteStore(final ObserverHandler<T> handler, final RemoteClient client) {
+    public LocalStore(final ObserverHandler<T> handler, final DataPersistence persistence) {
         mHandler = handler;
-        mClient = client;
-    }
-
-    protected RemoteClient getClient() {
-        return mClient;
+        mPersistence = persistence;
     }
 
     protected ObserverHandler<T> getHandler() {
         return mHandler;
+    }
+
+    protected DataPersistence getPersistence() {
+        return mPersistence;
     }
 
     @Override
@@ -34,7 +38,7 @@ public abstract class RemoteStore<T> implements DataStore<T> {
 
             @Override
             protected Response<T> doInBackground(final Void... params) {
-                return RemoteStore.this.execute(request);
+                return LocalStore.this.execute(request);
             }
 
             @Override
@@ -55,4 +59,14 @@ public abstract class RemoteStore<T> implements DataStore<T> {
     public boolean removeObserver(final Observer<T> observer) {
         return mHandler.removeObserver(observer);
     }
+
+    protected static class ObserverProxy implements OnSharedPreferenceChangeListener {
+
+        @Override
+        public void onSharedPreferenceChanged(final SharedPreferences sharedPreferences, final String key) {
+
+        }
+    }
+
+    // TODO change observers back to listening to shared prefs?
 }

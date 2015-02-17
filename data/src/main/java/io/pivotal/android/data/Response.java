@@ -38,4 +38,8 @@ public class Response<T> {
     public boolean hasPreconditionFailed() {
         return this.error != null && this.error.hasPreconditionFailed();
     }
+
+    public boolean isUnauthorized() {
+        return this.error != null && this.error.isUnauthorized();
+    }
 }

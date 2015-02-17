@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import java.util.Random;
 
 @SuppressWarnings("unchecked")
-public class RemoteStoreTest extends AndroidTestCase {
+public class LocalStoreTest extends AndroidTestCase {
 
     private static final boolean RESULT = new Random().nextBoolean();
 
@@ -23,11 +23,11 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testAddObserverInvokesHandler() {
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
-        final RemoteStore remoteStore = Mockito.spy(new DefaultRemoteStore(observerHandler, null));
+        final LocalStore localStore = Mockito.spy(new DefaultLocalStore(observerHandler, null));
 
         Mockito.when(observerHandler.addObserver(observer)).thenReturn(RESULT);
 
-        assertEquals(RESULT, remoteStore.addObserver(observer));
+        assertEquals(RESULT, localStore.addObserver(observer));
 
         Mockito.verify(observerHandler).addObserver(observer);
     }
@@ -35,11 +35,11 @@ public class RemoteStoreTest extends AndroidTestCase {
     public void testRemoveObserverInvokesHandler() {
         final ObserverHandler observerHandler = Mockito.mock(ObserverHandler.class);
         final DataStore.Observer observer = Mockito.mock(DataStore.Observer.class);
-        final RemoteStore remoteStore = Mockito.spy(new DefaultRemoteStore(observerHandler, null));
+        final LocalStore localStore = Mockito.spy(new DefaultLocalStore(observerHandler, null));
 
         Mockito.when(observerHandler.removeObserver(observer)).thenReturn(RESULT);
 
-        assertEquals(RESULT, remoteStore.removeObserver(observer));
+        assertEquals(RESULT, localStore.removeObserver(observer));
 
         Mockito.verify(observerHandler).removeObserver(observer);
     }
@@ -48,10 +48,10 @@ public class RemoteStoreTest extends AndroidTestCase {
     // ==============================================================
 
 
-    public static class DefaultRemoteStore extends RemoteStore<Object> {
+    public static class DefaultLocalStore extends LocalStore<Object> {
 
-        public DefaultRemoteStore(final ObserverHandler<Object> handler, final RemoteClient client) {
-            super(handler, client);
+        public DefaultLocalStore(final ObserverHandler<Object> handler, final DataPersistence persistence) {
+            super(handler, persistence);
         }
 
         @Override
@@ -59,5 +59,4 @@ public class RemoteStoreTest extends AndroidTestCase {
             return null;
         }
     }
-
 }

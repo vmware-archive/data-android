@@ -8,7 +8,7 @@ import android.test.AndroidTestCase;
 import java.util.UUID;
 
 @SuppressWarnings("unchecked")
-public class QueuedRequestTest extends AndroidTestCase {
+public class PendingRequestTest extends AndroidTestCase {
 
     private static final String COLLECTION = UUID.randomUUID().toString();
     private static final String KEY = UUID.randomUUID().toString();
@@ -25,9 +25,9 @@ public class QueuedRequestTest extends AndroidTestCase {
     public void testQueuedRequest() {
         final KeyValue object = new KeyValue(COLLECTION, KEY, VALUE);
         final KeyValue fallback = new KeyValue(COLLECTION, KEY, FALLBACK);
-        final Request request = new Request(object, fallback, false);
+        final Request request = new Request(METHOD, object, fallback, false);
 
-        final QueuedRequest queued = new QueuedRequest(request, METHOD);
+        final PendingRequest queued = new PendingRequest(request);
 
         assertEquals(METHOD, queued.method);
         assertEquals(request.object, queued.object);

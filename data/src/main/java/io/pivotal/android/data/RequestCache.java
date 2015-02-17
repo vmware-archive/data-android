@@ -8,11 +8,7 @@ import android.os.AsyncTask;
 
 public interface RequestCache<T> {
 
-    public void queueGet(final Request<T> request);
-
-    public void queuePut(final Request<T> request);
-
-    public void queueDelete(final Request<T> request);
+    public void queue(final Request<T> request);
 
     public void executePending();
 
@@ -35,31 +31,19 @@ public interface RequestCache<T> {
             mExecutor = executor;
         }
 
-        protected QueuedRequest<T> createQueuedRequest(final Request<T> request, final int method) {
-            return new QueuedRequest<T>(request, method);
+        protected PendingRequest<T> createPendingRequest(final Request<T> request) {
+            return new PendingRequest<T>(request);
         }
 
         @Override
-        public void queueGet(final Request<T> request) {
-            final QueuedRequest<T> queuedRequest = createQueuedRequest(request, QueuedRequest.Methods.GET);
-            mQueue.add(queuedRequest);
-        }
-
-        @Override
-        public void queuePut(final Request<T> request) {
-            final QueuedRequest<T> queuedRequest = createQueuedRequest(request, QueuedRequest.Methods.PUT);
-            mQueue.add(queuedRequest);
-        }
-
-        @Override
-        public void queueDelete(final Request<T> request) {
-            final QueuedRequest<T> queuedRequest = createQueuedRequest(request, QueuedRequest.Methods.DELETE);
-            mQueue.add(queuedRequest);
+        public void queue(final Request<T> request) {
+            final PendingRequest<T> pendingRequest = createPendingRequest(request);
+            mQueue.add(pendingRequest);
         }
 
         @Override
         public void executePending() {
-            final QueuedRequest.List<T> requests = mQueue.empty();
+            final PendingRequest.List<T> requests = mQueue.empty();
 
             mExecutor.execute(requests);
         }
