@@ -7,7 +7,7 @@ import android.content.Context;
 
 public class KeyValueOfflineStore extends OfflineStore<KeyValue> {
 
-    public static OfflineStore<KeyValue> create(final Context context) {
+    public static KeyValueOfflineStore create(final Context context) {
         final LocalStore<KeyValue> localStore = new KeyValueLocalStore(context);
         final RemoteStore<KeyValue> remoteStore = new KeyValueRemoteStore(context);
         return new KeyValueOfflineStore(context, localStore, remoteStore);
