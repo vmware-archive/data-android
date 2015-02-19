@@ -3,6 +3,7 @@
  */
 package io.pivotal.android.data;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -20,11 +21,13 @@ public class DataPersistence {
         return mPreferences.getString(key, EMPTY);
     }
 
+    @SuppressLint("CommitPrefEdits")
     public String putString(final String key, final String value) {
         mPreferences.edit().putString(key, value).commit();
         return value;
     }
 
+    @SuppressLint("CommitPrefEdits")
     public String deleteString(final String key) {
         mPreferences.edit().remove(key).commit();
         return EMPTY;

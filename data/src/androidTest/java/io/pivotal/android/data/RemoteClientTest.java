@@ -92,25 +92,6 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(client).execute(Mockito.isA(HttpDelete.class), Mockito.eq(FORCE));
     }
 
-    public void testExecuteAddsHeadersAndExecutes() throws Exception {
-        final HttpUriRequest request = Mockito.mock(HttpUriRequest.class);
-        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
-
-        Mockito.when(request.getURI()).thenReturn(new URI(URL));
-        Mockito.doReturn(TOKEN).when(client).provideAccessToken();
-        Mockito.doReturn(RESULT).when(client).execute(Mockito.any(HttpUriRequest.class));
-
-        assertEquals(RESULT, client.execute(request, FORCE));
-
-        Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpGet.class));
-        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class));
-        Mockito.verify(client).execute(request);
-
-        if (!FORCE) {
-            Mockito.verify(client).addEtagHeader(Mockito.any(HttpUriRequest.class), Mockito.eq(URL));
-        }
-    }
-
     public void testExecuteAddsHeadersAndHandlesResponse() throws Exception {
         final HttpUriRequest request = Mockito.mock(HttpUriRequest.class);
         final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
@@ -123,14 +104,16 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.when(httpClient.execute(Mockito.any(HttpUriRequest.class))).thenReturn(httpResponse);
         Mockito.when(httpResponse.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(200);
+        Mockito.doNothing().when(client).addHeaders(Mockito.any(HttpUriRequest.class), Mockito.anyBoolean());
         Mockito.doReturn(RESULT).when(client).handleResponse(Mockito.any(HttpResponse.class), Mockito.anyString());
 
-        assertEquals(RESULT, client.execute(request));
+        assertEquals(RESULT, client.execute(request, FORCE));
 
         Mockito.verify(client).getHttpClient();
         Mockito.verify(httpClient).execute(request);
         Mockito.verify(httpResponse).getStatusLine();
         Mockito.verify(statusLine).getStatusCode();
+        Mockito.verify(client).addHeaders(request, FORCE);
         Mockito.verify(client).handleResponse(httpResponse, URL);
         Mockito.verify(client, Mockito.never()).invalidateAccessToken();
     }
@@ -148,16 +131,37 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.when(httpResponse.getStatusLine()).thenReturn(statusLine);
         Mockito.when(statusLine.getStatusCode()).thenReturn(401);
         Mockito.doNothing().when(client).invalidateAccessToken();
+        Mockito.doNothing().when(client).addHeaders(Mockito.any(HttpUriRequest.class), Mockito.anyBoolean());
+        Mockito.doNothing().when(client).addAuthHeader(Mockito.any(HttpUriRequest.class));
         Mockito.doReturn(RESULT).when(client).handleResponse(Mockito.any(HttpResponse.class), Mockito.anyString());
 
-        assertEquals(RESULT, client.execute(request));
+        assertEquals(RESULT, client.execute(request, FORCE));
 
         Mockito.verify(client).getHttpClient();
         Mockito.verify(httpClient, Mockito.times(2)).execute(request);
         Mockito.verify(httpResponse).getStatusLine();
         Mockito.verify(statusLine).getStatusCode();
+        Mockito.verify(client).addHeaders(request, FORCE);
+        Mockito.verify(client).addAuthHeader(request);
         Mockito.verify(client).handleResponse(httpResponse, URL);
         Mockito.verify(client).invalidateAccessToken();
+    }
+
+    public void testAddHeaders() throws Exception {
+        final HttpUriRequest request = Mockito.mock(HttpUriRequest.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
+
+        Mockito.when(request.getURI()).thenReturn(new URI(URL));
+        Mockito.doReturn(TOKEN).when(client).provideAccessToken();
+
+        client.addHeaders(request, FORCE);
+
+        Mockito.verify(client).addUserAgentHeader(Mockito.any(HttpGet.class));
+        Mockito.verify(client).addAuthHeader(Mockito.any(HttpGet.class));
+
+        if (!FORCE) {
+            Mockito.verify(client).addEtagHeader(Mockito.any(HttpUriRequest.class), Mockito.eq(URL));
+        }
     }
 
     public void testAddUserAgentHeaderAddsUserAgent() {
@@ -182,13 +186,18 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpRequest).addHeader(RemoteClient.Default.Headers.AUTHORIZATION, "Bearer " + TOKEN);
     }
 
-    public void testAddAuthHeaderDoesNotAddNullAccessToken() {
+    public void testAddAuthHeaderThrowsExceptionIfAccessTokenIsNull() {
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
         final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(null, null));
 
         Mockito.doReturn(null).when(client).provideAccessToken();
 
-        client.addAuthHeader(httpRequest);
+        try {
+            client.addAuthHeader(httpRequest);
+            fail();
+        } catch (IllegalStateException e) {
+            assertNotNull(e);
+        }
 
         Mockito.verify(httpRequest, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
     }

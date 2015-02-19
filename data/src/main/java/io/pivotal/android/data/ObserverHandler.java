@@ -51,6 +51,7 @@ public class ObserverHandler<T> extends Handler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void notifyObservers(final Message msg) {
         for (final DataStore.Observer<T> observer : mObservers) {
             final Response<T> response = (Response<T>) msg.obj;

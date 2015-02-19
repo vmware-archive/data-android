@@ -85,6 +85,28 @@ public interface RemoteClient {
 
         protected String execute(final HttpUriRequest request, final boolean force) throws Exception {
             final String url = request.getURI().toString();
+            final HttpClient httpClient = getHttpClient();
+
+            addHeaders(request, force);
+
+            HttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 401) {
+                Logger.v("Response 401 (invalidating token).");
+                invalidateAccessToken();
+
+                Logger.v("Response 401 (requesting new token).");
+                addAuthHeader(request);
+
+                Logger.v("Response 401 (retrying).");
+                response = httpClient.execute(request);
+            }
+
+            return handleResponse(response, url);
+        }
+
+        protected void addHeaders(final HttpUriRequest request, final boolean force) throws Exception {
+            final String url = request.getURI().toString();
 
             Logger.v("Request Url: " + url);
 
@@ -97,23 +119,6 @@ public interface RemoteClient {
             } else {
                 Logger.e("Request Header - No Etag. Request Forced.");
             }
-
-            return execute(request);
-        }
-
-        protected String execute(final HttpUriRequest request) throws Exception {
-            final String url = request.getURI().toString();
-            final HttpClient httpClient = getHttpClient();
-
-            HttpResponse response = httpClient.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 401) {
-                invalidateAccessToken();
-
-                response = httpClient.execute(request);
-            }
-
-            return handleResponse(response, url);
         }
 
 
@@ -143,6 +148,7 @@ public interface RemoteClient {
                 request.addHeader(Headers.AUTHORIZATION, "Bearer " + accessToken);
             } else {
                 Logger.e("Request Header - No access token found.");
+                throw new IllegalStateException("Could not retrieve access token.");
             }
         }
 
