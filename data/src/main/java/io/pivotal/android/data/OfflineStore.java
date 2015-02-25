@@ -60,62 +60,84 @@ public class OfflineStore<T> implements DataStore<T> {
     }
 
     protected Response<T> get(final Request<T> request) {
-
         if (isConnected()) {
-            final Response<T> response = mRemoteStore.execute(request);
-
-            if (response.isSuccess()) {
-                final Request<T> put = new Request.Put<T>(request);
-                put.object = response.object;
-
-                return mLocalStore.execute(put);
-
-            } else if (response.isNotFound()) {
-                final Request<T> delete = new Request.Delete<T>(request);
-
-                mLocalStore.execute(delete);
-
-                return response;
-
-            } else if (response.isNotModified()) {
-                return mLocalStore.execute(request);
-
-            } else {
-                return response;
-            }
+            return executeGetRemotely(request);
 
         } else {
-            final Response<T> response = mLocalStore.execute(request);
-
-            getRequestCache().queue(request);
-
-            return response;
+            return queueGet(request);
         }
     }
 
     protected Response<T> executeWithFallback(final Request<T> request) {
-
         if (isConnected()) {
-            final Response<T> response = mRemoteStore.execute(request);
-
-            if (response.isSuccess()) {
-                return mLocalStore.execute(request);
-
-            } else {
-                return response;
-            }
+            return executeRemotely(request);
 
         } else {
-            final Request<T> get = new Request.Get<T>(request);
-            final Response<T> fallback = mLocalStore.execute(get);
-            final Response<T> response = mLocalStore.execute(request);
+            return queueWithFallback(request);
+        }
+    }
 
-            request.fallback = fallback.object;
+    private Response<T> executeGetRemotely(final Request<T> request) {
+        final Response<T> response = mRemoteStore.execute(request);
 
-            getRequestCache().queue(request);
+        if (response.isSuccess()) {
+            return executePutLocally(request, response);
 
+        } else if (response.isNotFound()) {
+            return executeDeleteLocally(request, response);
+
+        } else if (response.isNotModified()) {
+            return mLocalStore.execute(request);
+
+        } else {
             return response;
         }
+    }
+
+    private Response<T> executeDeleteLocally(final Request<T> request, final Response<T> response) {
+        final Request<T> delete = new Request.Delete<T>(request);
+
+        mLocalStore.execute(delete);
+
+        return response;
+    }
+
+    private Response<T> executePutLocally(final Request<T> request, final Response<T> response) {
+        final Request<T> put = new Request.Put<T>(request);
+        put.object = response.object;
+
+        return mLocalStore.execute(put);
+    }
+
+    private Response<T> executeRemotely(final Request<T> request) {
+        final Response<T> response = mRemoteStore.execute(request);
+
+        if (response.isSuccess()) {
+            return mLocalStore.execute(request);
+
+        } else {
+            return response;
+        }
+    }
+
+    private Response<T> queueGet(final Request<T> request) {
+        final Response<T> response = mLocalStore.execute(request);
+
+        getRequestCache().queue(request);
+
+        return response;
+    }
+
+    private Response<T> queueWithFallback(final Request<T> request) {
+        final Request<T> get = new Request.Get<T>(request);
+        final Response<T> fallback = mLocalStore.execute(get);
+        final Response<T> response = mLocalStore.execute(request);
+
+        request.fallback = fallback.object;
+
+        getRequestCache().queue(request);
+
+        return response;
     }
 
     @Override
