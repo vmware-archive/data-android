@@ -14,7 +14,7 @@ buildscript {
 }
 
 ext {
-    versionName = "2.0.0"
+    versionName = "1.1.0"
     versionCode = 2
     isSnapshot = false
 }
@@ -72,14 +72,14 @@ subprojects {
     apply plugin: 'android-library'
 
     android {
-        compileSdkVersion 19
-        buildToolsVersion "19.1.0"
+        compileSdkVersion 21
+        buildToolsVersion "21.1.2"
 
         defaultConfig {
             versionCode versionCode
             versionName versionName
-            minSdkVersion 10
-            targetSdkVersion 19
+            minSdkVersion 14
+            targetSdkVersion 21
 
             buildConfigField "String", "SDK_VERSION", "\"${version}\""
         }

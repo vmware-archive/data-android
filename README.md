@@ -1,24 +1,28 @@
-Android Data Client SDK
-=======================
+# PCF Mobile Services Android Data SDK
 
-The Data SDK requires API level 10 or greater.
+This SDK requires API level 14 or greater.
 
-Data SDK Usage
---------------
+## Usage
+---
 
-For more information please visit the [docs site](http://docs.pivotal.io/mobile/datasync/android)
+For more information please visit the [docs site](http://docs.pivotal.io/mobile/data/android).
 
-Building the SDK
-----------------
+## Building the SDK
+---
 
-You can build this project directly from the command line using Gradle or in Android Studio.
+To build the project from the command line, run the following command:
 
-The library depends on the following libraries:
+```bash
+./scripts/build-package.sh
+```
 
- * Jackson Databind
+If you have a device connected to your computer then you can also run the test suite with the following command:
 
-To load this project in Android Studio, you will need to select "Import Project" and select the `build.gradle` file in
-the project's base directory.
+```bash
+./scripts/run-tests.sh
+```
 
-To build the project from the command line, run the command `./gradlew clean assemble`.  If you have a device connected
-to your computer then you can also run the unit test suite with the command `./gradlew connectedCheck`.
+## Dependencies
+---
+
+ * [Jackson Databind - v2.1.1](https://github.com/FasterXML/jackson-databind/)
