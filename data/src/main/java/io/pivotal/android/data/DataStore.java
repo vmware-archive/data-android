@@ -9,18 +9,6 @@ public interface DataStore<T> {
 
     public void execute(final Request<T> request, final Listener<T> listener);
 
-//    public Response<T> get(final Request<T> request);
-//
-//    public void get(final Request<T> request, final Listener<T> listener);
-//
-//    public Response<T> executeWithFallback(final Request<T> request);
-//
-//    public void executeWithFallback(final Request<T> request, final Listener<T> listener);
-//
-//    public Response<T> delete(final Request<T> request);
-//
-//    public void delete(final Request<T> request, final Listener<T> listener);
-
     public boolean addObserver(final Observer<T> observer);
 
     public boolean removeObserver(final Observer<T> observer);

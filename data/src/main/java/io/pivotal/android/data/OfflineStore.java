@@ -51,9 +51,9 @@ public class OfflineStore<T> implements DataStore<T> {
             }
 
             @Override
-            protected void onPostExecute(final Response<T> resp) {
+            protected void onPostExecute(final Response<T> response) {
                 if (listener != null) {
-                    listener.onResponse(resp);
+                    listener.onResponse(response);
                 }
             }
         }.execute();
