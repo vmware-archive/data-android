@@ -24,4 +24,9 @@ public class Data {
         final OfflineStore<KeyValue> offlineStore = KeyValueOfflineStore.create(context);
         offlineStore.getRequestCache().executePendingAsync();
     }
+
+    public static void clearLocalCache(final Context context) {
+        new DataPersistence(context, KeyValueLocalStore.DATA_PREFIX).clear();
+        new DataPersistence(context, EtagStore.ETAG_CACHE).clear();
+    }
 }

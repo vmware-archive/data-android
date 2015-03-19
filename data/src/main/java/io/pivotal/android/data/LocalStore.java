@@ -10,7 +10,7 @@ import android.os.AsyncTask;
 
 public abstract class LocalStore<T> implements DataStore<T> {
 
-    private static final String DATA_PREFIX = "PCFData:Data";
+    static final String DATA_PREFIX = "PCFData:Data";
 
     private final ObserverHandler<T> mHandler;
     private final DataPersistence mPersistence;

@@ -32,4 +32,9 @@ public class DataPersistence {
         mPreferences.edit().remove(key).commit();
         return EMPTY;
     }
+
+    @SuppressLint("CommitPrefEdits")
+    public void clear() {
+        mPreferences.edit().clear().commit();
+    }
 }

@@ -75,4 +75,21 @@ public class DataPersistenceTest extends AndroidTestCase {
         Mockito.verify(context).getSharedPreferences(NAME, Context.MODE_PRIVATE);
         Mockito.verify(editor).remove(KEY);
     }
+
+    public void testClearInvokesSharedPreferences() {
+        final Context context = Mockito.mock(Context.class);
+        final SharedPreferences preferences = Mockito.mock(SharedPreferences.class);
+        final SharedPreferences.Editor editor = Mockito.mock(SharedPreferences.Editor.class);
+
+        Mockito.when(context.getSharedPreferences(Mockito.anyString(), Mockito.anyInt())).thenReturn(preferences);
+        Mockito.when(preferences.edit()).thenReturn(editor);
+        Mockito.when(editor.clear()).thenReturn(editor);
+
+        final DataPersistence persistence = new DataPersistence(context, NAME);
+
+        persistence.clear();
+
+        Mockito.verify(context).getSharedPreferences(NAME, Context.MODE_PRIVATE);
+        Mockito.verify(editor).clear();
+    }
 }

@@ -7,7 +7,7 @@ import android.content.Context;
 
 public class EtagStore {
 
-    private static final String ETAG_CACHE = "PCFData:EtagCache";
+    static final String ETAG_CACHE = "PCFData:EtagCache";
 
     private final DataPersistence mPersistence;
 

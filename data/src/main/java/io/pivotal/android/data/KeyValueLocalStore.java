@@ -9,7 +9,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 public class KeyValueLocalStore extends LocalStore<KeyValue> {
 
-    private static final String DATA_PREFIX = "PCFData:Data";
+    static final String DATA_PREFIX = "PCFData:Data";
 
     public KeyValueLocalStore(final Context context) {
         this(new ObserverHandler<KeyValue>(), new DataPersistence(context, DATA_PREFIX));
