@@ -202,7 +202,7 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpRequest, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
     }
 
-    public void testAddIfMatchEtagHeaderIfEtagsAreSupportedAndAvailable() {
+    public void testAddEtagHeaderIfEtagsAreSupportedAndDefaultRequestHasEtag() {
         final Properties properties = new Properties();
         properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
@@ -219,7 +219,7 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpRequest).addHeader(IF_MATCH, RESULT);
     }
 
-    public void testAddIfNonMatchEtagHeaderIfEtagsAreSupportedAndAvailable() {
+    public void testAddEtagHeaderIfEtagsAreSupportedAndGetRequestHasEtag() {
         final Properties properties = new Properties();
         properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
@@ -236,7 +236,7 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpRequest).addHeader(IF_NONE_MATCH, RESULT);
     }
 
-    public void testAddEtagHeaderIfEtagsAreSupportedAndNotAvailable() {
+    public void testAddEtagHeaderIfEtagsAreSupportedAndDefaultRequestHasNoEtag() {
         final Properties properties = new Properties();
         properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
         Pivotal.setProperties(properties);
@@ -246,11 +246,28 @@ public class RemoteClientTest extends AndroidTestCase {
         final RemoteClient.Default client = new RemoteClient.Default(context, etagStore);
         final HttpUriRequest httpRequest = Mockito.mock(HttpUriRequest.class);
 
-        Mockito.when(etagStore.get(URL)).thenReturn(null);
+        Mockito.when(etagStore.get(URL)).thenReturn("");
 
         client.addEtagHeader(httpRequest, URL);
 
-        Mockito.verify(httpRequest, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(httpRequest).addHeader(IF_NONE_MATCH, "*");
+    }
+
+    public void testAddEtagHeaderIfEtagsAreSupportedAndGetRequestHasNoEtag() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.collisionStrategy", "OptimisticLocking");
+        Pivotal.setProperties(properties);
+
+        final EtagStore etagStore = Mockito.mock(EtagStore.class);
+        final Context context = Mockito.mock(Context.class);
+        final RemoteClient.Default client = new RemoteClient.Default(context, etagStore);
+        final HttpGet httpRequest = Mockito.mock(HttpGet.class);
+
+        Mockito.when(etagStore.get(URL)).thenReturn("");
+
+        client.addEtagHeader(httpRequest, URL);
+
+        Mockito.verify(httpRequest).addHeader(IF_MATCH, "*");
     }
 
     public void testAddEtagHeaderIfEtagsAreNotSupported() {

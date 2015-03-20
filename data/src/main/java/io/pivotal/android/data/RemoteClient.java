@@ -154,16 +154,25 @@ public interface RemoteClient {
 
         protected void addEtagHeader(final HttpUriRequest request, final String url) {
             if (Pivotal.areEtagsEnabled()) {
+
                 final String etag = mEtagStore.get(url);
-                if (etag != null) {
+
+                if (!TextUtils.isEmpty(etag)) {
                     if (request instanceof HttpGet) {
                         request.addHeader(Headers.IF_NONE_MATCH, etag);
+                        Logger.v("Request Header - " + Headers.IF_NONE_MATCH + ": " + etag);
                     } else {
                         request.addHeader(Headers.IF_MATCH, etag);
+                        Logger.v("Request Header - " + Headers.IF_MATCH + ": " + etag);
                     }
-                    Logger.v("Request Header - Etag: " + etag);
                 } else {
-                    Logger.e("Request Header - No etag found.");
+                    if (request instanceof HttpGet) {
+                        request.addHeader(Headers.IF_MATCH, "*");
+                        Logger.v("Request Header - " + Headers.IF_MATCH + ": *");
+                    } else {
+                        request.addHeader(Headers.IF_NONE_MATCH, "*");
+                        Logger.v("Request Header - " + Headers.IF_NONE_MATCH + ": *");
+                    }
                 }
             } else {
                 Logger.e("Request Header - Etags Disabled.");
