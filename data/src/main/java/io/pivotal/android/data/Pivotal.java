@@ -7,6 +7,9 @@ import android.text.TextUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /* package */ class Pivotal {
@@ -19,6 +22,8 @@ import java.util.Properties;
     private static final class Keys {
         private static final String SERVICE_URL = "pivotal.data.serviceUrl";
         private static final String COLLISION_STRATEGY = "pivotal.data.collisionStrategy";
+        private static final String PINNED_SSL_CERTIFICATE_NAMES = "pivotal.data.pinnedSslCertificateNames";
+        private static final String TRUST_ALL_SSL_CERTIFICATES = "pivotal.data.trustAllSslCertificates";
     }
 
     private static final String[] LOCATIONS = {
@@ -79,6 +84,25 @@ import java.util.Properties;
             return collisionStrategy != null && collisionStrategy.equals(Strategies.OPTIMISTIC_LOCKING);
         } catch (final IllegalStateException e) {
             return false;
+        }
+    }
+
+    public static Boolean getTrustAllSslCertificates() {
+        try {
+            String trustAllSslCertificatesStringValue = get(Keys.TRUST_ALL_SSL_CERTIFICATES);
+            return Boolean.valueOf(trustAllSslCertificatesStringValue);
+        } catch (final IllegalStateException e) {
+            return false;
+        }
+    }
+
+    public static List<String> getPinnedSslCertificateNames() {
+        try {
+            final String spaceDelimitedSslCertificateNames = get(Keys.PINNED_SSL_CERTIFICATE_NAMES);
+            final String[] sslCertificateNames = spaceDelimitedSslCertificateNames.split(" ");
+            return Arrays.asList(sslCertificateNames);
+        } catch (final IllegalStateException e) {
+            return new ArrayList<String>();
         }
     }
 }

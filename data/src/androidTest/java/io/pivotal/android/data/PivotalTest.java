@@ -5,6 +5,7 @@ package io.pivotal.android.data;
 
 import android.test.AndroidTestCase;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -81,5 +82,45 @@ public class PivotalTest extends AndroidTestCase {
 
     public void testEtagsValueUnspecified() {
         assertFalse(Pivotal.areEtagsEnabled());
+    }
+
+    public void testTrustAllSslCertificatesEvaluatesToTrue() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.trustAllSslCertificates", "true");
+
+        Pivotal.setProperties(properties);
+
+        assertTrue(Pivotal.getTrustAllSslCertificates());
+    }
+
+    public void testTrustAllSslCertificatesEvaluatesToFalse() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.trustAllSslCertificates", "false");
+
+        Pivotal.setProperties(properties);
+
+        assertFalse(Pivotal.getTrustAllSslCertificates());
+    }
+
+    public void testTrustAllSslCertificatesDefaultsToNo() {
+        assertFalse(Pivotal.getTrustAllSslCertificates());
+    }
+
+    public void testPinnedSslCertificateNames() {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.pinnedSslCertificateNames", "thing.der black_ad.der cert.der");
+
+        Pivotal.setProperties(properties);
+
+        final List<String> pinnedSslCertificateNames = Pivotal.getPinnedSslCertificateNames();
+
+        assertEquals(pinnedSslCertificateNames.get(0), "thing.der");
+        assertEquals(pinnedSslCertificateNames.get(1), "black_ad.der");
+        assertEquals(pinnedSslCertificateNames.get(2), "cert.der");
+    }
+
+    public void testPinnedSslCertificateNamesUnspecified() {
+        assertNotNull(Pivotal.getPinnedSslCertificateNames());
+        assertEquals(Pivotal.getPinnedSslCertificateNames().size(), 0);
     }
 }
