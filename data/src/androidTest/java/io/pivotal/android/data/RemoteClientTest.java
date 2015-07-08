@@ -16,6 +16,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.mockito.Mockito;
@@ -23,6 +24,9 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -279,7 +283,7 @@ public class RemoteClientTest extends AndroidTestCase {
         Mockito.verify(httpRequest, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
     }
 
-    public void testGetHttpClientIsCreatedWithAppropriateTimeouts() {
+    public void testGetHttpClientIsCreatedWithAppropriateTimeouts() throws Exception {
         final RemoteClient.Default client = new RemoteClient.Default(null, null);
         final HttpClient httpClient = client.getHttpClient();
         final HttpParams params = httpClient.getParams();
@@ -429,5 +433,67 @@ public class RemoteClientTest extends AndroidTestCase {
         assertEquals(TOKEN, client.provideAccessToken());
 
         Mockito.verify(provider).provideAccessToken(mContext);
+    }
+
+    public void testKeyStoreLoadsCorrectCertificates() throws Exception {
+        final String certName1 = "test.cer";
+        final String certName2 = "test2.cer";
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.pinnedSslCertificateNames", certName1 + " " + certName2);
+
+        Pivotal.setProperties(properties);
+
+        final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
+        final KeyStore keyStore = client.getKeyStore();
+        final Certificate certificate1 = keyStore.getCertificate(certName1);
+        final Certificate certificate2 = keyStore.getCertificate(certName2);
+
+        final InputStream inputStream1 = getContext().getAssets().open(certName1);
+        final CertificateFactory certificateFactory1 = CertificateFactory.getInstance("X.509");
+        final Certificate expectedCertificate1 = certificateFactory1.generateCertificate(inputStream1);
+        inputStream1.close();
+
+        final InputStream inputStream2 = getContext().getAssets().open(certName2);
+        final CertificateFactory certificateFactory2 = CertificateFactory.getInstance("X.509");
+        final Certificate expectedCertificate2 = certificateFactory2.generateCertificate(inputStream2);
+        inputStream2.close();
+
+        assertEquals(expectedCertificate1, certificate1);
+        assertEquals(expectedCertificate2, certificate2);
+    }
+
+    public void testGetSocketFactoryCallsKeyStoreWhenCertificatesArePinned() throws Exception {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.pinnedSslCertificateNames", UUID.randomUUID().toString());
+
+        Pivotal.setProperties(properties);
+
+        final KeyStore keyStore = Mockito.mock(KeyStore.class);
+        final RemoteClient.Default client = Mockito.spy(new RemoteClient.Default(mContext, null));
+
+        Mockito.doReturn(keyStore).when(client).getKeyStore();
+
+        assertNotNull(client.getSocketFactory());
+
+        Mockito.verify(client).getKeyStore();
+    }
+
+    public void testGetSocketFactoryReturnsTrustAllSSLSocketFactoryWhenAllowAllSSLCertificatesIsEnabled() throws Exception {
+        final Properties properties = new Properties();
+        properties.setProperty("pivotal.data.trustAllSslCertificates", "true");
+
+        Pivotal.setProperties(properties);
+
+        final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
+        final SSLSocketFactory socketFactory = client.getSocketFactory();
+
+        assertTrue(socketFactory instanceof RemoteClient.TrustAllSSLSocketFactory);
+    }
+
+    public void testGetSocketFactoryReturnsNullByDefault() throws Exception {
+        final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
+        final SSLSocketFactory socketFactory = client.getSocketFactory();
+
+        assertNull(socketFactory);
     }
 }

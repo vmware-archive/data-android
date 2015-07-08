@@ -15,6 +15,8 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
@@ -23,6 +25,21 @@ import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.List;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public interface RemoteClient {
 
@@ -189,12 +206,68 @@ public interface RemoteClient {
         // ========================================================
 
 
-        protected HttpClient getHttpClient() {
+        protected HttpClient getHttpClient() throws Exception {
             final HttpParams params = new BasicHttpParams();
             HttpConnectionParams.setConnectionTimeout(params, Timeouts.CONNECTION);
             HttpConnectionParams.setSoTimeout(params, Timeouts.SOCKET);
 
-            return new DefaultHttpClient(params);
+            final DefaultHttpClient client = new DefaultHttpClient(params);
+
+            final SSLSocketFactory socketFactory = getSocketFactory();
+            if (socketFactory != null) {
+                final Scheme scheme = new Scheme("https", socketFactory, 443);
+                client.getConnectionManager().getSchemeRegistry().register(scheme);
+            }
+
+            return client;
+        }
+
+        protected SSLSocketFactory getSocketFactory() throws Exception {
+            if (Pivotal.trustAllSslCertificates()) {
+                return new TrustAllSSLSocketFactory(null);
+
+            } else if (Pivotal.getPinnedSslCertificateNames().size() > 0) {
+                return new SSLSocketFactory(getKeyStore());
+
+            } else {
+                return null;
+            }
+        }
+
+        protected KeyStore getKeyStore() throws Exception {
+            final String defaultType = KeyStore.getDefaultType();
+            final KeyStore keyStore = KeyStore.getInstance(defaultType);
+            keyStore.load(null, null);
+
+            loadCertificates(keyStore);
+
+            return keyStore;
+        }
+
+        protected void loadCertificates(final KeyStore keyStore) throws Exception {
+            final CertificateFactory certificateFactory = getCertificateFactory();
+
+            final List<String> certificateNames = Pivotal.getPinnedSslCertificateNames();
+            for (final String certificateName : certificateNames) {
+
+                loadCertificate(keyStore, certificateFactory, certificateName);
+            }
+        }
+
+        protected CertificateFactory getCertificateFactory() throws Exception {
+            return CertificateFactory.getInstance("X.509");
+        }
+
+        protected void loadCertificate(final KeyStore keyStore, final CertificateFactory certificateFactory, final String certificateName) throws Exception {
+            final InputStream inputStream = mContext.getAssets().open(certificateName);
+            try {
+                final Certificate certificate = certificateFactory.generateCertificate(inputStream);
+                keyStore.setCertificateEntry(certificateName, certificate);
+            } catch (final Exception e) {
+                Logger.ex(e);
+            } finally {
+                inputStream.close();
+            }
         }
 
         protected String handleResponse(final HttpResponse response, final String url) throws Exception {
@@ -232,6 +305,38 @@ public interface RemoteClient {
             Logger.v("Response Body: " + result);
 
             return result;
+        }
+    }
+
+    public static class TrustAllSSLSocketFactory extends SSLSocketFactory {
+        private final SSLContext mSslContext = SSLContext.getInstance("TLS");
+
+        private final TrustManager mTrustManager = new X509TrustManager() {
+            public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+            }
+
+            public void checkServerTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+
+        public TrustAllSSLSocketFactory(final KeyStore keyStore) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, UnrecoverableKeyException {
+            super(keyStore);
+
+            mSslContext.init(null, new TrustManager[]{mTrustManager}, null);
+        }
+
+        @Override
+        public Socket createSocket(final Socket socket, final String host, final int port, final boolean autoClose) throws IOException {
+            return mSslContext.getSocketFactory().createSocket(socket, host, port, autoClose);
+        }
+
+        @Override
+        public Socket createSocket() throws IOException {
+            return mSslContext.getSocketFactory().createSocket();
         }
     }
 }

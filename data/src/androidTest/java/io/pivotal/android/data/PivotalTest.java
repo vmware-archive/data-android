@@ -90,7 +90,7 @@ public class PivotalTest extends AndroidTestCase {
 
         Pivotal.setProperties(properties);
 
-        assertTrue(Pivotal.getTrustAllSslCertificates());
+        assertTrue(Pivotal.trustAllSslCertificates());
     }
 
     public void testTrustAllSslCertificatesEvaluatesToFalse() {
@@ -99,11 +99,11 @@ public class PivotalTest extends AndroidTestCase {
 
         Pivotal.setProperties(properties);
 
-        assertFalse(Pivotal.getTrustAllSslCertificates());
+        assertFalse(Pivotal.trustAllSslCertificates());
     }
 
     public void testTrustAllSslCertificatesDefaultsToNo() {
-        assertFalse(Pivotal.getTrustAllSslCertificates());
+        assertFalse(Pivotal.trustAllSslCertificates());
     }
 
     public void testPinnedSslCertificateNames() {

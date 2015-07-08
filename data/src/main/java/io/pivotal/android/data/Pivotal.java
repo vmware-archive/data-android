@@ -87,10 +87,10 @@ import java.util.Properties;
         }
     }
 
-    public static Boolean getTrustAllSslCertificates() {
+    public static Boolean trustAllSslCertificates() {
         try {
-            String trustAllSslCertificatesStringValue = get(Keys.TRUST_ALL_SSL_CERTIFICATES);
-            return Boolean.valueOf(trustAllSslCertificatesStringValue);
+            final String trustAllSslCertificates = get(Keys.TRUST_ALL_SSL_CERTIFICATES);
+            return Boolean.valueOf(trustAllSslCertificates);
         } catch (final IllegalStateException e) {
             return false;
         }
@@ -98,8 +98,8 @@ import java.util.Properties;
 
     public static List<String> getPinnedSslCertificateNames() {
         try {
-            final String spaceDelimitedSslCertificateNames = get(Keys.PINNED_SSL_CERTIFICATE_NAMES);
-            final String[] sslCertificateNames = spaceDelimitedSslCertificateNames.split(" ");
+            final String pinnedSslCertificateNames = get(Keys.PINNED_SSL_CERTIFICATE_NAMES);
+            final String[] sslCertificateNames = pinnedSslCertificateNames.split(" ");
             return Arrays.asList(sslCertificateNames);
         } catch (final IllegalStateException e) {
             return new ArrayList<String>();
