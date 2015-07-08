@@ -284,6 +284,10 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetHttpClientIsCreatedWithAppropriateTimeouts() throws Exception {
+        final Properties properties = new Properties();
+
+        Pivotal.setProperties(properties);
+
         final RemoteClient.Default client = new RemoteClient.Default(null, null);
         final HttpClient httpClient = client.getHttpClient();
         final HttpParams params = httpClient.getParams();
@@ -436,7 +440,7 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testKeyStoreLoadsCorrectCertificates() throws Exception {
-        final String certName1 = "test.cer";
+        final String certName1 = "test1.cer";
         final String certName2 = "test2.cer";
         final Properties properties = new Properties();
         properties.setProperty("pivotal.data.pinnedSslCertificateNames", certName1 + " " + certName2);
@@ -491,6 +495,10 @@ public class RemoteClientTest extends AndroidTestCase {
     }
 
     public void testGetSocketFactoryReturnsNullByDefault() throws Exception {
+        final Properties properties = new Properties();
+
+        Pivotal.setProperties(properties);
+
         final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
         final SSLSocketFactory socketFactory = client.getSocketFactory();
 

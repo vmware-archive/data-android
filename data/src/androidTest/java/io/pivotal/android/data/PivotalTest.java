@@ -120,6 +120,10 @@ public class PivotalTest extends AndroidTestCase {
     }
 
     public void testPinnedSslCertificateNamesUnspecified() {
+        final Properties properties = new Properties();
+
+        Pivotal.setProperties(properties);
+
         assertNotNull(Pivotal.getPinnedSslCertificateNames());
         assertEquals(Pivotal.getPinnedSslCertificateNames().size(), 0);
     }
