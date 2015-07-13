@@ -108,15 +108,15 @@ public class PivotalTest extends AndroidTestCase {
 
     public void testPinnedSslCertificateNames() {
         final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.pinnedSslCertificateNames", "thing.der black_ad.der cert.der");
+        properties.setProperty("pivotal.data.pinnedSslCertificateNames", "thing.cer black_ad.der hurr.der");
 
         Pivotal.setProperties(properties);
 
         final List<String> pinnedSslCertificateNames = Pivotal.getPinnedSslCertificateNames();
 
-        assertEquals(pinnedSslCertificateNames.get(0), "thing.der");
+        assertEquals(pinnedSslCertificateNames.get(0), "thing.cer");
         assertEquals(pinnedSslCertificateNames.get(1), "black_ad.der");
-        assertEquals(pinnedSslCertificateNames.get(2), "cert.der");
+        assertEquals(pinnedSslCertificateNames.get(2), "hurr.der");
     }
 
     public void testPinnedSslCertificateNamesUnspecified() {

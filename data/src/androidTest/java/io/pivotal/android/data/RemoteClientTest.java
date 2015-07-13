@@ -25,8 +25,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
@@ -437,33 +435,6 @@ public class RemoteClientTest extends AndroidTestCase {
         assertEquals(TOKEN, client.provideAccessToken());
 
         Mockito.verify(provider).provideAccessToken(mContext);
-    }
-
-    public void testKeyStoreLoadsCorrectCertificates() throws Exception {
-        final String certName1 = "test1.cer";
-        final String certName2 = "test2.cer";
-        final Properties properties = new Properties();
-        properties.setProperty("pivotal.data.pinnedSslCertificateNames", certName1 + " " + certName2);
-
-        Pivotal.setProperties(properties);
-
-        final RemoteClient.Default client = new RemoteClient.Default(mContext, null);
-        final KeyStore keyStore = client.getKeyStore();
-        final Certificate certificate1 = keyStore.getCertificate(certName1);
-        final Certificate certificate2 = keyStore.getCertificate(certName2);
-
-        final InputStream inputStream1 = getContext().getAssets().open(certName1);
-        final CertificateFactory certificateFactory1 = CertificateFactory.getInstance("X.509");
-        final Certificate expectedCertificate1 = certificateFactory1.generateCertificate(inputStream1);
-        inputStream1.close();
-
-        final InputStream inputStream2 = getContext().getAssets().open(certName2);
-        final CertificateFactory certificateFactory2 = CertificateFactory.getInstance("X.509");
-        final Certificate expectedCertificate2 = certificateFactory2.generateCertificate(inputStream2);
-        inputStream2.close();
-
-        assertEquals(expectedCertificate1, certificate1);
-        assertEquals(expectedCertificate2, certificate2);
     }
 
     public void testGetSocketFactoryCallsKeyStoreWhenCertificatesArePinned() throws Exception {
