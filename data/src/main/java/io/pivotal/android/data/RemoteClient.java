@@ -212,11 +212,15 @@ public interface RemoteClient {
 
             final SSLSocketFactory socketFactory = getSocketFactory();
             if (socketFactory != null) {
-                final Scheme scheme = new Scheme("https", socketFactory, 443);
+                final Scheme scheme = new Scheme("https", socketFactory, getDefaultSslPort());
                 client.getConnectionManager().getSchemeRegistry().register(scheme);
             }
 
             return client;
+        }
+
+        protected int getDefaultSslPort() {
+            return 443;
         }
 
         protected SSLSocketFactory getSocketFactory() throws Exception {

@@ -19,7 +19,6 @@ public class KeyStoreFactory {
         mContext = context;
     }
 
-
     public KeyStore getKeyStore() throws Exception {
         final String defaultType = KeyStore.getDefaultType();
         final KeyStore keyStore = KeyStore.getInstance(defaultType);
